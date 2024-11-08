@@ -160,7 +160,7 @@ export class webview_homepage {
         const pathClose = vscode.Uri.joinPath(context.extensionUri, 'res/images/close.svg');
         const close = panel.webview.asWebviewUri(pathClose).toString();
 
-        const pathJS = vscode.Uri.joinPath(context.extensionUri, 'out/Extension/homepage.js');
+        const pathJS = vscode.Uri.joinPath(context.extensionUri, 'out/extension/homepage.js');
         const js = panel.webview.asWebviewUri(pathJS).toString();
 
         const pathCSS = vscode.Uri.joinPath(context.extensionUri, 'res/webviews/homepage.css');
@@ -170,7 +170,7 @@ export class webview_homepage {
         const folder = panel.webview.asWebviewUri(pathFolder).toString();
 
 
-        html = html.replace('../../out/Extension/homepage.js', js);
+        html = html.replace('../../out/extension/homepage.js', js);
         html = html.replace('homepage.css', css);
         html = html.replaceAll('../images/Wago.png', img);
         html = html.replaceAll('../images/wago-icons_rgb_chevron-right_outline_green.svg', chivron);

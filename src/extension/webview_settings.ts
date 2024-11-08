@@ -73,7 +73,7 @@ export class custom_webview_provider_settings implements vscode.WebviewViewProvi
         var html = fs.readFileSync(path.join(__dirname, '../../res/webviews/settings.html'), "utf-8").toString();
 
         const path_css = vscode.Uri.joinPath(this._extensionUri, 'res/webviews/settings.css');
-        const path_js = vscode.Uri.joinPath(this._extensionUri, 'out/Extension/settings.js');
+        const path_js = vscode.Uri.joinPath(this._extensionUri, 'out/extension/settings.js');
         const path_tick = vscode.Uri.joinPath(this._extensionUri, 'res/images/wago-icons_rgb_tick-sign_outline_black.svg');
         const path_chevron = vscode.Uri.joinPath(this._extensionUri, 'res/images/wago-icons_rgb_chevron-right_outline_green.svg');
         const path_view = vscode.Uri.joinPath(this._extensionUri, 'res/images/wago-icons_rgb_view_outline_green.svg');
@@ -83,7 +83,7 @@ export class custom_webview_provider_settings implements vscode.WebviewViewProvi
         const chevron = webview.asWebviewUri(path_chevron).toString();
         const view = webview.asWebviewUri(path_view).toString();
         html = html.replace("settings.css", css);
-        html = html.replace("../../out/Extension/settings.js", js);
+        html = html.replace("../../out/extension/settings.js", js);
         html = html.replaceAll('../images/wago-icons_rgb_tick-sign_outline_black.svg', tick);
         html = html.replaceAll("../images/wago-icons_rgb_chevron-right_outline_green.svg", chevron);
         html = html.replace("../images/wago-icons_rgb_view_outline_green.svg", view);
