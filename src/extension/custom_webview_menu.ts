@@ -155,7 +155,7 @@ export class custom_webview_provider_menu implements vscode.WebviewViewProvider 
         var html = fs.readFileSync(path.join(__dirname, '../../res/webviews/menu.html'), "utf-8").toString();
 
         const path_css = vscode.Uri.joinPath(this._extensionUri, 'res/webviews/menu.css');
-        const path_js = vscode.Uri.joinPath(this._extensionUri, 'out/Extension/menu.js');
+        const path_js = vscode.Uri.joinPath(this._extensionUri, 'out/extension/menu.js');
         const pathImgPlay = vscode.Uri.joinPath(this._extensionUri, 'res/images/wago-icons_rgb_play_outline_green.svg');
         const pathImgUpload = vscode.Uri.joinPath(this._extensionUri, 'res/images/wago-icons_rgb_upload_outline_green.svg');
         const pathImgView = vscode.Uri.joinPath(this._extensionUri, 'res/images/wago-icons_rgb_view_outline_green.svg');
@@ -173,7 +173,7 @@ export class custom_webview_provider_menu implements vscode.WebviewViewProvider 
         const imgImport = webview.asWebviewUri(pathImgDownload).toString();
         const imgDebug = webview.asWebviewUri(pathImgDebug).toString();
 
-        html = html.replace("../../out/Extension/menu.js", js);
+        html = html.replace("../../out/extension/menu.js", js);
         html = html.replace("menu.css", css);
         html = html.replace("../images/wago-icons_rgb_play_outline_green.svg", imgPlay);
         html = html.replace("../images/wago-icons_rgb_upload_outline_green.svg", imgUpload);
