@@ -67,7 +67,7 @@
       "activitybar": [
         {
           "id": "CC100",
-          "title": "CC100 programming Interface",
+          "title": "WAGO CC100",
           "icon": "res/images/WAGO_W.png"
         }
       ]
