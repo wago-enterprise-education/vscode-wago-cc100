@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="./io_check.css">
+	<script type="module" src="../ioCheck.js"></script>
+	<title>IO-Check</title>
+</head>
+
+<body id="body">
+
+
+	<!-- center with CC100 -->
+	<div id="center">
+
+		<div id="refrash_rate_panel">
+			<img id="refrash_rate_svg" src='res/images/wago-icons_rgb_future_outline_green.svg'>
+			<label id="refrash_rate">221 ms</label>
+		</div>
+
+		<svg id="cc100" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1548 1077" width="1000" height="800">
+			<image href="../images/cc100_neu11.png" x="0" y="0" width="1548" height="1077" />
+			<rect id="LED_DI1" class="LED_DI" x="849" y="420" width="30" height="30" style="fill: white;" />
+			<rect id="LED_DI2" class="LED_DI" x="898" y="420" width="30" height="30" style="fill: white;" />
+			<rect id="LED_DI3" class="LED_DI" x="946" y="420" width="30" height="30" style="fill: white;" />
+			<rect id="LED_DI4" class="LED_DI" x="996" y="420" width="30" height="30" style="fill: white;" />
+			<rect id="LED_DI5" class="LED_DI" x="1047" y="420" width="30" height="30" style="fill: white;" />
+			<rect id="LED_DI6" class="LED_DI" x="1095" y="420" width="30" height="30" style="fill: white;" />
+			<rect id="LED_DI7" class="LED_DI" x="1144" y="420" width="30" height="30" style="fill: white;" />
+			<rect id="LED_DI8" class="LED_DI" x="1193" y="420" width="30" height="30" style="fill: white;" />
+
+			<rect id="LED_DO1" class="LED_DO" x="849" y="570" width="30" height="30" style="fill: white;" />
+			<rect id="LED_DO2" class="LED_DO" x="898" y="570" width="30" height="30" style="fill: white;" />
+			<rect id="LED_DO3" class="LED_DO" x="947" y="570" width="30" height="30" style="fill: white;" />
+			<rect id="LED_DO4" class="LED_DO" x="996" y="570" width="30" height="30" style="fill: white;" />
+
+			<rect id="LED_SYS" class="LED_CON" x="251" y="533" width="30" height="30" style="fill: #6EC800;" />
+			<rect id="LED_RUN" class="LED_CON" x="300" y="533" width="30" height="30" style="fill: white;" />
+			<rect id="LED_USR" class="LED_CON" x="350" y="533" width="30" height="30" style="fill: white;" />
+			<rect id="LED_LACT1" class="LED_CON" x="400" y="533" width="30" height="30" style="fill: white;" />
+			<rect id="LED_LACT2" class="LED_CON" x="450" y="533" width="30" height="30" style="fill: white;" />
+			<rect id="LED_MSD" class="LED_CON" x="498" y="533" width="30" height="30" style="fill: white;" />
+
+			<rect x="675" y="375" width="70" height="215" rx="40" ry="30" fill="#D7D7D7"></rect>
+			<image id="switch" href="../images/cc100_schalter.png" x="625" y="395" width="170" height="170" />
+		</svg>
+
+	</div>
+
+
+	<!-- parameters on the right for the temperature -->
+	<div id="right_params_temperature">
+
+		<div class="header">
+			<h2>Temperature:</h2>
+		</div>
+
+		<div class="analog_panel">
+			<div class="pt">
+				<label class="analog_input_labels">PT1</label>
+				<label class="analog_display" id="text_PT1">0.00</label>
+				<label class="analog_input_labels">°C</label>
+			</div>
+			<div class="pt">
+				<label class="analog_input_labels">PT2</label>
+				<label class="analog_display" id="text_PT2">0.00</label>
+				<label class="analog_input_labels">°C</label>
+			</div>
+		</div>
+	</div>
+
+	<!-- parameters on the right for the inputs -->
+	<div id="right_params_inputs">
+
+		<div class="header">
+			<h2>Inputs:</h2>
+		</div>
+
+		<div class="digital_header">
+			<h3>Digital:</h3>
+		</div>
+
+		<div class="digital_panel">
+			<div class="label_and_button">
+				<label class="digital_labels">DI1</label>
+				<input class="btn_di" id="btn_DI1" type="button" value="LOW" disabled="disabled" />
+			</div>
+			<div class="label_and_button">
+				<label class="digital_labels">DI2</label>
+				<input class="btn_di" id="btn_DI2" type="button" value="LOW" disabled="disabled" />
+			</div>
+			<div class="label_and_button">
+				<label class="digital_labels">DI3</label>
+				<input class="btn_di" id="btn_DI3" type="button" value="LOW" disabled="disabled" />
+			</div>
+			<div class="label_and_button">
+				<label class="digital_labels">DI4</label>
+				<input class="btn_di" id="btn_DI4" type="button" value="LOW" disabled="disabled" />
+			</div>
+			<div class="label_and_button">
+				<label class="digital_labels">DI5</label>
+				<input class="btn_di" id="btn_DI5" type="button" value="LOW" disabled="disabled" />
+			</div>
+			<div class="label_and_button">
+				<label class="digital_labels">DI6</label>
+				<input class="btn_di" id="btn_DI6" type="button" value="LOW" disabled="disabled" />
+			</div>
+			<div class="label_and_button">
+				<label class="digital_labels">DI7</label>
+				<input class="btn_di" id="btn_DI7" type="button" value="LOW" disabled="disabled" />
+			</div>
+			<div class="label_and_button">
+				<label class="digital_labels">DI8</label>
+				<input class="btn_di" id="btn_DI8" type="button" value="LOW" disabled="disabled" />
+			</div>
+		</div>
+
+		<div class="analog_header">
+			<h3>Analog:</h3>
+		</div>
+
+		<div class="analog_panel">
+			<div class="ai">
+				<label class="analog_input_labels">AI1</label>
+				<label class="analog_display" id="AI1">0.00</label>
+				<label class="analog_input_labels">mV</label>
+			</div>
+			<div class="ai">
+				<label class="analog_input_labels">AI2</label>
+				<label class="analog_display" id="AI2">0.00</label>
+				<label class="analog_input_labels">mV</label>
+			</div>
+		</div>
+
+	</div>
+
+	<!-- parameters on the right for the outputs -->
+	<div id="right_params_outputs">
+
+		<div class="header">
+			<h2>Outputs:</h2>
+		</div>
+
+		<div class="digital_header">
+			<h3>Digital:</h3>
+		</div>
+
+		<div class="digital_panel">
+			<div class="label_and_button">
+				<label class="digital_labels">DO1</label>
+				<input class="btn_do" type="button" id="btn_DO1" value="LOW">
+			</div>
+			<div class="label_and_button">
+				<label class="digital_labels">DO2</label>
+				<input class="btn_do" type="button" id="btn_DO2" value="LOW">
+			</div>
+			<div class="label_and_button">
+				<label class="digital_labels">DO3</label>
+				<input class="btn_do" type="button" id="btn_DO3" value="LOW">
+			</div>
+			<div class="label_and_button">
+				<label class="digital_labels">DO4</label>
+				<input class="btn_do" type="button" id="btn_DO4" value="LOW">
+			</div>
+		</div>
+
+		<div class="analog_header">
+			<h3>Analog:</h3>
+		</div>
+
+		<div class="analog_panel">
+			<div class="ao">
+                <label class="analog_input_labels">AO1</label>
+                <label class="analog_display" id="val_AO1">0.00</label>
+                <label class="analog_input_labels">mV</label>
+            </div>
+			<div class="ao">
+				<!-- <label class="analog_output_labels">AO1</label> -->
+				<input class="text_input" type="number" id="text_AO1">
+				<!-- <label class="analog_output_labels">mV</label> -->
+			</div>
+
+			<button id="btn_AO1_write" class="btn_write">
+				<img class="chevron" src="res/images/wago-icons_rgb_chevron-right_outline_green.svg" alt=">">
+				<label class="button_label">Write</label>
+			</button>
+
+			<div class="ao">
+                <label class="analog_input_labels">AO2</label>
+                <label class="analog_display" id="val_AO2">0.00</label>
+                <label class="analog_input_labels">mV</label>
+            </div>
+			<div class="ao">
+				<!-- <label class="analog_output_labels">AO2</label> -->
+				<input class="text_input" type="number" id="text_AO2">
+				<!-- <label class="analog_output_labels">mV</label> -->
+			</div>
+
+			<button id="btn_AO2_write" class="btn_write">
+				<img class="chevron" src="res/images/wago-icons_rgb_chevron-right_outline_green.svg" alt=">">
+				<label class="button_label">Write</label>
+			</button>
+
+		</div>
+
+	</div>
+
+	<!-- parameters on the right for the RS-485 -->
+	<div id="right_params_serial">
+
+		<div class="header">
+			<h2>RS-485:</h2>
+		</div>
+
+		<div id="chat_serial"></div>
+
+		<div id="send_panel">
+			<input type="text" id="input_serial">
+			<button id="btn_serial_send" class="btn_write">
+				<img id="small_chevron" class="chevron " src="res/images/wago-icons_rgb_chevron-right_outline_green.svg"
+					alt=">">
+				<label class="button_label">Send</label>
+			</button>
+		</div>
+	</div>
+	<!-- side-navigation on the right side -->
+	<div id="side_nav">
+		<div id="inputs" class="side_items">
+			<img class="side_icons rotate" src="res/images/wago-icons_rgb_import_outline_green.svg" data-rotate="90">
+			<label class="side_nav_labels" for="inputs">Inputs</label>
+		</div>
+		<div id="outputs" class="side_items">
+			<img class="side_icons rotate" src="res/images/wago-icons_rgb_export_outline_green.svg" data-rotate="90">
+			<label class="side_nav_labels" for="outputs">Outputs</label>
+		</div>
+		<div id="serial" class="side_items">
+			<img class="side_icons" src="res/images/wago-icons_rgb_connectors_outline_green.svg">
+			<label class="side_nav_labels" for="serial">RS-485</label>
+		</div>
+		<div id="temperature" class="side_items">
+			<?xml version="1.0" encoding="UTF-8"?>
+			<img class="side_icons" src="res/images/wago-icons_rgb_temperature_outline_green.svg">
+			<label class="side_nav_labels" for="temperature">Temp.</label>
+		</div>
+		<div id="fill_item"></div>
+	</div>
+</body>
+
+</html>

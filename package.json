@@ -1,0 +1,122 @@
+{
+  "name": "vscode-wago-cc100",
+  "displayName": "WAGO CC100",
+  "description": "VS Code extension to develop python scripts for the WAGO CC100 programmable logic controller",
+  "version": "0.1.0",
+  "author": {
+    "name": "WAGO Education",
+    "email": "ausbildungminden@wago.com",
+    "url": "https://github.com/wago-enterprise-education"
+  },
+  "contributors": [
+    { "name": "André Bell" },
+    { "name": "Maik Rehburg" },
+    { "name": "Florian Deerberg" },
+    { "name": "Andreas Epp" },
+    { "name": "William Epp" },
+    { "name": "Fabian Henßler" },
+    { "name": "Alexander Nungesser" },
+    { "name": "Marius Rösner" },
+    { "name": "Max Steidle" }  
+  ],
+  "publisher": "WAGO-education",
+  "license": "see LICENSE file",
+  "homepage": "https://github.com/wago-enterprise-education/vscode-wago-cc100",
+  "bugs": {
+    "url": "https://github.com/wago-enterprise-education/vscode-wago-cc100/issues"
+  },
+  "qna": "https://github.com/wago-enterprise-education/vscode-wago-cc100/discussions",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wago-enterprise-education/vscode-wago-cc100.git"
+  },
+  "icon": "res/images/WAGO_W.png",
+  "type": "commonjs",
+  "engines": {
+    "vscode": "^1.63.0"
+  },
+  "galleryBanner": {
+    "color": "white",
+    "theme": "light"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "vscode-wago-cc100.home",
+        "title": "Home"
+      },
+      {
+        "command": "vscode-wago-cc100.application_upload",
+        "title": "Upload application to CC100"
+      },
+      {
+        "command": "vscode-wago-cc100.iocheck",
+        "title": "IO-Check"
+      },
+      {
+        "command": "vscode-wago-cc100.testSSH",
+        "title": "Test SSH"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "CC100",
+          "title": "CC100 programming Interface",
+          "icon": "res/images/WAGO_W.png"
+        }
+      ]
+    },
+    "views": {
+      "CC100": [
+        {
+          "name": "Menu",
+          "id": "menu",
+          "type": "webview"
+        },
+        {
+          "name": "Settings",
+          "id": "settings",
+          "type": "webview"
+        }
+      ]
+    },
+    "webviews": [
+      {
+        "viewType": "vscode-wago-cc100.home",
+        "icon": {
+          "light": "res/images/WAGO_W.png",
+          "dark": "res/images/WAGO_W.png"
+        }
+      }
+    ]
+  },
+  "extensionDependencies": [
+    "ms-python.python",
+    "mindaro-dev.file-downloader"
+  ],
+  "dependencies": {
+    "@microsoft/vscode-file-downloader-api": "^1.0.1",
+    "node-ssh": "^13.1.0",
+    "sanitize-html": "^2.13.0",
+    "ssh2": "^1.15.0",
+    "typescript": "^5.3.3"
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.8",
+    "@types/sanitize-html": "2.11.0",
+    "@types/vscode": "^1.63.0"
+  }
+}

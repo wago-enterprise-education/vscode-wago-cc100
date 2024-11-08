@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="settings.css">
+    <script src="../../out/Extension/settings.js"></script>
+</head>
+
+<body>
+    <form id="settings_form">
+        <div class="section">
+            <p>Connection:</p>
+            <label class="container">USB-C
+                <input type="radio" id="usb_c" name="mode" value="usb_c" onchange="radio_btn_changed()">
+                <span class="checkmark">
+                    <img id="usb_c_tick" class="checkImg" src="../images/wago-icons_rgb_tick-sign_outline_black.svg">
+                </span>
+            </label>
+            <label class="container" id="label_simulator">Simulator
+                <input type="radio" id="simulator" name="mode" value="simulator" onchange="radio_btn_changed()">
+                <span class="checkmark">
+                    <img id="simulator_tick" class="checkImg"
+                        src="../images/wago-icons_rgb_tick-sign_outline_black.svg">
+                </span>
+            </label>
+            <label class="container">Ethernet
+                <input type="radio" id="ethernet" name="mode" value="ethernet" onchange="radio_btn_changed()">
+                <span class="checkmark">
+                    <img id="ethernet_tick" class="checkImg" src="../images/wago-icons_rgb_tick-sign_outline_black.svg">
+                </span>
+            </label>
+
+            <div id="ipInput" class="element">
+                <label for="ip">IP-Adress:</label><br>
+                <input type="text" id="ip" name="ip_adress">
+            </div>
+
+            <button class="submitButton" id="change_password">
+                <img class="chevron" src="../images/wago-icons_rgb_chevron-right_outline_green.svg" alt=">">
+                <label class="button_label">Change Password</label>
+            </button>
+        </div>
+        
+        <div class="section element">
+            <label class="container">Auto Update CC100IO-Libary
+                <input type="checkbox" id="autoupdate" onchange="auto_update_changed()" name="autoupdate">
+                <span class="checkmark">
+                    <img src="../images/wago-icons_rgb_tick-sign_outline_black.svg" id="autoupdate_checkmark">
+                </span>
+            </label>
+        </div>
+        <button class="submitButton" id="submitButton" type="submit" onclick="save_clicked()">
+            <img class="chevron" src="../images/wago-icons_rgb_chevron-right_outline_green.svg" alt=">">
+            <label class="button_label">Save</label>
+        </button>
+    </form>
+</body>

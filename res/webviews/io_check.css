@@ -1,0 +1,371 @@
+:root {
+    --color-main-light: #ffffff;
+    --color-main-primary: #6ec800;
+    --color-main-primary-80: #8bd333;
+    --color-main-secondary: #1f2837;
+    --color-main-dark: #000000;
+    --color-anthracite-70: #616a73;
+    --color-anthracite-15: #dedfe1;
+    --color-anthracite-7: #eff0f1;
+    --color-transparent: rgba(0, 0, 0, 0);
+    --copy: copy;
+}
+
+input:focus {
+    outline-color: #6EC800;
+}
+
+html,
+body {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background-color: var(--vscode-editor-background);
+    overflow: hidden;
+    transition-property: opacity;
+    transition-duration: 1s;
+}
+
+body {
+    font-family: Copy, Arial;
+    flex-direction: row;
+}
+
+h1,
+h2,
+h3 {
+    color: var(--vscode-tab-activeForeground);
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+label {
+    color: var(--vscode-tab-activeForeground);
+}
+
+#side_nav {
+    display: flex;
+    flex-direction: column;
+    min-width: 50px;
+    height: 100%;
+    padding-left: 10px;
+    align-items: center;
+    background-color: var(--vscode-sideBar-background);
+}
+
+#side_nav img {
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+.side_items {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin-bottom: 15px;
+    border-left: 4px solid;
+    border-color: var(--vscode-sideBar-border);
+    align-items: center;
+}
+
+#temperature {
+    padding-top: 8px;
+}
+
+.side_icons {
+    fill: var(--vscode-tab-activeForeground);
+}
+
+.side_items:hover {
+    cursor: pointer;
+}
+
+.rotate {
+    transform: rotate(90deg);
+}
+
+.side_nav_labels {
+    margin-bottom: 10px;
+    cursor: pointer;
+}
+
+#fill_item {
+    width: 100%;
+    height: 100%;
+    border-left: 4px solid;
+    border-color: var(--vscode-sideBar-border);
+}
+
+#inputs {
+    border-color: var(--color-main-primary);
+}
+
+#center {
+    width: 80%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+#refrash_rate_panel {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    font: var(--copy);
+    font-weight: bold;
+    max-height: 20px;
+    padding: 5px;
+    margin-top: 0;
+    margin-bottom: auto;
+    margin-right: 4px;
+    min-width: 90px;
+    align-content: center;
+}
+
+#refrash_rate_svg {
+    text-align: center;
+    max-width: 20px;
+}
+
+#refrash_rate {
+    margin-top: auto;
+    margin-bottom: auto;
+    text-align: center;
+    margin-left: 10px;
+}
+
+#cc100 {
+    width: 100%;
+    height: auto;
+    margin-top: auto;
+    margin-bottom: auto;
+}
+
+#right_params_inputs,
+#right_params_outputs,
+#right_params_serial,
+#right_params_temperature {
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 160px;
+    width: 20%;
+    height: 100%;
+    padding: 5px;
+    background-color: var(--vscode-sideBar-background);
+}
+
+#right_params_outputs {
+    z-index: 2;
+    display: none;
+}
+
+#right_params_serial {
+    z-index: 3;
+    display: none;
+}
+
+#right_params_temperature {
+    z-index: 4;
+    display: none;
+}
+
+.header {
+    margin-left: 5%;
+    margin-right: 5%;
+    border-bottom: 0.5px solid var(--vscode-sideBar-border);
+}
+
+.digital_header,
+.analog_header {
+    margin-top: 10%;
+    margin-left: 10%;
+    margin-right: 10%;
+    border-bottom: 0.5px solid var(--vscode-sideBar-border);
+}
+
+.digital_panel {
+    display: flex;
+    flex-direction: column;
+}
+
+.label_and_button {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    margin-top: 20px;
+}
+
+.digital_labels {
+    margin: auto;
+    margin-right: 5%;
+}
+
+.btn_do,
+.btn_di {
+    width: 30%;
+    margin: auto;
+    margin-left: 5%;
+    background-color: var(--vscode-sideBar-border);
+    color: var(--color-main-light);
+    border: none;
+    cursor: pointer;
+    text-align: center;
+    font: var(--copy);
+    font-weight: bold;
+}
+
+.btn_di {
+    cursor: default;
+}
+
+.btn_di:focus {
+    border: 1px solid var(--color-main-dark);
+}
+
+.btn_do:disabled {
+    cursor: default;
+}
+
+.analog_panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.ao,
+.ai,
+.pt {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-content: center;
+    width: 100%;
+    margin-top: 10%;
+    margin-bottom: 5%;
+}
+
+.analog_input_labels,
+.analog_display {
+    margin: auto;
+}
+
+.analog_output_labels {
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+.text_input {
+    width: 50%;
+    height: 100%;
+    border: 1px solid var(--color-anthracite-70);
+    color: var(--color-anthracite-70);
+    text-align: center;
+    font: var(--copy);
+}
+
+.text_input:focus {
+    text-align: center;
+    color: var(--color-main-secondary);
+    border: 1px solid var(--color-main-primary);
+}
+
+.btn_write {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    font-size: 1em;
+    font-weight: bold;
+    background-color: transparent;
+    border: 1px solid var(--color-transparent);
+    outline: 1px solid var(--color-main-primary);
+    outline-offset: 0;
+    padding: 1%;
+    width: 50%;
+    height: 8%;
+}
+
+.btn_write:hover {
+    border-top: 1px solid var(--color-transparent);
+    border-right: 1px solid var(--color-main-primary);
+    border-bottom: 1px solid var(--color-main-primary);
+    border-left: 1px solid var(--color-transparent);
+}
+
+
+.btn_write:active {
+    border-top: 1px solid var(--color-main-primary);
+    border-right: 1px solid var(--color-transparent);
+    border-bottom: 1px solid var(--color-transparent);
+    border-left: 1px solid var(--color-main-primary);
+}
+
+.chevron {
+    margin: auto;
+    margin-right: 10px;
+    height: 75%;
+    width: auto;
+}
+
+.button_label {
+    color: var(--color-main-primary);
+    font-size: 1em;
+    margin: auto;
+    margin-left: 0;
+}
+
+.btn_write:disabled {
+    color: var(--color-anthracite-15);
+    background-color: var(--color-anthracite-7);
+    border: 1px solid var(--color-anthracite-7);
+}
+
+#chat_serial {
+    width: 100%;
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+#send_panel {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 4%;
+    max-height: 30px;
+    align-items: center;
+    margin: 5% auto;
+}
+
+#input_serial {
+    width: 60%;
+    height: 70%;
+    margin: auto 2%;
+    color: var(--color-main-secondary);
+    font: var(--copy);
+}
+
+#btn_serial_send {
+    padding: 2px;
+    width: 30%;
+    height: 70%;
+    margin-left: 2%;
+}
+
+#small_chevron {
+    margin-right: 5px;
+}
+
+.button_div {
+    height: 5%;
+}
+
+p {
+    padding: 5px;
+    border-radius: 5px;
+    overflow-x: auto;
+    color: var(--vscode-tab-activeForeground);
+    background-color: var(--color-main-primary);
+    font: var(--copy);
+}

@@ -1,0 +1,256 @@
+:root {
+    --color-main-light: #ffffff;
+    --color-main-primary: #6ec800;
+    --color-main-primary-80: #8bd333;
+    --color-main-secondary: #1f2837;
+    --color-main-dark: #000000;
+    --color-anthracite-40: #a5a8af;
+    --color-transparent: rgba(0, 0, 0, 0);
+}
+
+input:focus {
+    outline-color: #6EC800;
+}
+
+
+html,
+body {
+    font-family: AktivGrotesk, Arial, sans-serif;
+    font-weight: 400;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    background-color: var(--vscode-editor-background);
+}
+
+button.main {
+    display: flex;
+    font-size: 1em;
+    font-weight: bold;
+    background-color: transparent;
+    border: 1px solid var(--color-transparent);
+    outline: 1px solid var(--color-main-primary);
+    outline-offset: 0;
+    color: var(--color-main-primary);
+    margin-bottom: 2.5%;
+    margin-top: 2.5%;
+    min-width: 280px;
+    height: 8%;
+    width: 65%;
+    margin-left: 10px;
+}
+
+button#submit {
+    height: 50%;
+    align-items: center;
+    text-align: center;
+    margin: auto
+}
+
+button.main:hover {
+    border-top: 1px solid var(--color-transparent);
+    border-right: 1px solid var(--color-main-primary);
+    border-bottom: 1px solid var(--color-main-primary);
+    border-left: 1px solid var(--color-transparent);
+}
+
+button.main:active {
+    border-top: 1px solid var(--color-main-primary);
+    border-right: 1px solid var(--color-transparent);
+    border-bottom: 1px solid var(--color-transparent);
+    border-left: 1px solid var(--color-main-primary);
+
+}
+
+button#x {
+    display: flex;
+    background-color: transparent;
+    max-width: 5%;
+    width: 5%;
+    max-height: 100%;
+    border: none;
+    padding: 0;
+}
+
+.button_label {
+    color: var(--color-main-primary);
+    margin: auto;
+    margin-left: 0;
+}
+
+.chevron {
+    margin: auto;
+    height: 30%;
+    width: auto;
+    margin-right: 10px;
+    margin-left: 25%
+}
+
+#div_path_input input {
+    width: 100%;
+    padding-right: 10%;
+    box-sizing: border-box;
+}
+
+#div_path_input img {
+    position: relative;
+    bottom: 41%;
+    left: 45%;
+    width: 28px
+}
+
+div.links {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    max-width: 65%;
+    height: 100%;
+}
+
+div.buttons {
+    border-left: var(--vscode-sideBar-border) solid 1px;
+    padding-left: 15px;
+    min-width: 35%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 80%;
+    margin-top: auto;
+    margin-bottom: auto;
+}
+
+img#main_logo {
+    max-width: 1202px;
+    max-height: 434px;
+    width: 75%;
+    height: auto;
+    margin: 0 auto;
+    margin-top: 0;
+}
+
+img.popup_logo {
+    width: 20%;
+    margin: auto;
+    margin-left: 0;
+    margin-right: auto;
+}
+
+#menu {
+    opacity: 1;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    z-index: 0;
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+#new_project {
+    z-index: 100;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    display: none;
+    justify-content: center;
+    align-items: center;
+}
+
+.new_project_label {
+    text-align: left;
+    margin-top: 10%;
+    outline: transparent;
+}
+
+.new_project_textfield {
+    margin-top: 2%;
+    font-size: large;
+    box-sizing: border-box;
+    border: 1px solid var(--vscode-editor-foreground);
+}
+
+.new_project_textfield:focus {
+    outline: none;
+}
+
+.new_project_textfield::placeholder {
+    color: var(--color-anthracite-40);
+}
+
+#popup_header {
+    height: 10%;
+    display: flex;
+    flex-direction: row;
+    border-bottom: 1px var(--vscode-sideBar-border) solid;
+    margin-left: 5%;
+    margin-right: 5%;
+    align-items: center;
+}
+
+#popup_footer {
+    height: 10%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-top: 1px var(--vscode-sideBar-border) solid;
+    margin-bottom: 0%;
+    margin-top: auto;
+    margin-left: 10%;
+    margin-right: 10%;
+}
+
+#popup_main {
+    font-size: large;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-content: center;
+    margin: auto;
+    margin-left: 10%;
+    margin-right: 10%;
+}
+
+#svg_x {
+    fill: var(--vscode-icon-foreground);
+}
+
+#window {
+    display: flex;
+    flex-direction: column;
+    border-radius: 5px;
+    background-color: var(--vscode-editor-background);
+    height: 80%;
+    min-height: 300px;
+    width: 30%;
+    min-width: 400px;
+    text-align: center;
+    border: 1px #262626 solid;
+}
+
+@media screen and (max-width: 750px) {
+    div.links {
+        height: 30%;
+        max-width: 95%;
+        margin-top: 10%;
+        border-bottom: 1px var(--vscode-sideBar-border) solid;
+        padding-bottom: 5%;
+    }
+
+    #menu {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    div.buttons {
+        border-left: none;
+        height: 70%;
+        justify-content: flex-start;
+        margin-top: 10%;
+    }
+
+    button.main {
+        height: 10%;
+    }
+}

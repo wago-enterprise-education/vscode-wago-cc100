@@ -1,0 +1,11 @@
+{
+    "usb_c": true,
+    "simulator": false,
+    "ethernet": false,
+    "ip_adress": "192.168.1.17",
+    "simulation_frontend": "http://localhost:3000",
+    "simulation_backend": "localhost",
+    "user": "root",
+    "port": "22",
+    "autoupdate": "on"
+}

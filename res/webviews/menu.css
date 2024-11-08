@@ -1,0 +1,92 @@
+#menu {
+    overflow: visible
+}
+
+body {
+    overflow: hidden;
+}
+
+button.main {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    background-color: var(--vscode-sideBar-background);
+    border-style: solid;
+    border-color: var(--vscode-sideBar-background);
+    width: 100%;
+}
+
+button.main:hover {
+    background-color: var(--vscode-toolbar-hoverBackground);
+    border-color: transparent;
+}
+
+button.main:active {
+    border-color: var(--vscode-sideBar-background);
+}
+
+.options {
+    border-bottom: 0.5px solid var(--vscode-sideBar-border);
+    padding: 5px;
+}
+
+text {
+    font-size: 15px;
+    color: var(--vscode-sideBarTitle-foreground);
+    margin-left: 5px;
+}
+
+#download,
+#simulation {
+    display: none
+}
+
+.highlight {
+    color: var(--vscode-editorWarning-foreground)
+}
+
+#confirm {
+    display: none;
+    flex-direction: column;
+}
+
+#selection {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    margin-top: 5px;
+}
+
+#selection button {
+    min-width: 75px;
+    width: 30%;
+    margin-left: 10%;
+    margin-right: 10%;
+    background-color: var(--vscode-input-background);
+    border: 1px solid var(--vscode-input-border);
+    color: var(--vscode-input-foreground);
+}
+
+#tooltip {
+    margin-top: 20px;
+    border: 0.5px solid var(--vscode-sideBar-border);
+    padding: 5px;
+    text-align: left;
+    margin-right: 20px;
+    color: var(--vscode-input-foreground);
+    background-color: var(--vscode-sideBar-background);
+    font-weight: normal;
+    font-size: 13px;
+    border-radius: 8px;
+    box-shadow: 0 1px 8px rgba(0, 0, 0, 0.5);
+    visibility: hidden;
+    opacity: 0;
+    transition: visibility 0s, opacity 0.8s ease;
+    bottom: 0;
+}
+
+.options:hover~#tooltip {
+    visibility: visible;
+    opacity: 1;
+    transition-delay: 2s;
+}

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <link href="homepage.css" rel="stylesheet">
+    <script src="../../out/Extension/homepage.js"></script>
+</head>
+
+<body>
+    <div id="menu">
+        <div class="links">
+            <img id="main_logo" src="../images/Wago.png" alt="Wago Logo">
+        </div>
+        <div class="buttons">
+            <button id="create_project" class="main" onclick="btn_create_project_clicked()">
+                <img src="../images/wago-icons_rgb_chevron-right_outline_green.svg" class="chevron">
+                <label class="button_label">Create Project</label>
+            </button>
+            <button id="open" class="main" onclick="btn_open_clicked()">
+                <img src="../images/wago-icons_rgb_chevron-right_outline_green.svg" class="chevron">
+                <label class="button_label">Open Project</label>
+            </button>
+            <button id="documentation" class="main" onclick="btn_documentation_clicked()">
+                <img src="../images/wago-icons_rgb_chevron-right_outline_green.svg" class="chevron">
+                <label class="button_label">Documentation</label>
+                <a href="https://"></a>
+            </button>
+        </div>
+    </div>
+    <div id="new_project">
+        <div id="window">
+            <header id="popup_header">
+                <img class="popup_logo" src="../images/Wago.png" alt="Wago Logo">
+                <button id="x" onclick="btn_x_clicked()">
+                    <svg id="svg_x" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <polygon
+                            points="20.03 5.03 18.97 3.97 12 10.939 5.03 3.97 3.97 5.03 10.939 12 3.97 18.97 5.03 20.03 12 13.061 18.97 20.03 20.03 18.97 13.061 12 20.03 5.03" />
+                    </svg>
+                </button>
+            </header>
+            <main id="popup_main">
+                <label class="new_project_label"> Projectname:</label>
+                <input type="text" class="new_project_textfield" id="txt_proj_name" placeholder="MyNewProject">
+                <label class="new_project_label"> Destination:</label>
+                <div id="div_path_input">
+                    <input type="text" class="new_project_textfield" , id="txt_path" ,
+                        placeholder="C:\Users\User\Projects">
+                    <img id="img_folder" src="../images/wago-icons_rgb_folder_outline_black.svg" ,
+                        onclick="img_folder_clicked()" />
+                </div>
+            </main>
+            <footer id="popup_footer">
+                <button id="submit" class="main" onclick="btn_submit_clicked()">
+                    <img src="../images/wago-icons_rgb_chevron-right_outline_green.svg" class="chevron"
+                        style="height: 75%; margin-left: auto;">
+                    <label class="button_label">Confirm</label>
+                </button>
+            </footer>
+        </div>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,128 @@
+:root {
+    --color-main-primary: #6ec800;
+    --color-main-primary-80: #8bd333;
+    --color-main-secondary: #1f2837;
+    --color-main-dark: #000000;
+    --color-transparent: rgba(0, 0, 0, 0);
+}
+
+input:focus {
+    outline-color: #6EC800;
+}
+
+.submitButton {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    font-size: 90%;
+    font-weight: bold;
+    background-color: var(--color-transparent);
+    border: 1px solid var(--color-transparent);
+    outline: 1px solid var(--color-main-primary);
+    outline-offset: 0;
+    padding: 5px;
+    width: 100%;
+    max-width: 168px;
+    height: 10%;
+}
+
+.submitButton:hover {
+    border-top: 1px solid var(--color-transparent);
+    border-right: 1px solid var(--color-main-primary);
+    border-bottom: 1px solid var(--color-main-primary);
+    border-left: 1px solid var(--color-transparent);
+}
+
+
+.submitButton:active {
+    border-top: 1px solid var(--color-main-primary);
+    border-right: 1px solid var(--color-transparent);
+    border-bottom: 1px solid var(--color-transparent);
+    border-left: 1px solid var(--color-main-primary);
+}
+
+.chevron {
+    margin: auto;
+    margin-right: 5px;
+    height: 10px;
+    width: auto;
+}
+
+.button_label {
+    color: var(--color-main-primary);
+    margin: auto;
+    margin-left: 0;
+}
+
+
+.container {
+    display: block;
+    position: relative;
+    padding-left: 30px;
+    margin-top: 10px;
+    cursor: pointer;
+}
+
+.container input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.checkmark {
+    max-height: 17px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    aspect-ratio: 1/1;
+    height: 100%;
+    background-color: var(--vscode-input-background);
+    border: 1px solid var(--vscode-input-border);
+}
+
+.container input:checked~.checkmark {
+    background-color: #6EC800;
+}
+
+.container .checkImg {
+    display: none
+}
+
+.element {
+    margin-top: 10px;
+}
+
+input {
+    background-color: var(--vscode-input-background);
+    border: 1px solid var(--vscode-input-border);
+    color: var(--vscode-input-foreground);
+    width: 100%;
+    max-width: 168px;
+}
+
+#ipInput,
+#ipPort {
+    display: none
+}
+
+.section {
+    padding-bottom: 10px;
+    border-bottom: 0.5px solid var(--vscode-sideBar-border);
+}
+
+.autoupdate {
+    background-color: var(--vscode-input-background);
+    border: 1px solid var(--vscode-input-border);
+}
+
+#autoupdate_checkmark {
+    display: none;
+}
+
+/* Change the display property to "block" for adding the simulator. Change it to "none" to hide the simulator  */
+#label_simulator {
+    display: none;
+}

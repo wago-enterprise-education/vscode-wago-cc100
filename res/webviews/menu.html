@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="menu.css">
+    <script src="../../out/Extension/menu.js"></script>
+</head>
+
+<body>
+    <div id="menu">
+        <div class="options">
+            <button id="btn_home" class="main" onclick="btn_home_clicked()" onmouseenter="change_tooltip('HOME')">
+                <img src="../images/wago-icons_rgb_house_outline_green.svg" width="20" height="20">
+                <text>
+                    Home
+                </text>
+            </button>
+        </div>
+        <div class="options">
+            <button id="btn_application_upload" class="main" onclick="btn_application_upload_clicked()"
+                onmouseenter="change_tooltip('UPLOAD')">
+                <img src="../images/wago-icons_rgb_upload_outline_green.svg" width="20" height="20">
+                <text>
+                    Upload
+            </button>
+        </div>
+        <div class="options">
+            <button id="btn_debug" class="main" onclick="btn_debug_clicked()" onmouseenter="change_tooltip('DEBUG')">
+                <img src="../images/wago-icons_rgb_tools_outline_green.svg" width="20" height="20">
+                <text>
+                    Debug
+                </text>
+            </button>
+        </div>
+        <div class="options">
+            <button id="btn_delete_boot" class="main" onclick="btn_delete_clicked()"
+                onmouseenter="change_tooltip('REMOVE')">
+                <img src="../images/wago-icons_rgb_delete_outline_green.svg" width="20" height="20">
+                <text>
+                    Remove
+                </text>
+            </button>
+        </div>
+        <div class="options">
+            <button id="btn_io_check" class="main" onclick="btn_io_check_clicked()"
+                onmouseenter="change_tooltip('IOCHECK')">
+                <img src="../images/wago-icons_rgb_view_outline_green.svg" width="20" height="20">
+                <text>
+                    IO-Check
+                </text>
+            </button>
+        </div>
+        <div class="options" id="download">
+            <button id="btn_download" class="main" onclick="btn_download_clicked()"
+                onmouseenter="change_tooltip('DOWNLOAD')">
+                <img src="../images/wago-icons_rgb_import_outline_green.svg" width="20" height="20">
+                <text>
+                    Download
+                </text>
+            </button>
+        </div>
+        <div class="options" id="simulation">
+            <button id="btn_simulation" class="main" onclick="btn_simulation_clicked()"
+                onmouseenter="change_tooltip('SIMULATOR')">
+                <img src="../images/wago-icons_rgb_play_outline_green.svg" width="20" height="20">
+                <text>
+                    Simulation
+                </text>
+            </button>
+        </div>
+        <div id="tooltip">
+            <label id="tooltip_text">You shouldn't see this</label>
+        </div>
+    </div>
+    <div id="confirm">
+        <p>
+            Downloading the current script from the CC100 will <span class="highlight">remove</span> the 'src'
+            folder from your current project and replace it with the script that is currently saved on the connected
+            CC100. After clicking confirm you will <span class="highlight">not</span> be able to restore your current
+            main.py file.
+        </p>
+        <div id="selection">
+            <button onclick="btn_cancel_clicked()">Cancel</button>
+            <button onclick="btn_confirm_clicked()">Confirm</button>
+        </div>
+    </div>
+</body>
+
+</html>
