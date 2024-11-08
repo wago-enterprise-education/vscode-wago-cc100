@@ -6,6 +6,8 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+## [0.1.1] - 2024-11-08
+
 ### Fixed
 - Issue #1: renamed `CC100 programming interface` to `WAGO CC100`
 - Issue #2: links repaired
