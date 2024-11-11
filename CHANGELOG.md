@@ -6,6 +6,9 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+### Fixed
+- Issue #3: Broken link. Changed from old documentation to current README
+
 ## [0.1.1] - 2024-11-08
 
 ### Fixed
