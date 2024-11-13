@@ -1,3 +1,8 @@
+# Documentation and sources
+# - https://docs.github.com/en/enterprise-server@3.14/actions/about-github-actions/about-continuous-integration-with-github-actions
+# - https://docs.github.com/en/enterprise-server@3.14/actions/learn-github-actions/workflow-syntax-for-github-actions
+# - https://code.visualstudio.com/api/working-with-extensions/continuous-integration
+
 name: Deploy to VSCode Marketplace
 
 on:
