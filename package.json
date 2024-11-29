@@ -9,15 +9,33 @@
     "url": "https://github.com/wago-enterprise-education"
   },
   "contributors": [
-    { "name": "André Bell" },
-    { "name": "Maik Rehburg" },
-    { "name": "Florian Deerberg" },
-    { "name": "Andreas Epp" },
-    { "name": "William Epp" },
-    { "name": "Fabian Henßler" },
-    { "name": "Alexander Nungesser" },
-    { "name": "Marius Rösner" },
-    { "name": "Max Steidle" }  
+    {
+      "name": "André Bell"
+    },
+    {
+      "name": "Maik Rehburg"
+    },
+    {
+      "name": "Florian Deerberg"
+    },
+    {
+      "name": "Andreas Epp"
+    },
+    {
+      "name": "William Epp"
+    },
+    {
+      "name": "Fabian Henßler"
+    },
+    {
+      "name": "Alexander Nungesser"
+    },
+    {
+      "name": "Marius Rösner"
+    },
+    {
+      "name": "Max Steidle"
+    }
   ],
   "publisher": "WAGO-education",
   "license": "see LICENSE file",
@@ -112,11 +130,13 @@
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile",
-    "test": "vscode-test"
+    "test": "vscode-test",
+    "deploy": "vsce publish"
   },
   "devDependencies": {
     "@types/node": "^20.14.8",
     "@types/sanitize-html": "2.11.0",
-    "@types/vscode": "^1.63.0"
+    "@types/vscode": "^1.63.0",
+    "@vscode/vsce": "^3.2.1"
   }
 }
