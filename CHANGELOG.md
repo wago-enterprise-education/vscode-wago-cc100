@@ -6,6 +6,12 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+## [0.1.2] - 2024-11-29
+
+### Added
+- Added script for continuous integration and deployment to VS Code Marketplace
+  (Tests still missing)
+
 ### Fixed
 - Issue #3: Broken link. Changed from old documentation to current README
 
