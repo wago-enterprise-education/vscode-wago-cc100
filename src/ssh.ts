@@ -1,6 +1,6 @@
 const fs = require('fs')
 const { NodeSSH } = require('node-ssh')
-const { Client } = require('ssh2')
+const { Client, utils: { generateKeyPair } } = require('ssh2')
 const { exec } = require('child_process')
 const { promisify } = require('util')
 const { homedir, userInfo } = require('os');
@@ -10,6 +10,7 @@ export class SSH {
   private ssh = new NodeSSH()
   private ssh2 = new Client()
   private privateKeyPath: string
+  private publicKeyPath: string
   public ipAdress: string
   public port: number
   public username: string
@@ -18,6 +19,7 @@ export class SSH {
 
   constructor(ipAdress: string, port: number, username: string, password: string) {
     this.privateKeyPath = join(homedir(), '.ssh', 'id_rsa_cc100')
+    this.publicKeyPath = join(homedir(), '.ssh', 'id_rsa_cc100.pub')
     this.ipAdress = ipAdress
     this.port = port
     this.username = username
@@ -25,24 +27,33 @@ export class SSH {
   }
 
   /**
-   * This method generates a key pair for a SSH connection to the CC100
+   * Generates an RSA key pair and saves the keys to the specified file paths.
    * 
-   * @returns Error message in a string when the keygen fails
+   * This function uses the `generateKeyPair` method to create a 2048-bit RSA key pair.
+   * The generated keys are saved to the paths specified by `this.publicKeyPath` and `this.privateKeyPath`.
+   * 
+   * @returns {Promise<void>} A promise that resolves when the key pair has been generated and saved.
+   * 
+   * @throws {Error} If an error occurs during key generation or file writing, the error is logged and the error message is returned.
    */
   private async ssh_keygen() {
-    try {
-      const command = `ssh-keygen -t rsa -b 2048 -f ${this.privateKeyPath} -C "cc100-extension-${userInfo().username}" -N "\n"`;
-      const execPromise = promisify(exec);
-      const { stdout, stderr } = await execPromise(command);
-      if (stderr) {
-        console.error(`stderr: ${stderr}`);
-      } else {
-        console.log(`stdout: ${stdout}`);
+    console.log('Generating rsa key pair');
+
+    generateKeyPair(
+      'rsa',
+      { bits: 2048, comment: `cc100-extension-${userInfo().username}` },
+      (err: Error | null, keys: { public: string; private: string }) => {
+        if (err) {
+          console.error(`Error: ${err.message}`);
+          return err.message;
+        }
+
+        fs.writeFileSync(this.publicKeyPath, keys.public);
+        fs.writeFileSync(this.privateKeyPath, keys.private);
+        console.log('Key pair generated and saved as ' + this.privateKeyPath +'(.pub)');
+        return keys
       }
-    }
-    catch (error: any) {
-      return 'Error: ' + error.message
-    }
+    );
   }
 
   /**
