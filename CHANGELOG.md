@@ -6,6 +6,9 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+## Fixed
+- WAGO W Logo changed to a square 256x256 image
+
 ## [0.1.2] - 2024-11-29
 
 ### Added
