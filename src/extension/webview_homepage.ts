@@ -58,7 +58,7 @@ export class webview_homepage {
                     }
                 case 'cmd_documentation':
                     {
-                        vscode.commands.executeCommand('simpleBrowser.show', 'https://github.com/wago-enterprise-education/vscode-wago-cc100/blob/main/README.md');
+                        vscode.env.openExternal(vscode.Uri.parse('https://github.com/wago-enterprise-education/vscode-wago-cc100/blob/main/README.md'));
                         break;
                     }
                 case 'cmd_open':
