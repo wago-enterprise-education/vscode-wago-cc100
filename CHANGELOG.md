@@ -6,7 +6,8 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
-## Fixed
+### Fixed
+- Issue #10: use `ssh2.utils.generateKeyPair()` instead of local ssh client
 - Use external browser for help
 - WAGO W Logo changed to a square 256x256 image
 
