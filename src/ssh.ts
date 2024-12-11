@@ -4,11 +4,12 @@ const { Client, utils: { generateKeyPair } } = require('ssh2')
 const { exec } = require('child_process')
 const { promisify } = require('util')
 const { homedir, userInfo } = require('os');
-const { join } = require('path');
+const path = require('path');
 
 export class SSH {
   private ssh = new NodeSSH()
   private ssh2 = new Client()
+  private sshDirPath: string
   private privateKeyPath: string
   private publicKeyPath: string
   public ipAdress: string
@@ -18,8 +19,9 @@ export class SSH {
 
 
   constructor(ipAdress: string, port: number, username: string, password: string) {
-    this.privateKeyPath = join(homedir(), '.ssh', 'id_rsa_cc100')
-    this.publicKeyPath = join(homedir(), '.ssh', 'id_rsa_cc100.pub')
+    this.sshDirPath = path.join(homedir(), '.ssh');
+    this.privateKeyPath = path.join(this.sshDirPath, 'id_rsa_cc100')
+    this.publicKeyPath = path.join(this.sshDirPath, 'id_rsa_cc100.pub')
     this.ipAdress = ipAdress
     this.port = port
     this.username = username
@@ -36,24 +38,39 @@ export class SSH {
    * 
    * @throws {Error} If an error occurs during key generation or file writing, the error is logged and the error message is returned.
    */
-  private async ssh_keygen() {
+  private async ssh_keygen(): Promise<void> {
     console.log('Generating rsa key pair');
 
-    generateKeyPair(
-      'rsa',
-      { bits: 2048, comment: `cc100-extension-${userInfo().username}` },
-      (err: Error | null, keys: { public: string; private: string }) => {
-        if (err) {
-          console.error(`Error: ${err.message}`);
-          return err.message;
-        }
+    if (!(await this.exists_file(this.sshDirPath))) {
+      fs.mkdirSync(this.sshDirPath);
+    }
 
-        fs.writeFileSync(this.publicKeyPath, keys.public);
-        fs.writeFileSync(this.privateKeyPath, keys.private);
-        console.log('Key pair generated and saved as ' + this.privateKeyPath +'(.pub)');
-        return keys
-      }
-    );
+    try {
+      await new Promise((resolve, reject) => {
+        generateKeyPair(
+          'rsa',
+          { bits: 2048, comment: `cc100-extension-${userInfo().username}` },
+          (err: Error | null, keys: { public: string; private: string }) => {
+            if (err) {
+              console.error(`Error: ${err.message}`);
+              reject(err);
+              return;
+            }
+    
+            fs.writeFileSync(this.publicKeyPath, keys.public);
+            fs.writeFileSync(this.privateKeyPath, keys.private);
+            console.log('Key pair generated and saved in ' + this.sshDirPath);
+            resolve(keys)
+          }
+        );
+      });
+    } catch (error) {
+      console.error(`Error: ${error}`);
+      throw error;
+    }
+
+
+    
   }
 
   /**
@@ -61,7 +78,7 @@ export class SSH {
    * @param filePath 
    * @returns `true` if the file exists, `false` if it doesn't and a `String` containing an error message if the process failed
    */
-  private async exists_file(filePath: string) {
+  private async exists_file(filePath: string): Promise<boolean> {
     try {
       await fs.promises.access(filePath);
       return true;
@@ -140,19 +157,19 @@ export class SSH {
    */
   public async copy_ssh_key_to_CC100() {
     try {
-      let publicKeyPath = this.privateKeyPath + '.pub'
-      let hostKeyPath = '/root/.ssh/authorized_keys'
+      let cc100AuthorizedKeysPath = '/root/.ssh/authorized_keys'
 
-      const exists = await this.exists_file(this.privateKeyPath);
-      if (!exists) {
+      const privateKeyExists = await this.exists_file(this.privateKeyPath);
+      const publicKeyExists = await this.exists_file(this.publicKeyPath);
+      if (!privateKeyExists || !publicKeyExists) {
         await this.ssh_keygen();
       }
 
       await this.ssh_connection_without_key().then(async () => {
         await this.ssh.execCommand('mkdir -p /root/.ssh/')
-        let publicKeyContent = await fs.readFileSync(publicKeyPath)
-        await this.append_to_file(hostKeyPath, publicKeyContent)
-        await this.ssh.execCommand(`chmod 600 ${publicKeyPath}`)
+        let publicKeyContent = await fs.readFileSync(this.publicKeyPath)
+        await this.append_to_file(cc100AuthorizedKeysPath, publicKeyContent)
+        await this.ssh.execCommand(`chmod 600 ${this.publicKeyPath}`)
         await this.disconnect_ssh()
       })
       return 'Successfully'
