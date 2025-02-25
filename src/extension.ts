@@ -7,9 +7,18 @@ import { webview_homepage } from './extension/webview_homepage';
 import { webview_IOCheck } from './webview_IOCheck';
 import { Workspace } from './extension/workspace';
 import { YamlCommands } from './extension/yaml';
+import { View } from './extension/view';
+import { Command } from './extension/command';
+
 const workspace = new Workspace();
 
 export function activate(context: vscode.ExtensionContext) {
+	//Create View
+	View.createView(context);
+
+	//Create Commands
+	Command.createCommands(context);
+
 	//create IO-Check
 	const webview_IO = new webview_IOCheck(context);
 

@@ -74,37 +74,102 @@
       },
       {
         "command": "vscode-wago-cc100.iocheck",
-        "title": "IO-Check"
+        "title": "IO-Check",
+        "icon": {
+          "light": "res/images/wago-icons_rgb_view_outline_green.svg",
+          "dark": "res/images/wago-icons_rgb_view_outline_green.svg"
+        }
       },
       {
         "command": "vscode-wago-cc100.testSSH",
         "title": "Test SSH"
       },
       {
-        "command": "vscode-wago-cc100.create-controller",
-        "title": "Create Controller"
+        "command": "vscode-wago-cc100.add-controller",
+        "title": "Add Controller",
+        "icon": {
+          "light": "res/images/wago-icons_rgb_house_outline_black.svg",
+          "dark": "res/images/wago-icons_rgb_house_outline_green.svg"
+        }
+      },
+      {
+        "command": "vscode-wago-cc100.upload",
+        "title": "Upload",
+        "icon": {
+          "light": "res/images/wago-icons_rgb_upload_outline_black.svg",
+          "dark": "res/images/wago-icons_rgb_upload_outline_green.svg"
+        }
+      },
+      {
+        "command": "vscode-wago-cc100.edit-setting",
+        "title": "Edit Setting",
+        "icon": {
+          "light": "res/images/wago-icons_rgb_settings_outline_green.svg",
+          "dark": "res/images/wago-icons_rgb_settings_outline_green.svg"
+        }
+      }
+    ],
+    "viewsWelcome": [
+      {
+      "view": "no-folder-view",
+      "contents": "In order to use this extension, you need to open a folder containing a CC100 project. \n [Create Project](command:vscode-wago-cc100.create-project) \n [Open Project](command:vscode.openFolder) \n To learn more about the extension read the [documentation](https://github.com/wago-enterprise-education/vscode-wago-cc100/blob/main/README.md)."
+      },
+      {
+      "view": "no-project-view",
+      "contents": "The folder you opened does not contain a CC100 project. \n [Init Project](command:vscode-wago-cc100.init-project) \n To learn more about the extension read the [documentation](https://github.com/wago-enterprise-education/vscode-wago-cc100/blob/main/README.md)."
       }
     ],
     "viewsContainers": {
       "activitybar": [
-        {
-          "id": "CC100",
-          "title": "WAGO CC100",
-          "icon": "res/images/WAGO_W.png"
-        }
+      {
+        "id": "CC100",
+        "title": "WAGO CC100",
+        "icon": "res/images/WAGO_W.png"
+      }
       ]
     },
     "views": {
       "CC100": [
+      {
+        "name": "Controller",
+        "id": "controller-view",
+        "when": "workspaceFolderCount > 0 && cc100ProjectFound"
+      },
+      {
+        "name": "No Folder Opened",
+        "id": "no-folder-view",
+        "when": "workspaceFolderCount == 0"
+      },
+      {
+        "name": "No CC100 Project Found",
+        "id": "no-project-view",
+        "when": "workspaceFolderCount > 0 && !cc100ProjectFound"
+      }
+      ]
+    },
+    "menus": {
+      "view/title": [
         {
-          "name": "Menu",
-          "id": "menu",
-          "type": "webview"
+          "command": "vscode-wago-cc100.add-controller",
+          "when": "view == controller-view",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "vscode-wago-cc100.upload",
+          "when": "view == controller-view  && viewItem == controller",
+          "group": "inline"
         },
         {
-          "name": "Settings",
-          "id": "settings",
-          "type": "webview"
+          "command": "vscode-wago-cc100.iocheck",
+          "when": "view == controller-view && viewItem == controller",
+          "group": "inline"
+        },
+        {
+          "command": "vscode-wago-cc100.edit-setting",
+          "when": "view == controller-view && viewItem == controllerItem",
+          "group": "inline"
         }
       ]
     },
