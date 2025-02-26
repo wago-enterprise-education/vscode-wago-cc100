@@ -1,6 +1,6 @@
 import * as vscode from 'vscode'
 import { SSH } from '../ssh';
-import { parse_JSON } from './json';
+import { parse_YAML } from './yaml';
 import fs from 'fs'
 
 export class Workspace {
@@ -41,7 +41,7 @@ export class Workspace {
      * @returns a `SSH` object if settings are written. `Returns` false of type `boolean` if ssh properties are not written because of unusual properties content.
      */
     public async read_settings_write_ssh_properties(ws_path: string, ssh: SSH): Promise<boolean | SSH> {
-        let project_settings = parse_JSON.read_json_file(ws_path + 'settings.json');
+        let project_settings = parse_YAML.read_yaml_file(ws_path + 'settings.json');
         if (Workspace.password.length == 0) {
             const passwordInput: string = await vscode.window.showInputBox({
                 password: true,

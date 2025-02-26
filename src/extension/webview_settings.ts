@@ -1,7 +1,7 @@
 import * as vscode from 'vscode'
 import fs from 'fs'
 import path from 'path'
-import { parse_JSON, settings } from './json';
+import { parse_YAML, settings } from './yaml';
 import { custom_webview_provider_menu } from './custom_webview_menu';
 import { webview_IOCheck } from '../webview_IOCheck';
 import { getApi, FileDownloader } from "@microsoft/vscode-file-downloader-api";
@@ -96,15 +96,14 @@ export class custom_webview_provider_settings implements vscode.WebviewViewProvi
     private async update_settings(data: any) {
         let ws_path = await this.workspace.get_project_path();
         if (!ws_path.startsWith("Error")) {
-            let settings_path = ws_path + 'settings.json';
+            let settings_path = ws_path + 'settings.yaml';
             let autoupdate: boolean = false;
             // reset mode
-            parse_JSON.write(settings_path, settings.usb_c, false);
-            parse_JSON.write(settings_path, settings.ethernet, false);
-            parse_JSON.write(settings_path, settings.simulator, false);
+            parse_YAML.write(settings_path, settings.usb_c, false);
+            parse_YAML.write(settings_path, settings.ethernet, false);
             for (var pair of data) {
                 if (pair[0] == "mode") {
-                    parse_JSON.write(settings_path, pair[1], true);
+                    parse_YAML.write(settings_path, pair[1], true);
                 } else {
                     let autoupdateOldValue = JSON.parse(fs.readFileSync(settings_path, 'utf8')).autoupdate;
                     // data only contains autoupdate, if the checkbox is checked
@@ -116,15 +115,15 @@ export class custom_webview_provider_settings implements vscode.WebviewViewProvi
                             this.download_lib();
                         }
                     }
-                    parse_JSON.write(settings_path, pair[0], pair[1]);
+                    parse_YAML.write(settings_path, pair[0], pair[1]);
                 }
             }
             // If the data didn't contain autoupdate, autoupdate has to be false
             if (!autoupdate) {
-                parse_JSON.write(settings_path, settings.autoupdate, false);
+                parse_YAML.write(settings_path, settings.autoupdate, false);
             }
             vscode.window.showInformationMessage("Saved Changes");
-            this.webview_menu._view?.webview.postMessage({ command: "cmd_reload", simulator: parse_JSON.read_json_file(settings_path).simulator.valueOf() })
+            this.webview_menu._view?.webview.postMessage({ command: "cmd_reload", simulator: parse_YAML.read_yaml_file(settings_path).simulator.valueOf() })
         }
         if (this.io_check.ioCheckPanel != undefined) {
             this.io_check.ioCheckPanel.dispose();
@@ -147,7 +146,7 @@ export class custom_webview_provider_settings implements vscode.WebviewViewProvi
             }
             let settingsPath = ws_path + 'settings.json';
             webview.postMessage({ command: "cmd_send_data", data: JSON.parse(fs.readFileSync(settingsPath, 'utf8')) });
-            this.webview_menu._view?.webview.postMessage({ command: "cmd_reload", simulator: parse_JSON.read_json_file(settingsPath).simulator.valueOf() })
+            this.webview_menu._view?.webview.postMessage({ command: "cmd_reload", simulator: parse_YAML.read_yaml_file(settingsPath).simulator.valueOf() })
         }
     }
     /**
