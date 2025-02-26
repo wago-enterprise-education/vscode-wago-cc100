@@ -123,7 +123,8 @@
     "node-ssh": "^13.1.0",
     "sanitize-html": "^2.14.0",
     "ssh2": "^1.15.0",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "yaml": "^2.7.0"
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
