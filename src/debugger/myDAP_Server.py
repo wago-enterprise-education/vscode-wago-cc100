@@ -1,6 +1,7 @@
 import json
 import socket
 import debugpy
+# pip install --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org debugpy
 
 HOST = '0,0,0,0'
 PORT = 5678
@@ -29,7 +30,7 @@ def handle_dap_request(request):
         debugpy.listen(("0.0.0.0", 5678))
         debugpy.wait_for_client()
         debugpy.run_path(program, run_name="__main__")
-         response = {"seq": request_json["seq"], "type": "response", "command": "launch", "success": True}
+        response = {"seq": request_json["seq"], "type": "response", "command": "launch", "success": True}
 
     elif command == "setBreakpoints":
         # Setze Breakpoints
