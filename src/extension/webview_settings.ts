@@ -96,7 +96,7 @@ export class custom_webview_provider_settings implements vscode.WebviewViewProvi
     private async update_settings(data: any) {
         let ws_path = await this.workspace.get_project_path();
         if (!ws_path.startsWith("Error")) {
-            let settings_path = ws_path + 'settings.yaml';
+            let settings_path = ws_path + 'controller/controller1.yaml';
             let autoupdate: boolean = false;
             // reset mode
             parse_YAML.write(settings_path, settings.usb_c, false);
