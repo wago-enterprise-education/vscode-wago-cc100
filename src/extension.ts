@@ -6,6 +6,7 @@ import { custom_webview_provider_settings } from './extension/webview_settings';
 import { webview_homepage } from './extension/webview_homepage';
 import { webview_IOCheck } from './webview_IOCheck';
 import { Workspace } from './extension/workspace';
+import { YamlCommands } from './extension/yaml';
 const workspace = new Workspace();
 
 export function activate(context: vscode.ExtensionContext) {
@@ -30,6 +31,9 @@ export function activate(context: vscode.ExtensionContext) {
 	vscode.commands.executeCommand('vscode-wago-cc100.home');
 
 	webview_provider_settings.download_lib();
+
+	const test = new YamlCommands();
+	test.registerYamlCommands(context);
 }
 
 // This method is called when your extension is deactivated
