@@ -1,13 +1,12 @@
 import * as vscode from 'vscode'
 import fs from 'fs'
-import path from 'path';
 import { SSH } from '../ssh';
 import { Connection } from './connection';
 import { Workspace } from './workspace';
 import { webview_IOCheck } from '../webview_IOCheck';
 
 
-export class custom_webview_provider_menu implements vscode.WebviewViewProvider {
+export class custom_webview_provider_menu {
 
     public static readonly viewType = 'menu';
 
@@ -15,14 +14,9 @@ export class custom_webview_provider_menu implements vscode.WebviewViewProvider 
     private Workspace = new Workspace();
     private Connection = new Connection();
     private io_check: webview_IOCheck;
-    public _view?: vscode.WebviewView;
     private readonly dest_path: string = '/home/user/python_bootapplication/';
     private readonly dest_path_to_ipk: string = this.dest_path + '../python3_3.7.6_armhf.ipk';
-    private readonly path_to_lib_file: string = 'src/lib/CC100IO.py';
     private readonly filename_on_startup: string = 'S99_python_runtime';
-    private readonly path_to_file_on_startup: string = '/etc/init.d/' + this.filename_on_startup;
-    private readonly path_to_symbolic_link: string = '/etc/rc.d/' + this.filename_on_startup;
-    private readonly path_to_log_file: string = "/home/user/python_bootapplication/errorLog"
     private output_channel: vscode.OutputChannel;
 
 
@@ -77,259 +71,7 @@ export class custom_webview_provider_menu implements vscode.WebviewViewProvider 
         context.subscriptions.push(debug);
         debug.show();
     }
-
-    /**
-     * Create the webview
-     */
-    public resolveWebviewView(
-        webviewView: vscode.WebviewView,
-        context: vscode.WebviewViewResolveContext,
-        _token: vscode.CancellationToken,
-    ): void {
-        this._view = webviewView;
-
-        webviewView.webview.options = {
-            // Allow scripts in the webview
-            enableScripts: true,
-
-            localResourceRoots: [
-                this._extensionUri
-            ]
-        };
-
-        webviewView.webview.html = this.getWebViewContent(webviewView.webview);
-
-        // Handling of the incoming messages from the webview
-        webviewView.webview.onDidReceiveMessage(async data => {
-            switch (data.command) {
-                case 'cmd_application_upload':
-                    {
-                        await this.btn_application_upload_clicked();
-                        break;
-                    }
-                case 'cmd_debug':
-                    {
-                        this.output_channel.clear();
-                        vscode.commands.executeCommand('vscode-wago-cc100.debug');
-                        break;
-                    }
-                case 'cmd_io_check':
-                    {
-                        this.btn_io_check_clicked();
-                        break;
-                    }
-                case 'cmd_simulation':
-                    {
-                        this.btn_simulation_clicked();
-                        break;
-                    }
-                case 'cmd_home':
-                    {
-                        this.btn_home_clicked();
-                        break;
-                    }
-                case 'cmd_delete':
-                    {
-                        this.btn_delete_clicked();
-                        break;
-                    }
-                case 'cmd_download': {
-                    this.btn_download_clicked()
-                    break;
-                }
-                case 'cmd_loaded': {
-                    let ws = (await vscode.workspace.findFiles('*/*/CC100IO.py', null, 1)).at(0);
-                    webviewView.webview.postMessage({ command: 'cmd_set_download', value: ws !== undefined })
-                    break;
-                }
-            }
-        });
-    }
-
-    /**
-     * Method for replacing the resource paths in the html source code with paths relative to the extension installation
-     * @param webview The webview of the menu
-     * @returns A string containig the html content with correct paths
-     */
-    private getWebViewContent(webview: vscode.Webview): string {
-        var html = fs.readFileSync(path.join(__dirname, '../../res/webviews/menu.html'), "utf-8").toString();
-
-        const path_css = vscode.Uri.joinPath(this._extensionUri, 'res/webviews/menu.css');
-        const path_js = vscode.Uri.joinPath(this._extensionUri, 'out/extension/menu.js');
-        const pathImgPlay = vscode.Uri.joinPath(this._extensionUri, 'res/images/wago-icons_rgb_play_outline_green.svg');
-        const pathImgUpload = vscode.Uri.joinPath(this._extensionUri, 'res/images/wago-icons_rgb_upload_outline_green.svg');
-        const pathImgView = vscode.Uri.joinPath(this._extensionUri, 'res/images/wago-icons_rgb_view_outline_green.svg');
-        const pathImgDelete = vscode.Uri.joinPath(this._extensionUri, 'res/images/wago-icons_rgb_delete_outline_green.svg');
-        const pathImgHome = vscode.Uri.joinPath(this._extensionUri, 'res/images/wago-icons_rgb_house_outline_green.svg');
-        const pathImgDownload = vscode.Uri.joinPath(this._extensionUri, 'res/images/wago-icons_rgb_import_outline_green.svg');
-        const pathImgDebug = vscode.Uri.joinPath(this._extensionUri, 'res/images/wago-icons_rgb_tools_outline_green.svg');
-        const js = webview.asWebviewUri(path_js).toString();
-        const css = webview.asWebviewUri(path_css).toString();
-        const imgPlay = webview.asWebviewUri(pathImgPlay).toString();
-        const imgUpload = webview.asWebviewUri(pathImgUpload).toString();
-        const imgView = webview.asWebviewUri(pathImgView).toString();
-        const imgDelete = webview.asWebviewUri(pathImgDelete).toString();
-        const imgHome = webview.asWebviewUri(pathImgHome).toString();
-        const imgImport = webview.asWebviewUri(pathImgDownload).toString();
-        const imgDebug = webview.asWebviewUri(pathImgDebug).toString();
-
-        html = html.replace("../../out/extension/menu.js", js);
-        html = html.replace("menu.css", css);
-        html = html.replace("../images/wago-icons_rgb_play_outline_green.svg", imgPlay);
-        html = html.replace("../images/wago-icons_rgb_upload_outline_green.svg", imgUpload);
-        html = html.replace("../images/wago-icons_rgb_view_outline_green.svg", imgView);
-        html = html.replace("../images/wago-icons_rgb_delete_outline_green.svg", imgDelete);
-        html = html.replace("../images/wago-icons_rgb_house_outline_green.svg", imgHome);
-        html = html.replace("../images/wago-icons_rgb_import_outline_green.svg", imgImport);
-        html = html.replace("../images/wago-icons_rgb_tools_outline_green.svg", imgDebug)
-        return html;
-    }
-    /**
-     * Trys to connect to the connected CC100 through the connection defined in the settings and downloads the project from the CC100 into the current project.
-     */
-    private async btn_download_clicked() {
-        let ws_path = await this.Workspace.get_project_path();
-        if (!ws_path.startsWith("Error")) {
-            vscode.window.showInformationMessage("Trying to connect...")
-            await this.Workspace.read_settings_write_ssh_properties(ws_path, this.ssh).then(result => {
-                if (typeof result !== 'boolean') {
-                    this.ssh = result;
-                }
-                else {
-                    return;
-                }
-            });
-
-            if (!await this.Connection.check_connection(this.ssh)) {
-                return;
-            }
-
-            let result = await this.ssh.ssh_connection_with_key();
-            if (!result.toString().startsWith('Error')) {
-                console.log("Connection successful");
-
-                await this.ssh.delete_files(this.dest_path + 'errorLog');
-                await this.ssh.delete_files(this.dest_path + '__pycache__/');
-                await this.ssh.delete_files(this.dest_path + 'main_debug.py')
-                let lib_content = await this.ssh.list_content_dir(this.dest_path + 'lib/');
-                let lib_content_array = lib_content.split("\n");
-                // Remove non python files
-                for (const element of lib_content_array) {
-                    if (!element.includes(".py")) {
-                        await this.ssh.delete_files(this.dest_path + 'lib/' + element)
-                    }
-                }
-                let result = await this.ssh.get_directory(ws_path + 'src', this.dest_path);
-                if (result.startsWith('Error: ')) {
-                    if (result.includes('No such file')) {
-                        vscode.window.showErrorMessage("Error: Could not find application on CC100");
-                    } else {
-                        vscode.window.showErrorMessage("Error: Unexpected error during copying");
-                    }
-                    console.log(result);
-                } else {
-                    console.log("Files transfered")
-                    vscode.window.showInformationMessage("Download successful")
-                }
-                await this.ssh.disconnect_ssh();
-            }
-            else {
-                console.log("Error: Cannot connect to CC100. Download canceled");
-                console.log(result);
-                vscode.window.showErrorMessage("Error: Could not connect to CC100");
-            }
-        }
-        else {
-            console.log(ws_path);
-            vscode.window.showErrorMessage(ws_path);
-        }
-
-    }
-
-    /**
-    * Method that will be executed when "delete" is clicked in the treeview
-    **/
-    private async btn_delete_clicked() {
-        let ws_path = await this.Workspace.get_project_path();
-        if (!ws_path.startsWith("Error")) {
-            vscode.window.showInformationMessage("Trying to connect...")
-
-            await this.Workspace.read_settings_write_ssh_properties(ws_path, this.ssh).then(result => {
-                if (typeof result !== 'boolean') {
-                    this.ssh = result;
-                }
-                else {
-                    return;
-                }
-            });
-
-            if (!await this.Connection.check_connection(this.ssh)) {
-                return;
-            }
-
-            let result = await this.ssh.ssh_connection_with_key();
-            if (!result.toString().startsWith('Error')) {
-                console.log("Connection successful");
-                await this.ssh.kill_all_python_scripts();
-                await this.ssh.delete_files(this.dest_path);
-                await this.ssh.delete_files(this.path_to_file_on_startup);
-                await this.ssh.delete_files(this.path_to_symbolic_link);
-                await this.ssh.digital_write(0);
-                await this.ssh.analog_write(1, 0);
-                await this.ssh.analog_write(2, 0);
-                await this.ssh.turn_off_run_led();
-                await this.ssh.kill_all_tails();
-                await this.ssh.disconnect_ssh();
-                vscode.window.showInformationMessage("Removed application from CC100");
-            }
-            else {
-                console.log("Error: Cannot connect to CC100. Deletion canceled");
-                console.log(result);
-                vscode.window.showErrorMessage("Error: Could not connect to CC100");
-            }
-        }
-        else {
-            console.log(ws_path);
-            vscode.window.showErrorMessage(ws_path);
-        }
-    }
-
-    /**
-    * Method that will be executed when "home" is clicked in the treeview
-    **/
-    private async btn_home_clicked() {
-        vscode.commands.executeCommand('vscode-wago-cc100.home');
-    }
-
-    /**
-    * Method that will be executed when "upload" is clicked in the treeview
-    **/
-    private async btn_application_upload_clicked() {
-        this.output_channel.clear();
-
-        vscode.commands.executeCommand("vscode-wago-cc100.application_upload")
-    }
-
-    /**
-    * Method that will be executed when "IO-Check" is clicked in the treeview
-    **/
-    private btn_io_check_clicked() {
-        if (this.io_check.can_load_panel) {
-            vscode.commands.executeCommand('vscode-wago-cc100.iocheck');
-            if (!this.io_check.ioCheckPanel) {
-                vscode.window.showInformationMessage("Trying to connect...")
-            }
-        }
-    }
-
-    /**
-    * Method that will be executed when "Simulation" is clicked in the treeview
-    **/
-    private async btn_simulation_clicked() {
-        vscode.commands.executeCommand('simpleBrowser.show', 'http://localhost:3000');
-        vscode.window.showInformationMessage("Starting simulation...");
-    }
-
+    
     /**
    * After this function is called, a current open project in workspace is uploaded on CC100 and will be executed.
    * 

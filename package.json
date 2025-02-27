@@ -65,10 +65,6 @@
   "contributes": {
     "commands": [
       {
-        "command": "vscode-wago-cc100.home",
-        "title": "Home"
-      },
-      {
         "command": "vscode-wago-cc100.application_upload",
         "title": "Upload application to CC100"
       },
@@ -172,16 +168,7 @@
           "group": "inline"
         }
       ]
-    },
-    "webviews": [
-      {
-        "viewType": "vscode-wago-cc100.home",
-        "icon": {
-          "light": "res/images/WAGO_W.png",
-          "dark": "res/images/WAGO_W.png"
-        }
-      }
-    ]
+    }
   },
   "extensionDependencies": [
     "ms-python.python",
