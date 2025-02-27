@@ -79,6 +79,10 @@
       {
         "command": "vscode-wago-cc100.testSSH",
         "title": "Test SSH"
+      },
+      {
+        "command": "vscode-wago-cc100.create-controller",
+        "title": "Create Controller"
       }
     ],
     "viewsContainers": {
