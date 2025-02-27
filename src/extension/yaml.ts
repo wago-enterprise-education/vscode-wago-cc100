@@ -66,11 +66,11 @@ export class YamlCommands {
 
 
 
-    public register_yaml_commands(context: vscode.ExtensionContext) {
+    public registerYamlCommands(context: vscode.ExtensionContext) {
         context.subscriptions.push(vscode.commands.registerCommand("vscode-wago-cc100.create_controller", async () => {
             
             await YamlCommands.createController();
-            
+
         }));
     }
 }
