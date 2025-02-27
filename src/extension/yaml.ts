@@ -1,6 +1,7 @@
 import fs from 'fs'
 import YAML from 'yaml'
 import { window } from 'vscode'
+import * as vscode from 'vscode'
 
 export class YamlCommands {
     /**
@@ -61,6 +62,16 @@ export class YamlCommands {
             id++;
         }
         return id;
+    }
+
+
+
+    public register_yaml_commands(context: vscode.ExtensionContext) {
+        context.subscriptions.push(vscode.commands.registerCommand("vscode-wago-cc100.create_controller", async () => {
+            
+            await YamlCommands.createController();
+            
+        }));
     }
 }
 
