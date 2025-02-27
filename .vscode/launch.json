@@ -16,6 +16,16 @@
 				"${workspaceFolder}/out/**/*.js"
 			],
 			"preLaunchTask": "${defaultBuildTask}"
-		}
+		},
+		{
+            "name": "Custom DAP Debugging",
+            "type": "python",
+            "request": "launch",
+            "program": "main.py",
+            "connect": {
+                "host": "localhost",
+                "port": 5678
+            }
+        }
 	]
 }

@@ -3,26 +3,46 @@ import socket
 import debugpy
 # pip install --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org debugpy
 
-HOST = '0,0,0,0'
+HOST = '0.0.0.0'  # Korrigierte IP-Adresse
 PORT = 5678
 LOG_FILE = "dap_log.json"
+BREAKPOINTS_FILE = "breakpoints.json"
 
 def log_message(message):
     """Speichert Debugging-Nachrichten in eine Datei"""
     with open(LOG_FILE, "a") as log_file:
         log_file.write(json.dumps(message, indent=4) + "\n\n")
 
+def save_breakpoints(breakpoints):
+    """Speichert die Breakpoints in eine JSON-Datei"""
+    with open(BREAKPOINTS_FILE, "w") as f:
+        json.dump(breakpoints, f, indent=4)
+
+def read_dap_message(conn):
+    """Liest eine vollständige DAP-Nachricht basierend auf Content-Length"""
+    header = b""
+    while b"\r\n\r\n" not in header:
+        header += conn.recv(1)
+
+    header_text = header.decode()
+    content_length = 0
+    for line in header_text.split("\r\n"):
+        if line.lower().startswith("content-length:"):
+            content_length = int(line.split(":")[1].strip())
+
+    body = conn.recv(content_length).decode()
+    return body
+
 def handle_dap_request(request):
     """Verarbeitet DAP-Anfragen von VS Code"""
     request_json = json.loads(request)
- 
-    # Logge die eingehende Nachricht
     log_message({"received": request_json})
 
     command = request_json.get("command")
+    response = {"seq": request_json.get("seq", 0), "type": "response", "command": command, "success": False}
 
     if command == "initialize":
-        return {"seq": request_json["seq"], "type": "response", "command": "initialize", "success": True}
+        response["success"] = True
 
     elif command == "launch":
         # Starte das Debugging
@@ -33,16 +53,21 @@ def handle_dap_request(request):
         response = {"seq": request_json["seq"], "type": "response", "command": "launch", "success": True}
 
     elif command == "setBreakpoints":
-        # Setze Breakpoints
-        breakpoints = request_json["arguments"]["breakpoints"]
-        return {"seq": request_json["seq"], "type": "response", "command": "setBreakpoints", "body": {"breakpoints": breakpoints}}
-        else:
-        response = {"seq": request_json["seq"], "type": "response", "command": command, "success": False}
+        try:
+            breakpoints = request_json["arguments"]["breakpoints"]
+            save_breakpoints(breakpoints)  # Speichert Breakpoints in JSON-Datei
+            response = {
+                "seq": request_json.get("seq", 0),
+                "type": "response",
+                "command": "setBreakpoints",
+                "body": {"breakpoints": breakpoints},
+                "success": True
+            }
+        except Exception as e:
+            response["message"] = str(e)
 
-    # Logge die ausgehende Antwort
     log_message({"response": response})
-
-    return {}
+    return response
 
 def start_dap_server():
     """Startet einen einfachen DAP-Server"""
@@ -54,11 +79,14 @@ def start_dap_server():
         conn, addr = server.accept()
         with conn:
             while True:
-                data = conn.recv(1024)
-                if not data:
+                try:
+                    request = read_dap_message(conn)
+                    response = handle_dap_request(request)
+                    response_str = json.dumps(response)
+                    conn.sendall(f"Content-Length: {len(response_str)}\r\n\r\n{response_str}".encode())
+                except Exception as e:
+                    print(f"Fehler: {e}")
                     break
-                response = handle_dap_request(data.decode())
-                conn.sendall(json.dumps(response).encode())
 
 if __name__ == "__main__":
     start_dap_server()
