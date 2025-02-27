@@ -133,7 +133,7 @@
       {
         "name": "Controller",
         "id": "controller-view",
-        "when": "workspaceFolderCount > 0 && cc100ProjectFound"
+        "when": "workspaceFolderCount > 0 && wagoYamlPresent"
       },
       {
         "name": "No Folder Opened",
@@ -143,7 +143,7 @@
       {
         "name": "No CC100 Project Found",
         "id": "no-project-view",
-        "when": "workspaceFolderCount > 0 && !cc100ProjectFound"
+        "when": "workspaceFolderCount > 0 && !wagoYamlPresent"
       }
       ]
     },

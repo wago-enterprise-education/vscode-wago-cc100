@@ -9,6 +9,7 @@ import { Workspace } from './extension/workspace';
 import { YamlCommands } from './extension/yaml';
 import { View } from './extension/view';
 import { Command } from './extension/command';
+import { verifyProject } from './extension/helper';
 
 const workspace = new Workspace();
 
@@ -18,6 +19,9 @@ export function activate(context: vscode.ExtensionContext) {
 
 	//Create Commands
 	Command.createCommands(context);
+
+	//Check if project is valid
+	verifyProject();
 
 	//create IO-Check
 	const webview_IO = new webview_IOCheck(context);

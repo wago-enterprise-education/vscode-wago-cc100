@@ -19,11 +19,19 @@ const controlleTest = [
 
 export class View {
     public static createView(context: vscode.ExtensionContext) {
-        vscode.window.registerTreeDataProvider('controller-view', new ControllerProvider());
+        vscode.window.registerTreeDataProvider('controller-view', ControllerProvider.instance);
     }
 }
 
-class ControllerProvider implements vscode.TreeDataProvider<Controller | ControllerItem> {
+export class ControllerProvider implements vscode.TreeDataProvider<Controller | ControllerItem> {
+    static readonly instance = new ControllerProvider();
+    private _onDidChangeTreeData: vscode.EventEmitter<Controller | undefined | null | void> = new vscode.EventEmitter<Controller | undefined | null | void>();
+    readonly onDidChangeTreeData: vscode.Event<Controller | ControllerItem | undefined | null | void> = this._onDidChangeTreeData.event;
+
+    refresh(): void {
+        this._onDidChangeTreeData.fire();
+    }
+
     getTreeItem(element: Controller | ControllerItem): vscode.TreeItem {
         return element;
     }
