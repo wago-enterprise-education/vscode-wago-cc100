@@ -4,16 +4,7 @@ import { window } from 'vscode'
 import * as vscode from 'vscode'
 
 export class YamlCommands {
-    /**
-     * Method for reading the content of a yaml-file.
-     * 
-     * @param path Path where the operating file is located.
-     * @returns an object that represents the yaml file.
-     */
-    public static readYamlFile(path: string) {
-        return YAML.parse(fs.readFileSync(path, 'utf8'));
-    }
-
+    
     /**
      * Method for changing a attribute of a yaml file.
      * 
@@ -22,7 +13,7 @@ export class YamlCommands {
      * @param value The new value of the attribute
      */
     public static write(path: string, attribute: settings, value: string | boolean) {
-        let yaml = this.readYamlFile(path);
+        let yaml = YAML.parse(fs.readFileSync(path, 'utf8'));
         yaml[attribute] = value;
         fs.writeFileSync(path, YAML.stringify(yaml, null, "\t"))
     }
@@ -56,7 +47,7 @@ export class YamlCommands {
     }
 
     private static findNextID() {
-        let yaml = this.readYamlFile(`${vscode.workspace.workspaceFolders![0].uri.fsPath}/wago.yaml`);
+        let yaml = YAML.parse(fs.readFileSync((`${vscode.workspace.workspaceFolders![0].uri.fsPath}/wago.yaml`), 'utf8'));
         let id = 0;
         while (yaml.controllers[id] != undefined) {
             id++;
@@ -72,6 +63,12 @@ export class YamlCommands {
             await YamlCommands.createController();
 
         }));
+        // context.subscriptions.push(vscode.commands.registerCommand("vscode-wago-cc100.write-controller", async () => {
+
+        //     let yaml = (`${vscode.workspace.workspaceFolders![0].uri.fsPath}/controller/controller1.yaml`);
+        //     await YamlCommands.write(yaml, settings.user, "test");
+
+        // }));
     }
 }
 
