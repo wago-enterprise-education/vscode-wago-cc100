@@ -101,8 +101,7 @@ export class YamlCommands {
 // enum for all attributes contained in the settings.yaml
 export enum settings {
     version = 'version',
-    usb_c = 'usb_c',
-    ethernet = 'ethernet',
+    connection = 'connection',
     ip_adress = 'ip_adress',
     port = 'port',
     user = 'user',
