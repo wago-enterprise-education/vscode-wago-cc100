@@ -63,6 +63,16 @@ export class YamlCommands {
         });
     }
 
+    public static removeController(id: number) {
+        //remove from wago.yaml
+        let yaml = this.readWagoYaml();
+        delete yaml.nodes[id];
+        fs.writeFileSync(`${vscode.workspace.workspaceFolders![0].uri.fsPath}/wago.yaml`, YAML.stringify(yaml, null, "\t"));
+
+        //remove Controller configuration file
+        fs.unlinkSync(`${vscode.workspace.workspaceFolders![0].uri.fsPath}/controllers/controller${id}.yaml`);
+    }
+
     private static findNextID() {
         let yaml = this.readWagoYaml();
         let id = 1;
@@ -78,6 +88,7 @@ export class YamlCommands {
             await YamlCommands.createController(context);
 
         }));
+
         // context.subscriptions.push(vscode.commands.registerCommand("vscode-wago-cc100.write-controller", async () => {
 
         //     let yaml = (`${vscode.workspace.workspaceFolders![0].uri.fsPath}/controller/controller1.yaml`);
