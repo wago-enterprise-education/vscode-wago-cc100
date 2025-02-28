@@ -30,7 +30,7 @@ export class YamlCommands {
     /**
      * Method for adding Controllers to the wago.yaml and corresponding Controllerfile.
      */
-    public static async createController() {
+    public static async createController(context: vscode.ExtensionContext) {
         
         //To be converted to attributes of the function
         let displaynameInput = await window.showInputBox({ prompt: "Enter the displayname of the controller" });
@@ -58,19 +58,9 @@ export class YamlCommands {
         fs.writeFileSync(`${vscode.workspace.workspaceFolders![0].uri.fsPath}/wago.yaml`, YAML.stringify(yaml, null, "\t"));
 
         //Adding Controller to corresponding controllers/controller[id].yaml file
-        let controller = {
-            usb_c: true,
-            ethernet: false,
-            ip_adress: "192.168.42.42",
-            port: 22,
-            simulator: false,
-            simulation_frontend: "http://localhost:5000",
-            simulation_backend: "localhost",
-            user: "root",
-            autoupdate: true
-        }
-
-        fs.writeFileSync(`${vscode.workspace.workspaceFolders![0].uri.fsPath}/controllers/controller${id}.yaml`, YAML.stringify(controller, null, "\t"));
+        fs.copyFile(`${context.extensionPath}.res/template/controller/controller1.yaml`, `${vscode.workspace.workspaceFolders![0].uri.fsPath}/controllers/controller${id}.yaml`, (err) => {
+            if (err) throw err;
+        });
     }
 
     private static findNextID() {
@@ -85,7 +75,7 @@ export class YamlCommands {
     public registerYamlCommands(context: vscode.ExtensionContext) {
         context.subscriptions.push(vscode.commands.registerCommand("vscode-wago-cc100.create-controller", async () => {
             
-            await YamlCommands.createController();
+            await YamlCommands.createController(context);
 
         }));
         // context.subscriptions.push(vscode.commands.registerCommand("vscode-wago-cc100.write-controller", async () => {
