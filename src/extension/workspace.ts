@@ -1,7 +1,7 @@
 import * as vscode from 'vscode'
 import { SSH } from '../ssh';
-import { YamlCommands } from './yaml';
-import fs from 'fs'
+import YAML from 'yaml';
+import fs from 'fs';
 
 export class Workspace {
     private static password: string = '';
@@ -41,7 +41,7 @@ export class Workspace {
      * @returns a `SSH` object if settings are written. `Returns` false of type `boolean` if ssh properties are not written because of unusual properties content.
      */
     public async read_settings_write_ssh_properties(ws_path: string, ssh: SSH): Promise<boolean | SSH> {
-        let project_settings = YamlCommands.readYamlFile(ws_path + 'settings.json');
+        let project_settings = YAML.parse(fs.readFileSync(ws_path + 'settings.json', 'utf8'));
         if (Workspace.password.length == 0) {
             const passwordInput: string = await vscode.window.showInputBox({
                 password: true,
