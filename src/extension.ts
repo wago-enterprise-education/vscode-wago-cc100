@@ -1,6 +1,5 @@
 import * as vscode from 'vscode';
 import { custom_webview_provider_menu } from './extension/custom_webview_menu';
-import { custom_webview_provider_settings } from './extension/webview_settings';
 import { webview_IOCheck } from './webview_IOCheck';
 import { YamlCommands } from './extension/yaml';
 import { View } from './extension/view';
@@ -25,11 +24,6 @@ export function activate(context: vscode.ExtensionContext) {
 	const webview_provider_menu = new custom_webview_provider_menu(context.extensionUri, webview_IO);
 	webview_provider_menu.register_commands(context);
 	webview_provider_menu.create_status_bar(context);
-
-	//show settings
-	const webview_provider_settings = new custom_webview_provider_settings(context);
-
-	webview_provider_settings.download_lib();
 
 	//register yaml commands
 	const test = new YamlCommands();
