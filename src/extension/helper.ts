@@ -30,13 +30,11 @@ function listenOnFileChange() {
     const fileWatcher = vscode.workspace.createFileSystemWatcher('**/wago.yaml');
 
     fileWatcher.onDidChange((uri: vscode.Uri) => {
-        vscode.window.showInformationMessage(`Changed: ${checkIfInRootFolder(uri)}`);
         vscode.commands.executeCommand('setContext', 'wagoYamlPresent', checkIfInRootFolder(uri));
         ControllerProvider.instance.refresh();
     });
 
     fileWatcher.onDidCreate((uri: vscode.Uri) => {
-        vscode.window.showInformationMessage(`Create: ${checkIfInRootFolder(uri)}`);
         vscode.commands.executeCommand('setContext', 'wagoYamlPresent', checkIfInRootFolder(uri));
         ControllerProvider.instance.refresh();
     });

@@ -2,14 +2,14 @@ import * as vscode from 'vscode';
 import { custom_webview_provider_menu } from './extension/custom_webview_menu';
 import { webview_IOCheck } from './webview_IOCheck';
 import { YamlCommands } from './extension/yaml';
-import { View } from './extension/view';
+import { ControllerProvider } from './extension/view';
 import { Command } from './extension/command';
 import { verifyProject } from './extension/helper';
 
 
 export function activate(context: vscode.ExtensionContext) {
-	//Create View
-	View.createView(context);
+	//Register TreeDataProvider for sidebar
+	vscode.window.registerTreeDataProvider('controller-view', ControllerProvider.instance);
 
 	//Create Commands
 	Command.createCommands(context);

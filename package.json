@@ -71,10 +71,7 @@
       {
         "command": "vscode-wago-cc100.iocheck",
         "title": "IO-Check",
-        "icon": {
-          "light": "res/images/wago-icons_rgb_view_outline_green.svg",
-          "dark": "res/images/wago-icons_rgb_view_outline_green.svg"
-        }
+        "icon": "$(eye)"
       },
       {
         "command": "vscode-wago-cc100.testSSH",
@@ -83,64 +80,77 @@
       {
         "command": "vscode-wago-cc100.add-controller",
         "title": "Add Controller",
-        "icon": {
-          "light": "res/images/wago-icons_rgb_house_outline_black.svg",
-          "dark": "res/images/wago-icons_rgb_house_outline_green.svg"
-        }
+        "icon": "$(add)"
       },
       {
         "command": "vscode-wago-cc100.upload",
         "title": "Upload",
-        "icon": {
-          "light": "res/images/wago-icons_rgb_upload_outline_black.svg",
-          "dark": "res/images/wago-icons_rgb_upload_outline_green.svg"
-        }
+        "icon": "$(cloud-upload)"
       },
       {
         "command": "vscode-wago-cc100.edit-setting",
         "title": "Edit Setting",
-        "icon": {
-          "light": "res/images/wago-icons_rgb_settings_outline_green.svg",
-          "dark": "res/images/wago-icons_rgb_settings_outline_green.svg"
-        }
+        "icon": "$(pencil)"
+      },
+      {
+        "command": "vscode-wago-cc100.remove-controller",
+        "title": "Remove Controller",
+        "icon": "$(remove)"
+      },
+      {
+        "command": "vscode-wago-cc100.refresh-view",
+        "title": "Refresh View",
+        "icon": "$(sync)"
+      },
+      {
+        "command": "vscode-wago-cc100.init-project",
+        "title": "Init Project"
+      },
+      {
+        "command": "vscode-wago-cc100.create-project",
+        "title": "Create Project"
       }
     ],
     "viewsWelcome": [
       {
-      "view": "no-folder-view",
-      "contents": "In order to use this extension, you need to open a folder containing a CC100 project. \n [Create Project](command:vscode-wago-cc100.create-project) \n [Open Project](command:vscode.openFolder) \n To learn more about the extension read the [documentation](https://github.com/wago-enterprise-education/vscode-wago-cc100/blob/main/README.md)."
+        "view": "no-folder-view",
+        "contents": "In order to use this extension, you need to open a folder containing a CC100 project. \n [Create Project](command:vscode-wago-cc100.create-project) \n [Open Project](command:vscode.openFolder) \n To learn more about the extension read the [documentation](https://github.com/wago-enterprise-education/vscode-wago-cc100/blob/main/README.md)."
       },
       {
-      "view": "no-project-view",
-      "contents": "The folder you opened does not contain a CC100 project. \n [Init Project](command:vscode-wago-cc100.init-project) \n To learn more about the extension read the [documentation](https://github.com/wago-enterprise-education/vscode-wago-cc100/blob/main/README.md)."
+        "view": "no-project-view",
+        "contents": "The folder you opened does not contain a CC100 project. \n [Init Project](command:vscode-wago-cc100.init-project) \n To learn more about the extension read the [documentation](https://github.com/wago-enterprise-education/vscode-wago-cc100/blob/main/README.md)."
+      },
+      {
+        "view": "controller-view",
+        "contents": "No controller added yet. \n [Add Controller](command:vscode-wago-cc100.add-controller) \n To learn more about the extension read the [documentation](https://github.com/wago-enterprise-education/vscode-wago-cc100/blob/main/README.md)."
       }
     ],
     "viewsContainers": {
       "activitybar": [
-      {
-        "id": "CC100",
-        "title": "WAGO CC100",
-        "icon": "res/images/WAGO_W.png"
-      }
+        {
+          "id": "CC100",
+          "title": "WAGO CC100",
+          "icon": "res/images/WAGO_W.png"
+        }
       ]
     },
     "views": {
       "CC100": [
-      {
-        "name": "Controller",
-        "id": "controller-view",
-        "when": "workspaceFolderCount > 0 && wagoYamlPresent"
-      },
-      {
-        "name": "No Folder Opened",
-        "id": "no-folder-view",
-        "when": "workspaceFolderCount == 0"
-      },
-      {
-        "name": "No CC100 Project Found",
-        "id": "no-project-view",
-        "when": "workspaceFolderCount > 0 && !wagoYamlPresent"
-      }
+        {
+          "name": "Controller",
+          "id": "controller-view",
+          "when": "workspaceFolderCount > 0 && wagoYamlPresent"
+        },
+        {
+          "name": "No Folder Opened",
+          "id": "no-folder-view",
+          "when": "workspaceFolderCount == 0"
+        },
+        {
+          "name": "No CC100 Project Found",
+          "id": "no-project-view",
+          "when": "workspaceFolderCount > 0 && !wagoYamlPresent"
+        }
       ]
     },
     "menus": {
@@ -148,19 +158,34 @@
         {
           "command": "vscode-wago-cc100.add-controller",
           "when": "view == controller-view",
-          "group": "navigation"
+          "group": "navigation@2"
+        },
+        {
+          "command": "vscode-wago-cc100.refresh-view",
+          "when": "view == controller-view",
+          "group": "navigation@1"
         }
       ],
       "view/item/context": [
         {
           "command": "vscode-wago-cc100.upload",
           "when": "view == controller-view  && viewItem == controller",
-          "group": "inline"
+          "group": "inline@4"
         },
         {
           "command": "vscode-wago-cc100.iocheck",
           "when": "view == controller-view && viewItem == controller",
-          "group": "inline"
+          "group": "inline@3"
+        },
+        {
+          "command": "vscode-wago-cc100.edit-displayname",
+          "when": "view == controller-view && viewItem == controller",
+          "group": "inline@2"
+        },
+        {
+          "command": "vscode-wago-cc100.remove-controller",
+          "when": "view == controller-view && viewItem == controller",
+          "group": "inline@1"
         },
         {
           "command": "vscode-wago-cc100.edit-setting",
@@ -194,6 +219,7 @@
     "@types/node": "^20.14.8",
     "@types/sanitize-html": "^2.13.0",
     "@types/vscode": "^1.63.0",
+    "@types/yaml": "^1.9.6",
     "@vscode/vsce": "^3.2.1"
   }
 }
