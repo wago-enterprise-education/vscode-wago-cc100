@@ -23,20 +23,38 @@ export class View {
     }
 }
 
+/**
+ * Tree data provider for the controller view.
+ */
 export class ControllerProvider implements vscode.TreeDataProvider<Controller | ControllerItem> {
     static readonly instance = new ControllerProvider();
     private _onDidChangeTreeData: vscode.EventEmitter<Controller | undefined | null | void> = new vscode.EventEmitter<Controller | undefined | null | void>();
     readonly onDidChangeTreeData: vscode.Event<Controller | ControllerItem | undefined | null | void> = this._onDidChangeTreeData.event;
 
+    /**
+     * Reloads the tree view.
+     */
     refresh(): void {
         this._onDidChangeTreeData.fire();
     }
 
+    /**
+     * Return the tree item for the given element.
+     * 
+     * @param element Controller or ControllerItem
+     * @returns vscode.TreeItem
+     */
     getTreeItem(element: Controller | ControllerItem): vscode.TreeItem {
         return element;
     }
 
-    getChildren(element: Controller | ControllerItem): vscode.ProviderResult<Controller[] | ControllerItem[]> {
+    /**
+     * Return the children of the given element. If the element is undefined, return the a Controller.
+     * 
+     * @param element Controller or ControllerItem or undefined
+     * @returns vscode.ProviderResult<Controller[] | ControllerItem[]>
+     */
+    getChildren(element?: Controller | ControllerItem | undefined): vscode.ProviderResult<Controller[] | ControllerItem[]> {
         if(!element) {
             return Promise.resolve(
                 controlleTest.map(element => {
@@ -56,6 +74,9 @@ export class ControllerProvider implements vscode.TreeDataProvider<Controller | 
     }
 }
 
+/**
+ * Abstract representation of a controller in the tree view.
+ */
 class Controller extends vscode.TreeItem {
     constructor(
         public readonly label: string,
@@ -66,6 +87,9 @@ class Controller extends vscode.TreeItem {
     }
 }
 
+/**
+ * Abstract representation of a controller item in the tree view.
+ */
 class ControllerItem extends vscode.TreeItem {
     constructor(
         public readonly label: string,

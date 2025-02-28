@@ -1,11 +1,17 @@
 import * as vscode from 'vscode';
 import { ControllerProvider } from './view';
 
+/**
+ * Check if the project is valid by checking if the wago.yaml file is present in the root folder.
+ */
 export function verifyProject() {
     findWagoYaml();
     listenOnFileChange();
 }
 
+/**
+ * Find the wago.yaml file in the workspace.
+ */
 function findWagoYaml() {
     vscode.workspace.findFiles('**/wago.yaml', '', 1).then((files) => {
         if(files.length > 0 && checkIfInRootFolder(files[0])) {
@@ -17,6 +23,9 @@ function findWagoYaml() {
     });
 }
 
+/**
+ * Listen for changes on the workspace and check if the wago.yaml file is present.
+ */
 function listenOnFileChange() {
     const fileWatcher = vscode.workspace.createFileSystemWatcher('**/wago.yaml');
 
@@ -39,6 +48,12 @@ function listenOnFileChange() {
     });
 }
 
+/**
+ * Check if the file is in the root folder of the workspace.
+ * 
+ * @param uri Uri of the file to check.
+ * @returns True if the file is in the root folder, false otherwise.
+ */
 function checkIfInRootFolder(uri: vscode.Uri): Boolean {
     const workspaceFolders = vscode.workspace.workspaceFolders;
     if(workspaceFolders) {
