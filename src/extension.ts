@@ -31,6 +31,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 	webview_provider_settings.download_lib();
 
+	//register yaml commands
 	const test = new YamlCommands();
 	test.registerYamlCommands(context);
 }

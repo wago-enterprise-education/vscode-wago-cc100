@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 
-const controlleTest = [
+const controllerTest = [
     {
         "name": "Controller 1",
         "settings": {
@@ -57,7 +57,7 @@ export class ControllerProvider implements vscode.TreeDataProvider<Controller | 
     getChildren(element?: Controller | ControllerItem | undefined): vscode.ProviderResult<Controller[] | ControllerItem[]> {
         if(!element) {
             return Promise.resolve(
-                controlleTest.map(element => {
+                controllerTest.map(element => {
                     return new Controller(element.name, element.settings);
                 })
             )
