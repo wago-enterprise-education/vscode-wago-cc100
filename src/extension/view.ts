@@ -11,7 +11,9 @@ export class ControllerProvider implements vscode.TreeDataProvider<Controller | 
     readonly onDidChangeTreeData: vscode.Event<Controller | ControllerItem | undefined | null | void> = this._onDidChangeTreeData.event;
 
     /**
-     * Reloads the tree view.
+     * Refreshes the tree data by firing the `_onDidChangeTreeData` event.
+     * This method triggers an update to the tree view, causing it to re-fetch
+     * and re-render the data.
      */
     refresh(): void {
         this._onDidChangeTreeData.fire();
@@ -74,9 +76,16 @@ export class ControllerProvider implements vscode.TreeDataProvider<Controller | 
 }
 
 /**
- * Abstract representation of a controller in the tree view.
+ * Represents a controller item in a VS Code tree view.
+ * Extends the `vscode.TreeItem` class.
  */
 class Controller extends vscode.TreeItem {
+    /**
+     * Creates an instance of the Controller class.
+     * 
+     * @param id - The unique identifier for the controller.
+     * @param label - The label to display for the controller.
+     */
     constructor(
         public readonly id: string,
         public readonly label: string
@@ -87,7 +96,8 @@ class Controller extends vscode.TreeItem {
 }
 
 /**
- * Abstract representation of a controller item in the tree view.
+ * Represents an item in the tree view for a controller.
+ * Extends the `vscode.TreeItem` class.
  */
 class ControllerItem extends vscode.TreeItem {
     constructor(

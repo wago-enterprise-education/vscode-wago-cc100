@@ -28,7 +28,16 @@ export class YamlCommands {
     }
 
     /**
-     * Method for adding Controllers to the wago.yaml and corresponding Controllerfile.
+     * Creates a new controller by prompting the user for necessary details and updating the `wago.yaml` file.
+     * 
+     * This function performs the following steps:
+     * 1. Prompts the user to enter the display name, description, engine, and source of the controller.
+     * 2. Finds the next available ID for the new controller.
+     * 3. Adds the new controller details to the `wago.yaml` file.
+     * 4. Copies a template controller file to the appropriate location with the new controller's ID.
+     * 
+     * @param context - The extension context provided by VS Code.
+     * @returns A promise that resolves when the controller has been created.
      */
     public static async createController(context: vscode.ExtensionContext) {
         
@@ -63,6 +72,17 @@ export class YamlCommands {
         });
     }
 
+
+    /**
+     * Removes a controller configuration by its ID.
+     *
+     * This method performs the following actions:
+     * 1. Reads the `wago.yaml` file and removes the controller entry with the specified ID.
+     * 2. Writes the updated `wago.yaml` file back to the filesystem.
+     * 3. Deletes the corresponding controller configuration file from the `controllers` directory.
+     *
+     * @param id - The ID of the controller to be removed.
+     */
     public static removeController(id: number) {
         //remove from wago.yaml
         let yaml = this.readWagoYaml();
@@ -73,6 +93,15 @@ export class YamlCommands {
         fs.unlinkSync(`${vscode.workspace.workspaceFolders![0].uri.fsPath}/controllers/controller${id}.yaml`);
     }
 
+    
+    /**
+     * Finds the next available ID for a controller in the Wago YAML configuration.
+     *
+     * This method reads the Wago YAML configuration and iterates through the existing
+     * controller IDs to find the next available ID that is not already in use.
+     *
+     * @returns {number} The next available controller ID.
+     */
     private static findNextID() {
         let yaml = this.readWagoYaml();
         let id = 1;
@@ -98,7 +127,12 @@ export class YamlCommands {
     } */
 }
 
-// enum for all attributes contained in the settings.yaml
+
+/**
+ * Enum representing various settings for the application.
+ * 
+ * @enum {string}
+ */
 export enum settings {
     version = 'version',
     connection = 'connection',
