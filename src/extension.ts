@@ -1,16 +1,12 @@
 import * as vscode from 'vscode';
-import { SSH } from './ssh'
-const ssh = new SSH('192.168.42.42', 0, 'root', '');
 import { custom_webview_provider_menu } from './extension/custom_webview_menu';
 import { custom_webview_provider_settings } from './extension/webview_settings';
 import { webview_IOCheck } from './webview_IOCheck';
-import { Workspace } from './extension/workspace';
 import { YamlCommands } from './extension/yaml';
 import { View } from './extension/view';
 import { Command } from './extension/command';
 import { verifyProject } from './extension/helper';
 
-const workspace = new Workspace();
 
 export function activate(context: vscode.ExtensionContext) {
 	//Create View
