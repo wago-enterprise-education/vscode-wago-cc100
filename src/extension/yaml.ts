@@ -6,6 +6,15 @@ import * as vscode from 'vscode'
 export class YamlCommands {
     
     /**
+     * Function to read the content of the wago.yaml file.
+     * 
+     * @returns The content of the wago.yaml file as a JS object
+     */
+    public static readWagoYaml() {
+        return YAML.parse(fs.readFileSync(`${vscode.workspace.workspaceFolders![0].uri.fsPath}/wago.yaml`, 'utf8'));
+    }
+
+    /**
      * Method for changing a attribute of a yaml file.
      * 
      * @param path Path where the operating file is located.
@@ -19,43 +28,59 @@ export class YamlCommands {
     }
 
     /**
-     * Method for adding Controllers to the wago.yaml and correspondingfile
-     * 
-     * Note: Must be "awaited" on call to work
+     * Method for adding Controllers to the wago.yaml and corresponding Controllerfile.
      */
     public static async createController() {
         
-        let displayname = await window.showInputBox({ prompt: "Enter the displayname of the controller" });
-        let description = await window.showInputBox({ prompt: "Enter the description of the controller" }); 
-        let engine = await window.showInputBox({ prompt: "Enter the engine of the controller" });
-        let src = await window.showInputBox({ prompt: "Enter the src of the controller" });
+        //To be converted to attributes of the function
+        let displaynameInput = await window.showInputBox({ prompt: "Enter the displayname of the controller" });
+        let descriptionInput = await window.showInputBox({ prompt: "Enter the description of the controller" }); 
+        let engineInput = await window.showInputBox({ prompt: "Enter the engine of the controller" });
+        let srcInput = await window.showInputBox({ prompt: "Enter the src of the controller" });
 
+        //Addition of the Controller to wago.yaml
         let id = this.findNextID();
 
         let obj = {
-            controllers: {
+            nodes: {
                 [id]: {
-                    displayname: [displayname],
-                    description: [description],
-                    engine: [engine],
-                    src: [src]
+                    displayname: [displaynameInput],
+                    description: [descriptionInput],
+                    engine: [engineInput],
+                    src: [srcInput]
                 }
             }
         }
 
-        fs.writeFileSync(`${vscode.workspace.workspaceFolders![0].uri.fsPath}/wago.yaml`, YAML.stringify(obj));
+        let yaml = this.readWagoYaml();
+        yaml.nodes[id] = obj.nodes[id];
+
+        fs.writeFileSync(`${vscode.workspace.workspaceFolders![0].uri.fsPath}/wago.yaml`, YAML.stringify(yaml, null, "\t"));
+
+        //Adding Controller to corresponding controllers/controller[id].yaml file
+        let controller = {
+            usb_c: true,
+            ethernet: false,
+            ip_adress: "192.168.42.42",
+            port: 22,
+            simulator: false,
+            simulation_frontend: "http://localhost:5000",
+            simulation_backend: "localhost",
+            user: "root",
+            autoupdate: true
+        }
+
+        fs.writeFileSync(`${vscode.workspace.workspaceFolders![0].uri.fsPath}/controllers/controller${id}.yaml`, YAML.stringify(controller, null, "\t"));
     }
 
     private static findNextID() {
-        let yaml = YAML.parse(fs.readFileSync((`${vscode.workspace.workspaceFolders![0].uri.fsPath}/wago.yaml`), 'utf8'));
-        let id = 0;
+        let yaml = this.readWagoYaml();
+        let id = 1;
         while (yaml.controllers[id] != undefined) {
             id++;
         }
         return id;
     }
-
-
 
     public registerYamlCommands(context: vscode.ExtensionContext) {
         context.subscriptions.push(vscode.commands.registerCommand("vscode-wago-cc100.create-controller", async () => {
