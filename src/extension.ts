@@ -25,9 +25,9 @@ export function activate(context: vscode.ExtensionContext) {
 	webview_provider_menu.register_commands(context);
 	webview_provider_menu.create_status_bar(context);
 
-	//register yaml commands
+	/*//register yaml commands
 	const test = new YamlCommands();
-	test.registerYamlCommands(context);
+	test.registerYamlCommands(context); */
 }
 
 // This method is called when your extension is deactivated

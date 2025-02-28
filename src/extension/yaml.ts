@@ -82,7 +82,7 @@ export class YamlCommands {
         return id;
     }
 
-    public registerYamlCommands(context: vscode.ExtensionContext) {
+    /*public registerYamlCommands(context: vscode.ExtensionContext) {
         context.subscriptions.push(vscode.commands.registerCommand("vscode-wago-cc100.create-controller", async () => {
             
             await YamlCommands.createController(context);
@@ -95,7 +95,7 @@ export class YamlCommands {
         //     await YamlCommands.write(yaml, settings.user, "test");
 
         // }));
-    }
+    } */
 }
 
 // enum for all attributes contained in the settings.yaml
