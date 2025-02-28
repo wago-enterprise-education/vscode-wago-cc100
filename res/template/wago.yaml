@@ -1,0 +1,8 @@
+version: 0.2.0
+nodes: 
+    - id: 1
+      displayname: Controller1
+      description: Controller1
+      engine: CC100
+      src: main
+      imageVersion: 1.0.0
