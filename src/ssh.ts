@@ -368,28 +368,7 @@ export class SSH {
     }
   }
 
-  /**
-   * Requirements: An existing SSH connection
-   *
-   * Enables the analog outputs
-   *
-   * @returns A `String` containing an error or 'Successfully enabled'
-   */
-  public async enable_analog_output() {
-    const dir = "/sys/bus/iio/devices/";
 
-    try {
-      await this.ssh.execCommand(
-        "echo 0 >> " + dir + "iio:device0/out_voltage1_powerdown"
-      );
-      await this.ssh.execCommand(
-        "echo 0 >> " + dir + "iio:device1/out_voltage2_powerdown"
-      );
-      return "Successfully enabled";
-    } catch (error: any) {
-      return error.message;
-    }
-  }
 
   /**
    * Requirements: An existing SSH connection
