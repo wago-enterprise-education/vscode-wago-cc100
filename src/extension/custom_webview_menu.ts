@@ -3,28 +3,28 @@ import fs from 'fs'
 import { SSH } from '../ssh';
 import { Connection } from './connection';
 import { Workspace } from './workspace';
-import { webview_IOCheck } from '../webview_IOCheck';
+import { webviewIoCheck } from '../webviewIoCheck';
 
 
-export class custom_webview_provider_menu {
+export class customWebviewProviderMenu {
 
     public static readonly viewType = 'menu';
 
     private ssh = new SSH('192.168.42.42', 0, 'root', '');
     private Workspace = new Workspace();
     private Connection = new Connection();
-    private io_check: webview_IOCheck;
-    private readonly dest_path: string = '/home/user/python_bootapplication/';
-    private readonly dest_path_to_ipk: string = this.dest_path + '../python3_3.7.6_armhf.ipk';
-    private readonly filename_on_startup: string = 'S99_python_runtime';
-    private output_channel: vscode.OutputChannel;
+    private ioCheck: webviewIoCheck;
+    private readonly destPath: string = '/home/user/python_bootapplication/';
+    private readonly destPathToIpk: string = this.destPath + '../python3_3.7.6_armhf.ipk';
+    private readonly filenameOnStartup: string = 'S99_python_runtime';
+    private outputChannel: vscode.OutputChannel;
 
 
     constructor(
         private readonly _extensionUri: vscode.Uri,
-        io_check: webview_IOCheck) {
-        this.io_check = io_check;
-        this.output_channel = vscode.window.createOutputChannel("CC100 Python"); //, {log:!0});
+        io_check: webviewIoCheck) {
+        this.ioCheck = io_check;
+        this.outputChannel = vscode.window.createOutputChannel("CC100 Python"); //, {log:!0});
     }
 
     /**
@@ -32,13 +32,13 @@ export class custom_webview_provider_menu {
      * 
      * @param context The extension `context`.
      */
-    public register_commands(context: vscode.ExtensionContext) {
+    public registerCommands(context: vscode.ExtensionContext) {
         context.subscriptions.push(vscode.commands.registerCommand("vscode-wago-cc100.application_upload", async () => {
             vscode.window.withProgress({
                 location: vscode.ProgressLocation.Notification,
                 title: "Uploading application",
             }, async (progress) => {
-                await this.run_application(false, progress);
+                await this.runApplication(false, progress);
             });
         }));
         context.subscriptions.push(vscode.commands.registerCommand("vscode-wago-cc100.debug", async () => {
@@ -46,7 +46,7 @@ export class custom_webview_provider_menu {
                 location: vscode.ProgressLocation.Notification,
                 title: "Starting debug",
             }, async (progress) => {
-                await this.run_application(true, progress);
+                await this.runApplication(true, progress);
             });
         }));
     }
@@ -56,7 +56,7 @@ export class custom_webview_provider_menu {
      * 
      * @param context The extension `context`.
      */
-    public create_status_bar(context: vscode.ExtensionContext) {
+    public createStatusBar(context: vscode.ExtensionContext) {
         let upload = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 0);
         upload.command = "vscode-wago-cc100.application_upload";
         upload.tooltip = "Upload your project";
@@ -78,10 +78,10 @@ export class custom_webview_provider_menu {
    * @param debug set true if the debug application should be run in debug mode
    * @param progress the progress object used to display the statusbar in the popup
    */
-    private async run_application(debug: boolean, progress: any): Promise<void> {
-        let ws_path = await this.Workspace.get_project_path();
-        if (!ws_path.startsWith("Error")) {
-            await this.Workspace.read_settings_write_ssh_properties(ws_path, this.ssh).then(result => {
+    private async runApplication(debug: boolean, progress: any): Promise<void> {
+        let wsPath = await this.Workspace.getProjectPath();
+        if (!wsPath.startsWith("Error")) {
+            await this.Workspace.readSettingsWriteSshProperties(wsPath, this.ssh).then(result => {
                 if (typeof result !== 'boolean') {
                     this.ssh = result;
                 }
@@ -90,15 +90,15 @@ export class custom_webview_provider_menu {
                 }
             });
 
-            if (!await this.Connection.check_connection(this.ssh)) {
+            if (!await this.Connection.checkConnection(this.ssh)) {
                 return;
             }
             progress.report({ increment: 25, message: "Connected to CC100" })
-            let result_check_for_latest_python_version = await this.check_for_latest_python_version();
-            if (!(typeof result_check_for_latest_python_version == "boolean")) {
+            let resultCheckForLatestPythonVersion = await this.checkForLatestPythonVersion();
+            if (!(typeof resultCheckForLatestPythonVersion == "boolean")) {
                 return;
             }
-            else if (!result_check_for_latest_python_version) {
+            else if (!resultCheckForLatestPythonVersion) {
                 if (!await this.update_python_version()) {
                     vscode.window.showErrorMessage("Error: Could not update Python");
                     progress.report({ increment: 100, message: "ERROR" })
@@ -106,45 +106,45 @@ export class custom_webview_provider_menu {
                 }
             }
             progress.report({ increment: 15, message: "Ensured Python..." })
-            await this.ssh.ssh_connection_with_key().then(async () => {
-                await this.ssh.setup_serial_interface();
-                await this.ssh.disconnect_ssh();
+            await this.ssh.sshConnectionWithKey().then(async () => {
+                await this.ssh.setupSerialInterface();
+                await this.ssh.disconnectSsh();
             })
 
-            if (!await this.upload_application(ws_path)) {
+            if (!await this.upload_application(wsPath)) {
                 vscode.window.showErrorMessage("Error: Upload failed");
                 progress.report({ increment: 100, message: "ERROR" })
                 return;
             }
             progress.report({ increment: 35, message: "Files transfered..." })
-            await this.create_bootapplication();
+            await this.createBootapplication();
             for (var i = 0; i < vscode.debug.breakpoints.length; i++) {
-                let breakpoint_filepath_parts = (vscode.debug.breakpoints[i] as vscode.SourceBreakpoint).location.uri.path.split('/');
-                if (breakpoint_filepath_parts[breakpoint_filepath_parts.length - 1] != "main.py") {
+                let breakpointFilepathParts = (vscode.debug.breakpoints[i] as vscode.SourceBreakpoint).location.uri.path.split('/');
+                if (breakpointFilepathParts[breakpointFilepathParts.length - 1] != "main.py") {
                     vscode.debug.removeBreakpoints([vscode.debug.breakpoints[i]]);
                 }
             }
             progress.report({ increment: 5, message: "Created bootapplicaton..." })
             if (debug && vscode.debug.breakpoints.length > 0) {
                 const data: string[] = this.set_breakpoint();
-                await this.start_debugging(data[0], data[1]);
+                await this.startDebugging(data[0], data[1]);
                 progress.report({ increment: 100, message: "Debug started" })
             } else {
                 if (debug) {
                     progress.report({ increment: 10, message: "No breakpoints set, starting application..." })
                 }
-                await this.start_application();
+                await this.startApplication();
                 progress.report({ increment: 100, message: "Application started" })
                 // Reset IO-Check
-                if (this.io_check.ioCheckPanel != undefined) {
-                    this.io_check.ioCheckPanel.webview.postMessage({ command: 'reload' })
+                if (this.ioCheck.ioCheckPanel != undefined) {
+                    this.ioCheck.ioCheckPanel.webview.postMessage({ command: 'reload' })
                 }
-                await this.create_log_listener();
+                await this.createLogListener();
             }
         }
         else {
-            console.log(ws_path);
-            vscode.window.showErrorMessage(ws_path);
+            console.log(wsPath);
+            vscode.window.showErrorMessage(wsPath);
             progress.report({ increment: 100, message: "ERROR" })
         }
     }
@@ -157,28 +157,28 @@ export class custom_webview_provider_menu {
      * @returns `true` if the current python version is installed, otherwise `false`. Returns `void` if an error occured while transferring the necessary package. 
      */
     private async check_for_latest_python_version(): Promise<Boolean | void> {
-        await this.ssh.ssh_connection_with_key();
-        let current_python_version_installed: boolean;
-        let result_get_python_version = await this.ssh.get_python_version();
-        if (!result_get_python_version.startsWith("Error")) {
-            current_python_version_installed = true;
+        await this.ssh.sshConnectionWithKey();
+        let currentPythonVersionInstalled: boolean;
+        let resultGetPythonVersion = await this.ssh.getPythonVersion();
+        if (!resultGetPythonVersion.startsWith("Error")) {
+            currentPythonVersionInstalled = true;
             console.log("Necessary python version already installed");
         }
         else {
-            current_python_version_installed = false;
+            currentPythonVersionInstalled = false;
             console.log("Error: Necessary python version not installed. Doing it now:");
-            let result_transfer_ipk = await this.ssh.transfer_directory(__dirname + '/../../res/python_files/python3_3.7.6_armhf.ipk', this.dest_path_to_ipk);
-            if (!result_transfer_ipk.toString().startsWith('Error')) {
+            let resultTransferIpk = await this.ssh.transferDirectory(__dirname + '/../../res/python_files/python3_3.7.6_armhf.ipk', this.dest_path_to_ipk);
+            if (!resultTransferIpk.toString().startsWith('Error')) {
                 console.log(".ipk file successfully transferred");
             }
             else {
                 console.log("Error: .ipk file cannot be transferred");
-                console.log(result_transfer_ipk);
+                console.log(resultTransferIpk);
                 return;
             }
         }
-        await this.ssh.disconnect_ssh();
-        return current_python_version_installed;
+        await this.ssh.disconnectSsh();
+        return currentPythonVersionInstalled;
     }
 
     /**
@@ -187,80 +187,80 @@ export class custom_webview_provider_menu {
      * 
      * @returns `true` if python was updated, otherwise `false`
      */
-    private async update_python_version(): Promise<boolean> {
-        let updated_python: boolean = false;
+    private async updatePythonVersion(): Promise<boolean> {
+        let updatedPython: boolean = false;
         console.log("Python will be updated");
-        await this.ssh.ssh_connection_with_key().then(async () => {
-            let result_install_package = await this.ssh.install_package(this.dest_path_to_ipk);
-            if (result_install_package.startsWith("Error")) {
+        await this.ssh.sshConnectionWithKey().then(async () => {
+            let resultInstallPackage = await this.ssh.installPackage(this.destPathToIpk);
+            if (resultInstallPackage.startsWith("Error")) {
                 console.log("Error: Installing python failed");
-                console.log(result_install_package);
+                console.log(resultInstallPackage);
             }
             else {
                 console.log("Installed python successfully");
-                let result_delete_ipk = await this.ssh.delete_files(this.dest_path_to_ipk);
-                if (!result_delete_ipk.startsWith("Error")) {
+                let resultDeleteIpk = await this.ssh.deleteFiles(this.destPathToIpk);
+                if (!resultDeleteIpk.startsWith("Error")) {
                     console.log("Deleted ipk-File successfully");
                 }
                 else {
                     console.log("Error: Deletion of ipk-File failed");
-                    console.log(result_delete_ipk);
+                    console.log(resultDeleteIpk);
                 }
-                await this.ssh.disconnect_ssh();
-                updated_python = true;
+                await this.ssh.disconnectSsh();
+                updatedPython = true;
             }
         });
-        return updated_python;
+        return updatedPython;
     }
 
     /**
      * Method for uploading the application that should run onto the CC100.
      * 
-     * @param ws_path Path to to current opened CC100IO project.
+     * @param wsPath Path to to current opened CC100IO project.
      * @returns `true` if the application was uploaded successfully, otherwise `false`
      */
-    private async upload_application(ws_path: string): Promise<boolean> {
-        let uploaded_application: boolean = false;
-        await this.ssh.ssh_connection_with_key().then(async () => {
-            await this.ssh.delete_files(this.dest_path + 'errorLog');
-            await this.ssh.kill_all_tails();
-            await this.ssh.update_time(this.create_timestamp());
-            let result_upload_application = await this.ssh.transfer_directory(ws_path + "src", this.dest_path.substring(0, this.dest_path.length - 1));
-            if (!result_upload_application.startsWith("Error")) {
+    private async uploadApplication(wsPath: string): Promise<boolean> {
+        let uploadedApplication: boolean = false;
+        await this.ssh.sshConnectionWithKey().then(async () => {
+            await this.ssh.deleteFiles(this.destPath + 'errorLog');
+            await this.ssh.killAllTails();
+            await this.ssh.updateTime(this.create_timestamp());
+            let result_upload_application = await this.ssh.transferDirectory(wsPath + "src", this.destPath.substring(0, this.destPath.length - 1));
+            if (!resultUploadApplication.startsWith("Error")) {
                 console.log("Application upload successful");
-                uploaded_application = true;
+                uploadedApplication = true;
             }
             else {
                 console.log("Error: Application upload failed");
             }
-            await this.ssh.disconnect_ssh();
+            await this.ssh.disconnectSsh();
         });
-        return uploaded_application;
+        return uploadedApplication;
     }
 
     /**
      * Method for killing all running python scripts and start a new one.
      */
     private async start_application(): Promise<void> {
-        await this.ssh.ssh_connection_with_key().then(async () => {
+        await this.ssh.sshConnectionWithKey().then(async () => {
             console.log("Connected to CC100");
-            let result_kill_all_python_scripts = await this.ssh.kill_all_python_scripts();
-            if (result_kill_all_python_scripts.startsWith("Error")) {
+            let resultKillAllPythonScripts = await this.ssh.killAllPythonScripts();
+            if (resultKillAllPythonScripts.startsWith("Error")) {
                 console.log("Error: Cannot kill python scripts");
-                console.log(result_kill_all_python_scripts);
+                console.log(resultKillAllPythonScripts);
             }
             else {
                 console.log("Kill all running python scripts");
             }
-            let result_start_python_script = await this.ssh.start_python_script(this.dest_path + "/lib/runtimeCC.py");
-            if (!(result_start_python_script.toString().startsWith("Error"))) {
+            let resultStartPythonScript = await this.ssh.startPythonScript(this.destPath + "/lib/runtimeCC.py");
+            if (!(resultStartPythonScript.toString().startsWith("Error"))) {
                 console.log("Application started");
             }
             else {
                 console.log("Error: Application cannot be started");
-                console.log(result_start_python_script);
+                console.log(resultStartPythonScript);
             }
-            await this.ssh.disconnect_ssh();
+            await this.ssh.disconnectSsh();
         });
     }
 
@@ -269,71 +269,71 @@ export class custom_webview_provider_menu {
      * 
      * @returns `true` if the bootapplication was created, otherwise `false`.
      */
-    private async create_bootapplication(): Promise<boolean> {
-        let result_created_bootapplication: boolean = false;
-        await this.ssh.ssh_connection_with_key()
-        let result_upload_bootapplication = await this.ssh.put_init();
-        if (!result_upload_bootapplication.startsWith("Error")) {
+    private async creatBootapplication(): Promise<boolean> {
+        let resultCreatedBootapplication: boolean = false;
+        await this.ssh.sshConnectionWithKey()
+        let resultUploadBootapplication = await this.ssh.putInit();
+        if (!resultUploadBootapplication.startsWith("Error")) {
             console.log("Bash file created successfully");
-            let result_make_file_executable = await this.ssh.make_file_to_executable_file(this.filename_on_startup);
-            if (!result_make_file_executable.startsWith("Error")) {
+            let resultMakeFileExecutable = await this.ssh.makeFileToExecutableFile(this.filenameOnStartup);
+            if (!resultMakeFileExecutable.startsWith("Error")) {
                 console.log("Changed Filemode to executable");
-                let result_create_symlink = await this.ssh.create_symlink(this.filename_on_startup);
-                if (!result_create_symlink.startsWith("Error")) {
+                let resultCreateSymlink = await this.ssh.createSymlink(this.filenameOnStartup);
+                if (!resultCreateSymlink.startsWith("Error")) {
                     console.log("Created symbolic link successfully");
-                    result_created_bootapplication = true;
+                    resultCreatedBootapplication = true;
                 }
                 else {
                     console.log("Error: Could not create symbolic link");
-                    console.log(result_create_symlink);
+                    console.log(resultCreateSymlink);
                 }
             }
             else {
                 console.log("Error: Could not make file to executable");
-                console.log(result_make_file_executable);
+                console.log(resultMakeFileExecutable);
             }
         }
         else {
             console.log("Error: File transfer failed");
-            console.log(result_upload_bootapplication);
+            console.log(resultUploadBootapplication);
         }
-        await this.ssh.disconnect_ssh();
-        return result_created_bootapplication;
+        await this.ssh.disconnectSsh();
+        return resultCreatedBootapplication;
     }
 
     /**
      * This method places via string manipulation a `breakpoint()` at the corresponding line in the python script
      * @returns The modified python script as string
      */
-    private set_breakpoint(): string[] {
+    private setBreakpoint(): string[] {
         try {
-            let breakpoint_filepath_parts: string[] = (vscode.debug.breakpoints[0] as vscode.SourceBreakpoint).location.uri.fsPath.split('\\');
-            let breakpoint_filename: string = breakpoint_filepath_parts.slice(breakpoint_filepath_parts.indexOf('src') + 1, breakpoint_filepath_parts.length).toString();
-            let script: string[] = fs.readFileSync(breakpoint_filepath_parts.join('\\')).toString().split('\n');
+            let breakpointFilepathParts: string[] = (vscode.debug.breakpoints[0] as vscode.SourceBreakpoint).location.uri.fsPath.split('\\');
+            let breakpointFilename: string = breakpointFilepathParts.slice(breakpointFilepathParts.indexOf('src') + 1, breakpointFilepathParts.length).toString();
+            let script: string[] = fs.readFileSync(breakpointFilepatParts.join('\\')).toString().split('\n');
 
-            let breakpoint_lines: number[] = [];
-            let leading_spaces: string[] = [];
+            let breakpointLines: number[] = [];
+            let leadingSpaces: string[] = [];
 
-            let debug_script: string = '';
+            let debugScript: string = '';
 
             for (var i = 0; i < vscode.debug.breakpoints.length; i++) {
 
-                breakpoint_lines[i] = (vscode.debug.breakpoints[i] as vscode.SourceBreakpoint).location.range.start.line;
+                breakpointLines[i] = (vscode.debug.breakpoints[i] as vscode.SourceBreakpoint).location.range.start.line;
 
-                const script_line = script[breakpoint_lines[i]].match(/^\s+/g);
-                if (script_line) {
-                    leading_spaces[i] = script_line[0];
+                const scriptLine = script[breakpointLines[i]].match(/^\s+/g);
+                if (scriptLine) {
+                    leadingSpaces[i] = scriptLine[0];
                 } else {
-                    leading_spaces[i] = '';
+                    leadingSpaces[i] = '';
                 }
             }
 
             for (var i = 0; i < script.length; i++) {
-                debug_script += (breakpoint_lines.indexOf(i) > -1) ? leading_spaces[breakpoint_lines.indexOf(i)] + 'breakpoint()\n' : '';
-                debug_script += script[i] + '\n';
+                debugScript += (breakpointLines.indexOf(i) > -1) ? leadingSpaces[breakpointLines.indexOf(i)] + 'breakpoint()\n' : '';
+                debugScript += script[i] + '\n';
             }
 
-            return new Array(breakpoint_filename.slice(0, breakpoint_filename.length - 3).toString().concat("_debug.py"), debug_script);
+            return new Array(breakpointFilename.slice(0, breakpointFilename.length - 3).toString().concat("_debug.py"), debugScript);
         }
         catch {
             return new Array('', '');
@@ -344,14 +344,14 @@ export class custom_webview_provider_menu {
      * This method starts the debugging process, by setting the breakpoint and starting the script within a bash on the CC100 
      * @returns `false` if any errors occur, otherwise `true`
      */
-    private async start_debugging(filename: string, data: string): Promise<boolean> {
+    private async startDebugging(filename: string, data: string): Promise<boolean> {
         try {
-            await this.ssh.ssh_connection_with_key().then(async () => {
+            await this.ssh.sshConnectionWithKey().then(async () => {
                 console.log("Connected to CC100");
-                await this.ssh.create_file(this.dest_path.concat(filename), data);
-                await this.ssh.kill_all_python_scripts();
+                await this.ssh.createFile(this.destPath.concat(filename), data);
+                await this.ssh.killAllPythonScripts();
                 console.log("Breakpoint set");
-                await this.ssh.disconnect_ssh();
+                await this.ssh.disconnectSsh();
                 console.log('Disconnected');
             });
 
@@ -368,10 +368,10 @@ export class custom_webview_provider_menu {
                     shell = 'powershell.exe';
                     break;
             }
-            var debugging_terminal = vscode.window.createTerminal('Debugging', shell, undefined);
+            var debuggingTerminal = vscode.window.createTerminal('Debugging', shell, undefined);
 
-            debugging_terminal.sendText(`ssh -i ${this._extensionUri.fsPath}/res/.ssh/id_rsa ${this.ssh.username}@${this.ssh.ipAdress} "python3 /home/user/python_bootapplication/main_debug.py"`, true);
-            debugging_terminal.show();
+            debuggingTerminal.sendText(`ssh -i ${this._extensionUri.fsPath}/res/.ssh/id_rsa ${this.ssh.username}@${this.ssh.ipAdress} "python3 /home/user/python_bootapplication/main_debug.py"`, true);
+            debuggingTerminal.show();
             return true;
         }
         catch {
@@ -383,21 +383,21 @@ export class custom_webview_provider_menu {
     /**
      * A Method that creates a listener that will be executed if the log file changes.
      */
-    private async create_log_listener() {
-        this.output_channel.show()
-        let result = (await this.ssh.ssh_connection_with_key()).toString();
+    private async createLogListener() {
+        this.outputChannel.show()
+        let result = (await this.ssh.sshConnectionWithKey()).toString();
         if (!result.includes("Error")) {
             return new Promise(async (resolve, reject) => {
                 resolve(null)
-                await this.ssh.read_log(this.write_log.bind(this.write_log))
+                await this.ssh.readLog(this.write_log.bind(this.write_log))
             })
         }
     }
 
-    private write_log = (data: Buffer) => {
-        let log_message: string = data.toString();
-        if (!log_message.startsWith("tail")) {
-            this.output_channel.append(log_message);
+    private writeLog = (data: Buffer) => {
+        let logMessage: string = data.toString();
+        if (!logMessage.startsWith("tail")) {
+            this.outputChannel.append(logMessage);
         }
     }
     /**
@@ -405,7 +405,7 @@ export class custom_webview_provider_menu {
      * @param num the number that will be converted
      * @returns A number with at least 2 digits
      */
-    private format_number(num: number) {
+    private formatNumber(num: number) {
         return num < 10 ? '0' + num : num;
     }
     /**
@@ -414,12 +414,12 @@ export class custom_webview_provider_menu {
      */
     private create_timestamp() {
         const now = new Date;
-        const year = this.format_number(now.getFullYear());
-        const month = this.format_number(now.getMonth() + 1);
-        const day = this.format_number(now.getDate());
-        const hours = this.format_number(now.getHours());
-        const minutes = this.format_number(now.getMinutes());
-        const seconds = this.format_number(now.getSeconds());
+        const year = this.formatNumber(now.getFullYear());
+        const month = this.formatNumber(now.getMonth() + 1);
+        const day = this.formatNumber(now.getDate());
+        const hours = this.formatNumber(now.getHours());
+        const minutes = this.formatNumber(now.getMinutes());
+        const seconds = this.formatNumber(now.getSeconds());
         const timestamp = `${month}${day}${hours}${minutes}${year}.${seconds}`;
 
         return timestamp;

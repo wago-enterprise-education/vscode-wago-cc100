@@ -5,7 +5,7 @@ import fs from 'fs';
 
 export class Workspace {
     private static password: string = '';
-    private readonly path_to_lib_file: string = 'src/lib/CC100IO.py';
+    private readonly pathToLibFile: string = 'src/lib/CC100IO.py';
 
 
     /**
@@ -13,19 +13,19 @@ export class Workspace {
      * 
      * @returns The path to the project or a error message.
      */
-    public async get_project_path(): Promise<string> {
+    public async getProjectPath(): Promise<string> {
         let ws = (await vscode.workspace.findFiles('*/*/CC100IO.py', null, 1)).at(0);
-        let ws_path: string;
+        let wsPath: string;
 
         if (ws !== undefined) { //Check if a CC100 project is opened in the explorer
             if (process.platform === 'win32') {
-                ws_path = ws.path.toString().substring(1, ws.path.toString().length - this.path_to_lib_file.length);
+                wsPath = ws.path.toString().substring(1, ws.path.toString().length - this.pathToLibFile.length);
             }
             else {
-                ws_path = ws.path.toString().substring(0, ws.path.toString().length - this.path_to_lib_file.length);
+                wsPath = ws.path.toString().substring(0, ws.path.toString().length - this.pathToLibFile.length);
             }
 
-            return ws_path;
+            return wsPath;
         }
         else {
             return "Error: Could not find a project";
@@ -36,12 +36,12 @@ export class Workspace {
     /**
      * This method reads the project settings and writes it to the properties of the ssh connection.
      * 
-     * @param ws_path The path to the workspace in which the settings file is located.
+     * @param wsPath The path to the workspace in which the settings file is located.
      * @param ssh The `SSH` object that includes the information about the ssh connection.
      * @returns a `SSH` object if settings are written. `Returns` false of type `boolean` if ssh properties are not written because of unusual properties content.
      */
-    public async read_settings_write_ssh_properties(ws_path: string, ssh: SSH): Promise<boolean | SSH> {
-        let project_settings = YAML.parse(fs.readFileSync(ws_path + 'settings.json', 'utf8'));
+    public async readSettingsWriteSshProperties(wsPath: string, ssh: SSH): Promise<boolean | SSH> {
+        let projectSettings = YAML.parse(fs.readFileSync(wsPath + 'settings.json', 'utf8'));
         if (Workspace.password.length == 0) {
             const passwordInput: string = await vscode.window.showInputBox({
                 password: true,
@@ -54,18 +54,18 @@ export class Workspace {
             ssh.password = Workspace.password;
         }
 
-        if (project_settings.usb_c.valueOf() && !project_settings.ethernet.valueOf() && !project_settings.simulator.valueOf()) {
+        if (projecSettings.usbC.valueOf() && !projectSettings.ethernet.valueOf() && !projectSettings.simulator.valueOf()) {
             ssh.ipAdress = "192.168.42.42";
-            ssh.port = project_settings.port;
+            ssh.port = projectSettings.port;
             return ssh;
         }
-        else if (!project_settings.usb_c.valueOf() && project_settings.ethernet.valueOf() && !project_settings.simulator.valueOf()) {
-            ssh.ipAdress = project_settings.ip_adress;
-            ssh.port = project_settings.port;
+        else if (!projectSettings.usbC.valueOf() && projectSettings.ethernet.valueOf() && !projectSettings.simulator.valueOf()) {
+            ssh.ipAdress = projectSettings.ipAdress;
+            ssh.port = projectSettings.port;
             return ssh;
         }
-        else if (!project_settings.usb_c.valueOf() && !project_settings.ethernet.valueOf() && project_settings.simulator.valueOf()) {
-            ssh.ipAdress = project_settings.simulation_backend;
+        else if (!projectSettings.usb_c.valueOf() && !projectSettings.ethernet.valueOf() && projectSettings.simulator.valueOf()) {
+            ssh.ipAdress = projectSettings.simulationBackend;
             ssh.port = 2222;
             return ssh;
         }
@@ -79,18 +79,18 @@ export class Workspace {
     /**
      * Checks if the CC100IO.py libary of the current project is up to date. If not, the user is asked if he wants to update it.
      */
-    public async lib_up_to_date(extension_path: String): Promise<boolean> {
-        let project_path = await this.get_project_path()
-        let lib_path = extension_path + "/res/template/src/lib/CC100IO.py"
-        if (!project_path.startsWith("Error")) {
-            let lib_project_path = project_path + "src/lib/CC100IO.py"
-            let data1 = fs.readFileSync(lib_project_path, "utf-8")
-            let data2 = fs.readFileSync(lib_path.toString(), "utf-8")
+    public async libUpToDate(extensionPath: String): Promise<boolean> {
+        let projectPath = await this.get_project_path()
+        let libPath = extensionPath + "/res/template/src/lib/CC100IO.py"
+        if (!projectPath.startsWith("Error")) {
+            let libProjectPath = projectPath + "src/lib/CC100IO.py"
+            let data1 = fs.readFileSync(libProjectPath, "utf-8")
+            let data2 = fs.readFileSync(libPath.toString(), "utf-8")
             if (data1 != data2) {
                 vscode.window.showInformationMessage("The CC100IO Libary in your current project is not up to date. Would you like to update?", "YES", "NO")
                     .then(answer => {
                         if (answer === "YES") {
-                            fs.copyFileSync(lib_path, lib_project_path)
+                            fs.copyFileSync(libPath, libProjectPath)
                         }
                     })
             }

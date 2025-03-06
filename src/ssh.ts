@@ -27,8 +27,8 @@ export class SSH {
     password: string
   ) {
     this.sshDirPath = path.join(homedir(), ".ssh");
-    this.privateKeyPath = path.join(this.sshDirPath, "id_rsa_cc100");
-    this.publicKeyPath = path.join(this.sshDirPath, "id_rsa_cc100.pub");
+    this.privateKeyPath = path.join(this.sshDirPath, "id_rsa_extension");
+    this.publicKeyPath = path.join(this.sshDirPath, "id_rsa_extension.pub");
     this.ipAdress = ipAdress;
     this.port = port;
     this.username = username;
@@ -45,10 +45,10 @@ export class SSH {
    *
    * @throws {Error} If an error occurs during key generation or file writing, the error is logged and the error message is returned.
    */
-  private async ssh_keygen(): Promise<void> {
+  private async sshKeygen(): Promise<void> {
     console.log("Generating rsa key pair");
 
-    if (!(await this.exists_file(this.sshDirPath))) {
+    if (!(await this.existsFile(this.sshDirPath))) {
       fs.mkdirSync(this.sshDirPath);
     }
 
@@ -82,7 +82,7 @@ export class SSH {
    * @param filePath
    * @returns `true` if the file exists, `false` if it doesn't and a `String` containing an error message if the process failed
    */
-  private async exists_file(filePath: string): Promise<boolean> {
+  private async existsFile(filePath: string): Promise<boolean> {
     try {
       await fs.promises.access(filePath);
       return true;
@@ -96,20 +96,20 @@ export class SSH {
    *
    * @returns a `String` containig an error message if the process fails or times out, otherwise the `value` given returned by the ssh.connect function
    */
-  public async ssh_connection_without_key() {
+  public async sshConnectionWithoutKey() {
     try {
       const timeout = new Promise((resolve) => {
         setTimeout(resolve, 2000, "Error: Timeout");
       });
 
-      let connection_result = this.ssh.connect({
+      let connectionResult = this.ssh.connect({
         host: this.ipAdress,
         port: this.port,
         username: this.username,
         password: this.password,
       });
 
-      return await Promise.race([timeout, connection_result]).then((value) => {
+      return await Promise.race([timeout, connectionResult]).then((value) => {
         return value;
       });
     } catch (error: any) {
@@ -121,20 +121,20 @@ export class SSH {
    * This method establish a SSH connection to the CC100 with the SSH keys
    * @returns a `String` containig an error message if the process fails or times out, otherwise the `value` given returned by the ssh.connect function
    */
-  public async ssh_connection_with_key() {
+  public async sshConnectionWithKey() {
     try {
       const timeout = new Promise((resolve) => {
         setTimeout(resolve, 2000, "Error: Timeout");
       });
 
-      let connection_result = this.ssh.connect({
+      let connectionResult = this.ssh.connect({
         host: this.ipAdress,
         port: this.port,
         username: this.username,
         privateKeyPath: this.privateKeyPath,
       });
 
-      return await Promise.race([timeout, connection_result]).then((value) => {
+      return await Promise.race([timeout, connectionResult]).then((value) => {
         return value;
       });
     } catch (error: any) {
@@ -146,7 +146,7 @@ export class SSH {
    * Checks whether the there is a ssh connection
    * @returns `true` or `false` depending on the connection status
    */
-  public async is_connected() {
+  public async isConnected() {
     return await this.ssh.isConnected();
   }
 
@@ -157,22 +157,22 @@ export class SSH {
    *
    * @returns A `String` that either contains 'Successfully' or an error message
    */
-  public async copy_ssh_key_to_CC100() {
+  public async copySshKeyToCC100() {
     try {
       let cc100AuthorizedKeysPath = "/root/.ssh/authorized_keys";
 
-      const privateKeyExists = await this.exists_file(this.privateKeyPath);
-      const publicKeyExists = await this.exists_file(this.publicKeyPath);
+      const privateKeyExists = await this.existsFile(this.privateKeyPath);
+      const publicKeyExists = await this.existsFile(this.publicKeyPath);
       if (!privateKeyExists || !publicKeyExists) {
-        await this.ssh_keygen();
+        await this.sshKeygen();
       }
 
-      await this.ssh_connection_without_key().then(async () => {
+      await this.sshConnectionWithoutKey().then(async () => {
         await this.ssh.execCommand("mkdir -p /root/.ssh/");
         let publicKeyContent = await fs.readFileSync(this.publicKeyPath);
-        await this.append_to_file(cc100AuthorizedKeysPath, publicKeyContent);
+        await this.appendToFile(cc100AuthorizedKeysPath, publicKeyContent);
         await this.ssh.execCommand(`chmod 600 ${this.publicKeyPath}`);
-        await this.disconnect_ssh();
+        await this.disconnectSsh();
       });
       return "Successfully";
     } catch (error: any) {
@@ -195,7 +195,7 @@ export class SSH {
    *
    * @returns A `String` that either contains 'Successfully' or an error message
    */
-  public async copy_file(originPath: string, destinationPath: string) {
+  public async copyFile(originPath: string, destinationPath: string) {
     try {
       return await this.ssh
         .execCommand("cp " + originPath + " " + destinationPath)
@@ -222,7 +222,7 @@ export class SSH {
    *
    * @returns A `String` that contains an error message if the process failed
    */
-  public async create_file(path: string, data: string) {
+  public async createFile(path: string, data: string) {
     try {
       const command = `echo -e "${data}" > ${path}`;
       return await this.ssh.execCommand(command).then(function (result: any) {
@@ -248,7 +248,7 @@ export class SSH {
    *
    * @returns When the writing process is done
    */
-  public async append_to_file(path: string, data: string) {
+  public async appendToFile(path: string, data: string) {
     try {
       const command = `echo "${data}" >> ${path}`;
       return await this.ssh.execCommand(command).then(function (result: any) {
@@ -266,7 +266,7 @@ export class SSH {
    *
    * @returns 'Success' or the 'error' message in a `String`
    */
-  public async turn_off_run_led() {
+  public async turnOffRunLed() {
     try {
       await this.ssh.exec("echo 0 >> /dev/leds/run-green/brightness", [""], {
         cwd: "/.",
@@ -289,7 +289,7 @@ export class SSH {
    *
    * @returns the complete PEA and PAA from the CC100, the sequence is: `DI`, `DO`, `AI1`, `AI2`, `AO1`, `AO2`, `PT1`, `PT2`, `SYS LED green`, `SYS LED red`, `RUN LED green`, `RUN LED red`, `USR LED green`, `USR LED red`, `LNK ACT1 LED`, `LNK ACT2 LED`, `µSD LED`
    */
-  public async read_CC100() {
+  public async readCC100() {
     try {
       return await this.ssh
         .exec(
@@ -328,7 +328,7 @@ export class SSH {
    *
    * @returns A decimal number which represents the outputs in binary format when the writing process is completed or a `String` containing an error
    */
-  public async digital_write(status: number) {
+  public async digitalWrite(status: number) {
     const path = "/sys/kernel/dout_drv/DOUT_DATA";
 
     try {
@@ -352,7 +352,7 @@ export class SSH {
    *
    * @returns a table containing the calibration data for the analog ports or a `String` containing an error
    */
-  public async analog_calib_data() {
+  public async analogCalibData() {
     try {
       return await this.ssh
         .exec("cat /etc/calib", [""], {
@@ -379,7 +379,7 @@ export class SSH {
    *
    * @returns A 12 bit value which represents the output voltage from the addressed pin or a `String` containing an error
    */
-  public async analog_write(pin: number, value: number) {
+  public async analogWrite(pin: number, value: number) {
     const dir = "/sys/bus/iio/devices/";
 
     try {
@@ -428,7 +428,7 @@ export class SSH {
    *
    * @returns A `String`containig 'Success!' or an error message
    */
-  public async setup_serial_interface() {
+  public async setupSerialInterface() {
     try {
       return await this.ssh
         .exec(
@@ -449,7 +449,7 @@ export class SSH {
    *
    * @returns the value returned by ssh2.connect
    */
-  public async ssh2_connect() {
+  public async ssh2Connect() {
     return await this.ssh2.connect({
       host: this.ipAdress,
       port: this.port,
@@ -463,7 +463,7 @@ export class SSH {
    *
    * The received data is in the Buffer variable
    */
-  public async serial_read(callback: (dataBuffer: Buffer) => void) {
+  public async serialRead(callback: (dataBuffer: Buffer) => void) {
     await this.ssh2.on("ready", () => {
       this.ssh2.shell((err: any, stream: any) => {
         if (err) throw err;
@@ -487,7 +487,7 @@ export class SSH {
    *
    * @returns when disconnected
    */
-  public async ssh2_disconnect() {
+  public async ssh2Disconnect() {
     return await this.ssh2.end();
   }
 
@@ -502,7 +502,7 @@ export class SSH {
    *
    * @returns the result of the executed command or a `String` containig an error message
    */
-  public async serial_write(serialData: string) {
+  public async serialWrite(serialData: string) {
     try {
       await this.ssh
         .exec("echo " + '"' + serialData + '"' + " >> /dev/ttySTM1", [""], {
@@ -529,7 +529,7 @@ export class SSH {
    *
    * @returns A `String` containig a list of files and folders at the specified path or an error message
    */
-  public async list_content_dir(path: string): Promise<String> {
+  public async listContentDir(path: string): Promise<String> {
     try {
       return await this.ssh
         .exec("ls " + path, [""], {
@@ -561,7 +561,7 @@ export class SSH {
    *
    * @returns A `String` containing either 'Successful' or an error message
    */
-  public async transfer_directory(originPath: string, destinationPath: string) {
+  public async transferDirectory(originPath: string, destinationPath: string) {
     try {
       return await this.ssh
         .putDirectory(originPath, destinationPath)
@@ -581,7 +581,7 @@ export class SSH {
     }
   }
 
-  public async get_directory(localDirectory: string, remoteDirectory: string) {
+  public async getDirectory(localDirectory: string, remoteDirectory: string) {
     try {
       return await this.ssh
         .getDirectory(localDirectory, remoteDirectory)
@@ -608,7 +608,7 @@ export class SSH {
    *
    * @returns A `String`containing either 'Successfully' or an error message
    */
-  public async delete_files(path: string) {
+  public async deleteFiles(path: string) {
     try {
       await this.ssh.execCommand("rm -r " + path);
       return "Successfully";
@@ -622,7 +622,7 @@ export class SSH {
    *
    * @returns A `String` that either contains the python version on the CC100 or an error message
    */
-  public async get_python_version() {
+  public async getPythonVersion() {
     try {
       return await this.ssh
         .exec("python3 -V", [""], {
@@ -647,7 +647,7 @@ export class SSH {
    *
    * @returns A `String` containing an error message if the process fails
    */
-  public async install_package(opkgPackage: string) {
+  public async installPackage(opkgPackage: string) {
     try {
       return await this.ssh
         .exec("opkg install " + opkgPackage, [""], {
@@ -672,7 +672,7 @@ export class SSH {
    *
    * @returns A `String` containing an error message if the process fails
    */
-  public async start_python_script(path: string) {
+  public async startPythonScript(path: string) {
     try {
       return await this.ssh
         .exec("python3 " + path + " &", [""], {
@@ -695,7 +695,7 @@ export class SSH {
    *
    * @returns A `String` that either contains 'Successfully' or an error message
    */
-  public async make_file_to_executable_file(filename: string) {
+  public async makeFileToExecutableFile(filename: string) {
     try {
       return await this.ssh
         .exec("chmod +x /etc/init.d/" + filename, [""], {
@@ -715,7 +715,7 @@ export class SSH {
    * @param filename the file for which the symbolic link is created
    * @returns A `String` that either contains 'Successfully' or an error message
    */
-  public async create_symlink(filename: string) {
+  public async createSymlink(filename: string) {
     try {
       return await this.ssh
         .exec("ln -s /etc/init.d/" + filename + " /etc/rc.d/", [""], {
@@ -734,7 +734,7 @@ export class SSH {
    * Creates the bootapplication
    * @returns A `String` that either contains 'Successfully' or an error message
    */
-  public async put_init() {
+  public async putInit() {
     try {
       return await this.ssh
         .execCommand(
@@ -752,9 +752,9 @@ export class SSH {
    * Changes the password
    *@returns A `String` that either contains 'Successfully' or an error message
    */
-  public async change_password() {
+  public async changePassword() {
     try {
-      await this.ssh_connection_without_key().then(async () => {
+      await this.sshConnectionWithoutKey().then(async () => {
         return await this.ssh
           .execCommand(
             "echo -e '" + this.password + "\n" + this.password + "' | passwd"
@@ -774,7 +774,7 @@ export class SSH {
    *
    * @returns Either a `String` containing an error message or the result returned by the ssh.exec() function
    */
-  public async kill_all_python_scripts() {
+  public async killAllPythonScripts() {
     try {
       return await this.ssh
         .exec("killall python3", [""], {
@@ -799,7 +799,7 @@ export class SSH {
    *
    * @returns the `state` of the slideswitch, can be run or stop or a `String` containing an error message
    */
-  public async read_switch_status(callback: (data: Buffer[]) => void) {
+  public async readSwitchStatus(callback: (data: Buffer[]) => void) {
     try {
       this.ssh.exec("cat /dev/input/event0", [""], {
         cwd: "",
@@ -830,7 +830,7 @@ export class SSH {
    * @param callback A Function that will be executed if the log file changes content.
    * @returns a `Buffer` that contains the content of the file or a `String` containing an error message
    */
-  public async read_log(callback: (data: Buffer) => void) {
+  public async readLog(callback: (data: Buffer) => void) {
     try {
       await this.ssh.exec(
         "tail -F /home/user/python_bootapplication/errorLog",
@@ -855,7 +855,7 @@ export class SSH {
    *
    * @returns Either a `String` containing an error message or the result returned by the ssh.exec() function
    */
-  public async kill_all_tails() {
+  public async killAllTails() {
     try {
       return await this.ssh
         .exec("killall tail", [""], {
@@ -876,7 +876,7 @@ export class SSH {
    *
    * @returns Either a `String` containing an error message or the result returned by the ssh.exec() function
    */
-  public async kill_all_cat() {
+  public async killAllCat() {
     try {
       return await this.ssh
         .execCommand("killall cat")
@@ -894,7 +894,7 @@ export class SSH {
    * @param path the absolute path to the file
    * @returns A `String` containing the content of the file
    */
-  public async read_file_content(path: string) {
+  public async readFileContent(path: string) {
     return await this.ssh
       .exec("cat " + path, [""], {
         cwd: "/.",
@@ -911,7 +911,7 @@ export class SSH {
    *
    * @returns Either a `String` containing an error message or the result returned by the ssh.dispose() function
    */
-  public async disconnect_ssh() {
+  public async disconnectSsh() {
     try {
       return await this.ssh.dispose();
     } catch (error: any) {
@@ -923,7 +923,7 @@ export class SSH {
    * @param timestamp A Timestamp with the format MMDDHHmmYYYY.ss
    * @returns Either a `String` containing an error message or the result returned by the ssh.exec() function
    */
-  public async update_time(timestamp: any) {
+  public async updateTime(timestamp: any) {
     try {
       return await this.ssh
         .exec("date " + timestamp, [""], {

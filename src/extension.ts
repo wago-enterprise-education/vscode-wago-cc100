@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { custom_webview_provider_menu } from './extension/custom_webview_menu';
-import { webview_IOCheck } from './webview_IOCheck';
+import { webview_IOCheck } from './webviewIoCheck';
 import { YamlCommands } from './extension/yaml';
 import { ControllerProvider } from './extension/view';
 import { Command } from './extension/command';
@@ -18,12 +18,12 @@ export function activate(context: vscode.ExtensionContext) {
 	verifyProject();
 
 	//create IO-Check
-	const webview_IO = new webview_IOCheck(context);
+	const webviewIo = new webviewIoCheck(context);
 
 	//show menu
-	const webview_provider_menu = new custom_webview_provider_menu(context.extensionUri, webview_IO);
-	webview_provider_menu.register_commands(context);
-	webview_provider_menu.create_status_bar(context);
+	const webviewProviderMenu = new customWebviewProviderMenu(context.extensionUri, webview_IO);
+	webviewProviderMenu.registerCommands(context);
+	webviewProviderMenu.createStatusBar(context);
 
 	/*//register yaml commands
 	const test = new YamlCommands();

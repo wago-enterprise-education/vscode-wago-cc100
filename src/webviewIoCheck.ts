@@ -8,18 +8,18 @@ import sanitizeHtml from 'sanitize-html';
 
 let ssh = new SSH('192.168.42.42', 22, 'root', '');
 
-export class webview_IOCheck {
-    private window_closed: boolean = false
+export class webviewIoCheck {
+    private windowClosed: boolean = false
     private test: boolean = false;
     private Workspace = new Workspace();
     private Connection = new Connection();
 
-    public can_load_panel: boolean = true;
+    public canLoadPanel: boolean = true;
     public ioCheckPanel: vscode.WebviewPanel | undefined = undefined;
     private context: vscode.ExtensionContext;
-    private readonly path_to_lib_file: string = 'src/lib/CC100IO.py';
-    private ws_path: string = '';
-    private connection_lost: boolean = false;
+    private readonly pathToLibFile: string = 'src/lib/CC100IO.py';
+    private wsPath: string = '';
+    private connectionLost: boolean = false;
     calibData: any[][] = [['PT1', 'PT2', 'AI1', 'AI2', 'AO1', 'AO2'],
     ['9663', '1000', '40753', '3000'],
     ['9551', '1000', '40571', '3000'],
@@ -27,16 +27,16 @@ export class webview_IOCheck {
     ['14106', '2494', '41873', '7492'],
     ['1050', '350', '8978', '3000'],
     ['1044', '350', '8970', '3000']];
-    private switch_status: string
+    private switchStatus: string
 
     constructor(private con: vscode.ExtensionContext) {
         this.context = con;
         this.calibData = [];
-        this.switch_status = '';
-        this.create_new_webview();
+        this.switchStatus = '';
+        this.createNewWebview();
     }
 
-    private create_new_webview() {
+    private createNewWebview() {
         this.context.subscriptions.push(
 
             // The command has been defined in the package.json file
@@ -46,11 +46,11 @@ export class webview_IOCheck {
             vscode.commands.registerCommand('vscode-wago-cc100.iocheck', async () => {
                 // The code you place here will be executed every time your command is executed
                 let ws = (await vscode.workspace.findFiles('*/*/CC100IO.py', null, 1)).at(0);
-                this.ws_path = await this.Workspace.get_project_path();
+                this.wsPath = await this.Workspace.getProjectPath();
                 //Check if a CC100 project is opened in the explorer
                 if (ws !== undefined) {
 
-                    await this.Workspace.read_settings_write_ssh_properties(this.ws_path, ssh).then(result => {
+                    await this.Workspace.readSettingsWriteSshProperties(this.wsPath, ssh).then(result => {
                         if (typeof result !== 'boolean') {
                             ssh = result;
                         }
@@ -60,7 +60,7 @@ export class webview_IOCheck {
                     });
                 }
                 else {
-                    vscode.window.showErrorMessage(this.ws_path);
+                    vscode.window.showErrorMessage(this.wsPath);
                     return;
                 }
 
@@ -70,8 +70,8 @@ export class webview_IOCheck {
                     : undefined;
 
                 if (this.ioCheckPanel) {
-                    if (!await ssh.is_connected()) {
-                        if (!await this.Connection.check_connection(ssh)) {
+                    if (!await ssh.isConnected()) {
+                        if (!await this.Connection.checkConnection(ssh)) {
                             console.log("IO Check exists")
                             return;
                         }
@@ -79,10 +79,10 @@ export class webview_IOCheck {
                     // If we already have a panel, show it in the target column
                     this.ioCheckPanel.reveal(columnToShowIn);
                 } else {
-                    this.can_load_panel = false;
+                    this.canLoadPanel = false;
                     // create IO-Check Webview panel 
-                    if (!await this.Connection.check_connection(ssh)) {
-                        this.can_load_panel = true;
+                    if (!await this.Connection.checkConnection(ssh)) {
+                        this.canLoadPanel = true;
                         return;
                     }
 
@@ -99,7 +99,7 @@ export class webview_IOCheck {
                         async message => {
                             switch (message.command) {
                                 case 'windowLoaded': {
-                                    this.can_load_panel = true;
+                                    this.canLoadPanel = true;
                                     break;
                                 }
                             }
@@ -113,18 +113,18 @@ export class webview_IOCheck {
                     this.ioCheckPanel.onDidDispose(() => {
                         // this.test = false;
                         this.ioCheckPanel = undefined;
-                        ssh.disconnect_ssh();
+                        ssh.disconnectSsh();
                         this.window_closed = true
-                        ssh.ssh2_disconnect();
+                        ssh.ssh2Disconnect();
 
                     },
                         null,
                         this.context.subscriptions
                     );
-                    ssh.ssh_connection_with_key().then(() => {
+                    ssh.sshConnectionWithKey().then(() => {
                         if (this.ioCheckPanel) {
                             try {
-                                this.update_io_check();
+                                this.updateIoCheck();
                             }
                             catch (error: any) {
                                 this.ioCheckPanel.dispose();
@@ -142,7 +142,7 @@ export class webview_IOCheck {
      * @param path Relative path of the file on your device
      * @returns The given path as webview path
      */
-    public get_path(path: any) {
+    public getPath(path: any) {
         // Get path to resource on disk
         const onDiskPath = vscode.Uri.joinPath(this.context.extensionUri, path);
         var webviewPath = vscode.Uri.joinPath(this.context.extensionUri);
@@ -158,50 +158,50 @@ export class webview_IOCheck {
      * @returns The modified HTML file as string
      */
     public getIOCheckWebviewContent() {
-        var pathHTML = path.join(this.context.extensionPath, 'res/webviews/io_check.html');
+        var pathHTML = path.join(this.context.extensionPath, 'res/webviews/ioCheck.html');
         var html = fs.readFileSync(pathHTML).toString();
 
-        const pathCC100 = this.get_path('res/images/cc100_neu11.png').toString();
-        const pathCC100Schalter = this.get_path('res/images/cc100_schalter.png').toString();
-        const pathStyle1 = this.get_path('res/webviews/io_check.css').toString();
-        const pathScript = this.get_path('out/ioCheck.js').toString();
-        const pathWagoimg = this.get_path('res/images/wago-icons_rgb_temperature_outline_green.svg').toString();
-        const pathSerialSVG = this.get_path('res/images/wago-icons_rgb_connectors_outline_green.svg').toString();
-        const pathWagoimg3 = this.get_path('res/images/WagoW.png').toString();
-        const pathWagoimg4 = this.get_path('res/images/wago-icons_rgb_export_outline_green.svg').toString();
-        const pathWagoimg5 = this.get_path('res/images/wago-icons_rgb_import_outline_green.svg').toString();
-        const pathChevron = this.get_path('res/images/wago-icons_rgb_chevron-right_outline_green.svg').toString();
-        const path_cycle_time = this.get_path('res/images/wago-icons_rgb_future_outline_green.svg').toString();
+        const pathCC100 = this.getPath('res/images/cc100Neu11.png').toString();
+        const pathCC100Schalter = this.getPath('res/images/cc100Schalter.png').toString();
+        const pathStyle1 = this.getPath('res/webviews/ioCheck.css').toString();
+        const pathScript = this.getPath('out/ioCheck.js').toString();
+        const pathWagoimg = this.getPath('res/images/wago-iconsRgbTemperatureOutlineGreen.svg').toString();
+        const pathSerialSVG = this.getPath('res/images/wago-iconsRgbConnectorsOutlineGreen.svg').toString();
+        const pathWagoimg3 = this.getPath('res/images/WagoW.png').toString();
+        const pathWagoimg4 = this.getPath('res/images/wago-iconsRgbExportOutlineGreen.svg').toString();
+        const pathWagoimg5 = this.getPath('res/images/wago-iconsRgbImportOutlineGreen.svg').toString();
+        const pathChevron = this.getPath('res/images/wago-iconsRgbChevron-rightOutlineGreen.svg').toString();
+        const pathCycleTime = this.getPath('res/images/wago-iconsRgbFutureOutlineGreen.svg').toString();
 
-        html = html.replace("../images/cc100_neu11.png", pathCC100.toString());
-        html = html.replace("../images/cc100_schalter.png", pathCC100Schalter.toString());
-        html = html.replace("./io_check.css", pathStyle1.toString());
+        html = html.replace("../images/cc100Neu11.png", pathCC100.toString());
+        html = html.replace("../images/cc100Schalter.png", pathCC100Schalter.toString());
+        html = html.replace("./ioCheck.css", pathStyle1.toString());
         html = html.replace("../ioCheck.js", pathScript.toString());
-        html = html.replace("res/images/wago-icons_rgb_temperature_outline_green.svg", pathWagoimg.toString());
-        html = html.replace("res/images/wago-icons_rgb_connectors_outline_green.svg", pathSerialSVG.toString());
+        html = html.replace("res/images/wago-iconsRgbTemperatureOutlineGreen.svg", pathWagoimg.toString());
+        html = html.replace("res/images/wago-iconsRgbConnectorsOutlineGreen.svg", pathSerialSVG.toString());
         html = html.replace("../images/WagoW.png", pathWagoimg3.toString());
-        html = html.replace("res/images/wago-icons_rgb_export_outline_green.svg", pathWagoimg4.toString());
-        html = html.replace("res/images/wago-icons_rgb_import_outline_green.svg", pathWagoimg5.toString());
-        html = html.replaceAll("res/images/wago-icons_rgb_chevron-right_outline_green.svg", pathChevron.toString())
-        html = html.replace('res/images/wago-icons_rgb_future_outline_green.svg', path_cycle_time.toString())
+        html = html.replace("res/images/wago-iconsRgbExportOutlineGreen.svg", pathWagoimg4.toString());
+        html = html.replace("res/images/wago-iconsRgbImportOutlineGreen.svg", pathWagoimg5.toString());
+        html = html.replaceAll("res/images/wago-iconsRgbChevron-rightOutlineGreen.svg", pathChevron.toString())
+        html = html.replace('res/images/wago-iconsRgbFutureOutlineGreen.svg', pathCycleTime.toString())
         return html;
     }
 
     /**
      * This method updates the UI via POST-Messages and the CC100 via SSH
      */
-    async update_io_check() {
+    async updateIoCheck() {
         let result: string
 
 
         if (this.ioCheckPanel) {
-            await ssh.analog_calib_data().then((tmp: string) => {
-                this.convert_analog_data(tmp);
+            await ssh.analogCalibData().then((tmp: string) => {
+                this.convertAnalogData(tmp);
             });
 
-            await this.start_event_for_serial_communication();
-            await this.start_event_for_switch();
-            await ssh.setup_serial_interface();
+            await this.startEventForSerialCommunication();
+            await this.startEventForSwitch();
+            await ssh.setupSerialInterface();
             this.ioCheckPanel.webview.postMessage({
                 command: 'start'
             })
@@ -210,12 +210,12 @@ export class webview_IOCheck {
 
             this.ioCheckPanel.webview.onDidReceiveMessage(
                 async message => {
-                    if (this.connection_lost) {
+                    if (this.connectionLost) {
                         this.ioCheckPanel?.webview.postMessage({
                             command: 'connection_lost'
                         })
                         vscode.window.showErrorMessage('Connection lost')
-                        await this.try_to_connect()
+                        await this.tryToConnect()
                         return
                     }
                     switch (message.command) {
@@ -224,7 +224,7 @@ export class webview_IOCheck {
                             return;
                         }
                         case 'readData': {
-                            await ssh.read_CC100().then((data: any) => {
+                            await ssh.readCC100().then((data: any) => {
                                 /**
                                  * `[0]` => digital inputs
                                  * `[1]` => digital outputs
@@ -245,30 +245,30 @@ export class webview_IOCheck {
                                  * `[16]` => LNK ACT2 LED
                                  */
                                 result = data;
-                                let data_array = this.split_data_to_string_array(data);
-                                data_array[0] = this.convert_digital(Number(data_array[0]), 'IN').toString(); // DI
-                                data_array[1] = this.convert_digital(Number(data_array[1]), 'OUT').toString(); // DO
-                                data_array[2] = this.calc_calibrated_values(Number(data_array[2]), this.calibData[3]).toString(); // AI1
-                                data_array[3] = this.calc_calibrated_values(Number(data_array[3]), this.calibData[4]).toString(); // AI2
-                                data_array[4] = this.calc_calibrated_ao_value(Number(data_array[4]), this.calibData[5]).toString(); // AO1
-                                data_array[5] = this.calc_calibrated_ao_value(Number(data_array[5]), this.calibData[6]).toString(); // AO2
-                                data_array[6] = this.calc_celsius(this.calc_calibrated_values(Number(data_array[6]), this.calibData[1])); // PT1
-                                data_array[7] = this.calc_celsius(this.calc_calibrated_values(Number(data_array[7]), this.calibData[2])); // PT2
+                                let dataArray = this.splitDataToStringArray(data);
+                                dataArray[0] = this.convertDigital(Number(dataArray[0]), 'IN').toString(); // DI
+                                dataArray[1] = this.convertDigital(Number(dataArray[1]), 'OUT').toString(); // DO
+                                dataArray[2] = this.calcCalibrated_values(Number(dataArray[2]), this.calibData[3]).toString(); // AI1
+                                dataArray[3] = this.calcCalibrated_values(Number(dataArray[3]), this.calibData[4]).toString(); // AI2
+                                dataArray[4] = this.calcCalibrated_ao_value(Number(dataArray[4]), this.calibData[5]).toString(); // AO1
+                                dataArray[5] = this.calcCalibrated_ao_value(Number(dataArray[5]), this.calibData[6]).toString(); // AO2
+                                dataArray[6] = this.calcCelsius(this.calcCalibrated_values(Number(dataArray[6]), this.calibData[1])); // PT1
+                                dataArray[7] = this.calcCelsius(this.calcCalibrated_values(Number(dataArray[7]), this.calibData[2])); // PT2
                                 this.ioCheckPanel?.webview.postMessage({
                                     command: 'readData',
-                                    values: data_array
+                                    values: dataArray
                                 })
                             })
 
                             if (result.includes('Error')) {
-                                this.connection_lost = true;
+                                this.connectionLost = true;
                             }
                             break;
                         }
                         case 'readSwitch': {
                             this.ioCheckPanel?.webview.postMessage({
                                 command: 'readSwitch',
-                                value: this.switch_status
+                                value: this.switchStatus
                             })
                             break;
                         }
@@ -295,8 +295,8 @@ export class webview_IOCheck {
                         case 'analogWrite': {
                             console.log('AnalogWrite Value: ' + message.value);
                             console.log('AnalogWrite Pin: ' + message.pin);
-                            var value = this.calc_calibrated_values(message.value, this.calibData[message.pin + 4]);
-                            await ssh.analog_write(message.pin, value).then(() => {
+                            var value = this.calcCalibratedValues(message.value, this.calibData[message.pin + 4]);
+                            await ssh.analogWrite(message.pin, value).then(() => {
                                 this.ioCheckPanel?.webview.postMessage({
                                     command: 'buttonClick',
                                     pin: message.pin
@@ -305,16 +305,16 @@ export class webview_IOCheck {
                             break;
                         }
                         case 'serialWrite': {
-                            await ssh.ssh2_disconnect();
+                            await ssh.ssh2Disconnect();
                             let text = sanitizeHtml(message.text, { allowedTags: [], allowedAttributes: {} });
-                            await ssh.serial_write(text).then(() => {
+                            await ssh.serialWrite(text).then(() => {
                                 this.ioCheckPanel?.webview.postMessage({
                                     command: 'serialWrite',
                                     text: text
                                 })
                             });
 
-                            await ssh.ssh2_connect()
+                            await ssh.ssh2Connect()
                             break;
                         }
                     }
@@ -325,7 +325,7 @@ export class webview_IOCheck {
         }
     }
 
-    split_data_to_string_array(data: string) {
+    splitDataToStringArray(data: string) {
         return data.split('\n');
     }
 
@@ -333,7 +333,7 @@ export class webview_IOCheck {
      * This method converts the analog data string to an array 
      * @param analogData The analog data string
      */
-    convert_analog_data(analogData: string) {
+    convertAnalogData(analogData: string) {
         if (!analogData.includes('*')) {
             const einD1 = analogData.split('\n');
             for (let index = 0; index < einD1.length; index++) {
@@ -344,42 +344,42 @@ export class webview_IOCheck {
 
     /**
      * This method calculates the calibrated values of AI, PT and AO(millie Volt to calibrated)
-     * @param val_uncal The uncalibrated values of AI, PT and AO
+     * @param valUncal The uncalibrated values of AI, PT and AO
      * @param calib The calibrated values for AI, PT and AO
      * @returns The calibrated values of AI, PT and AO
      */
-    calc_calibrated_values(val_uncal: number, calib: string[]) {
+    calcCalibratedValues(valUncal: number, calib: string[]) {
         var x1 = parseInt(calib[0]);
         var y1 = parseInt(calib[1]);
         var x2 = parseInt(calib[2]);
         var y2 = parseInt(calib[3]);
 
-        var val_cal = (y2 - y1) * (val_uncal - x1);
-        val_cal = val_cal / (x2 - x1);
-        val_cal = val_cal + y1;
+        var valCal = (y2 - y1) * (valUncal - x1);
+        valCal = valCal / (x2 - x1);
+        valCal = valCal + y1;
 
-        let result = parseInt(val_cal.toString());
+        let result = parseInt(valCal.toString());
 
         return (result < 0 ? 0 : result);
     }
 
     /**
      * This method calculates the calibrated values of AO(calibrated to millie Volt)
-     * @param val_uncal The uncalibrated value of AO
+     * @param valUncal The uncalibrated value of AO
      * @param calib The calibrated value for AO
      * @returns The calibrated value of AO
      */
-    calc_calibrated_ao_value(val_uncal: number, calib: string[]) {
+    calcCalibratedAoValue(valUncal: number, calib: string[]) {
         var x1 = parseInt(calib[0]);
         var y1 = parseInt(calib[1]);
         var x2 = parseInt(calib[2]);
         var y2 = parseInt(calib[3]);
 
-        var val_cal = (x2 - x1) * (val_uncal - y1);
-        val_cal = val_cal / (y2 - y1);
-        val_cal = val_cal + x1;
-        this.convert_digital(1.0, 'IN')
-        let result = parseInt(val_cal.toString());
+        var valCal = (x2 - x1) * (valUncal - y1);
+        valCal = valCal / (y2 - y1);
+        valCal = valCal + x1;
+        this.convertDigital(1.0, 'IN')
+        let result = parseInt(valCal.toString());
         return (result < 0 ? 0 : result);
     }
     /**
@@ -388,7 +388,7 @@ export class webview_IOCheck {
      * @param port either 'IN' or 'OUT'
      * @returns the binary array describing the given number
      */
-    convert_digital(value: number, port: string) {
+    convertDigital(value: number, port: string) {
         var values;
         if (port == 'IN') {
             values = [0, 0, 0, 0, 0, 0, 0, 0];
@@ -406,20 +406,20 @@ export class webview_IOCheck {
      * This method calculates the temperature value out of the given resistance value of the PT1000
      * @param resistance The calibrated value of the PT [Ohm]
      */
-    calc_celsius(resistance: number) {
+    calcCelsius(resistance: number) {
 
         // resistance value at 0°C [Ohm]
         const r0 = 1000;
         // temperature coefficient [ppm/K]
         const tk = 0.00358;
         // temperature value (rounded to 2 digits after comma) [°C]
-        var val_temperature = (resistance - r0) / (r0 * tk);
+        var valTemperature = (resistance - r0) / (r0 * tk);
 
-        if (val_temperature > 850.00) {
-            val_temperature = 0.00;
+        if (valTemperature > 850.00) {
+            valTemperature = 0.00;
         }
 
-        return val_temperature.toFixed(2);
+        return valTemperature.toFixed(2);
     }
 
     /**
@@ -427,7 +427,7 @@ export class webview_IOCheck {
      * @param data the string containing the data from serial communication
      * @returns the data from serial communication without any additional data
      */
-    remove_additional_data(data: string) {
+    removeAdditionalData(data: string) {
         const trash1 = '[00;32mWAGO Linux Terminal'
         const trash2 = 'root@CC100-'
         const trash21 = ':~'
@@ -456,20 +456,20 @@ export class webview_IOCheck {
      * 
      * @returns void if a connection can be established
      */
-    private async try_to_connect() {
-        this.window_closed = false;
-        let connection_succesful: boolean = false
-        let result_connection: string
+    private async tryToConnect() {
+        this.windowClosed = false;
+        let connectionSuccesful: boolean = false
+        let resultConnection: string
 
-        while (!connection_succesful) {
-            result_connection = (await ssh.ssh_connection_without_key()).toString()
-            console.log(result_connection)
-            if (!result_connection.startsWith("Error")) {
-                connection_succesful = true
-                this.connection_lost = false
-                await this.start_event_for_serial_communication();
-                await this.start_event_for_switch();
-                await ssh.setup_serial_interface();
+        while (!connectionSuccesful) {
+            resultConnection = (await ssh.sshConnectionWithoutKey()).toString()
+            console.log(resultConnection)
+            if (!resultConnection.startsWith("Error")) {
+                connectionSuccesful = true
+                this.connectionLost = false
+                await this.startEventForSerialCommunication();
+                await this.startEventForSwitch();
+                await ssh.setupSerialInterface();
                 this.ioCheckPanel?.webview.postMessage({
                     command: 'start'
                 })
@@ -477,7 +477,7 @@ export class webview_IOCheck {
                 return
             }
 
-            await this.Workspace.read_settings_write_ssh_properties(this.ws_path, ssh).then(result => {
+            await this.Workspace.readSettingsWriteSshProperties(this.wsPath, ssh).then(result => {
                 if (typeof result !== 'boolean') {
                     ssh = result;
                 }
@@ -486,19 +486,19 @@ export class webview_IOCheck {
                 }
             });
 
-            if (this.window_closed) {
-                this.connection_lost = false
+            if (this.windowClosed) {
+                this.connectionLost = false
                 return
             }
         }
     }
 
-    private async start_event_for_serial_communication() {
+    private async startEventForSerialCommunication() {
         let data;
-        await ssh.kill_all_cat();
-        await ssh.ssh2_connect()
-        await ssh.serial_read((rxData: Buffer) => {
-            data = this.remove_additional_data(rxData.toString())
+        await ssh.killAllCat();
+        await ssh.ssh2Connect()
+        await ssh.serialRead((rxData: Buffer) => {
+            data = this.removeAdditionalData(rxData.toString())
             this.ioCheckPanel?.webview.postMessage({
                 command: 'serialRead',
                 text: data.replace(/(?:\r\n|\r|\n)/g, '')
@@ -506,17 +506,17 @@ export class webview_IOCheck {
         });
     }
 
-    private async start_event_for_switch() {
-        ssh.read_switch_status((switch1: Buffer[]) => {
-            if (switch1[10].toString() != this.switch_status) {
-                this.switch_status = switch1[10].toString()
+    private async startEventForSwitch() {
+        ssh.readSwitchStatus((switch1: Buffer[]) => {
+            if (switch1[10].toString() != this.switchStatus) {
+                this.switchStatus = switch1[10].toString()
             }
         }).then((switch2: any) => {
             if (switch2 == 'run') {
-                this.switch_status = '1'
+                this.switchStatus = '1'
             }
             else {
-                this.switch_status = '2'
+                this.switchStatus = '2'
             }
         })
     }
