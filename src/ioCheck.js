@@ -21,16 +21,16 @@ const black = '#000000';
 const body = document.getElementById('body');
 
 const elemdo = document.getElementsByClassName('btnDo');
-const ledDo = document.getElementsByClassName('LedDO');
+const ledDo = document.getElementsByClassName('ledDO');
 
 const elemDi = document.getElementsByClassName('btnDi');
-const LedDi = document.getElementsByClassName('LedDi');
+const ledDi = document.getElementsByClassName('ledDi');
 
 const elemPtAi = document.getElementsByClassName('analogDisplay');
 
 var elemSwitch = document.getElementById('switch');
 
-const elem_AO_value = document.getElementsByClassName('textInput');
+const elemAoValue = document.getElementsByClassName('textInput');
 var elemAo1Val = document.getElementById('valAo1');
 var elemAo2Val = document.getElementById('valAo2');
 var elemAo1Write = document.getElementById('btnAo1Write');
@@ -53,12 +53,12 @@ var ledRun = document.getElementById('ledRun');
 var ledUsr = document.getElementById('ledUrs');
 var ledLnkAct1 = document.getElementById('ledLact1');
 var ledLnkAct2 = document.getElementById('ledLact2');
-var LED_µSd = document.getElementById('ledMSd');
+var LEDµSd = document.getElementById('ledMSd');
 
 var refrashRate = document.getElementById('refrashRate'); 
 
 // Set Event Listener
-// POST-Event for the communication to the `webview_IOCheck.ts` file
+// POST-Event for the communication to the `webviewIoCheck.ts` file
 window.addEventListener('message', event => {
 
     // The JSON data our extension sent
@@ -76,7 +76,7 @@ window.addEventListener('message', event => {
             break;
         }
         case 'readData': {
-            updateRefrash_Rate();
+            updateRefrashRate();
             updateEverything(message.values);
             readSwitch();
             setTimeout(function() {console.log('Delay');}, 5000);
@@ -195,7 +195,7 @@ for (let index = 0; index < elemDo.length; index++) {
 // SSH functions
 
 /**
- * This function sends a POST-Message to the file `webview_IOCheck.ts` to read all ports from the CC100 with one SSH command
+ * This function sends a POST-Message to the file `webviewIoCheck.ts` to read all ports from the CC100 with one SSH command
  */
 async function readData() {
     vscode.postMessage({
@@ -204,7 +204,7 @@ async function readData() {
 }
 
 /**
- * This method sends a POST-Message to the file `webview_IOCheck.ts` to write the digital outputs
+ * This method sends a POST-Message to the file `webviewIoCheck.ts` to write the digital outputs
  * @param value A decimal number to write, which represents the ports in binary format
  */
 function digitalWrite(value) {
@@ -215,7 +215,7 @@ function digitalWrite(value) {
 }
 
 /**
- * This method sends a POST-Message to the file `webview_IOCheck.ts` for all Click-Events
+ * This method sends a POST-Message to the file `webviewIoCheck.ts` for all Click-Events
  */
 async function buttonClick() {
     vscode.postMessage({
@@ -224,7 +224,7 @@ async function buttonClick() {
 }
 
 /**
- * This method sends a POST-Message to the file `webview_IOCheck.ts` to read incoming messages of the RS-485
+ * This method sends a POST-Message to the file `webviewIoCheck.ts` to read incoming messages of the RS-485
  */
 async function serialRead() {
     vscode.postMessage({
@@ -233,7 +233,7 @@ async function serialRead() {
 }
 
 /**
- * This method sends a POST-Message to the `file` `webview_IOCheck.ts` to write a message to the RS-485
+ * This method sends a POST-Message to the `file` `webviewIoCheck.ts` to write a message to the RS-485
  * @param text The text of the sending message
  */
 function serialWrite(text) {
@@ -244,7 +244,7 @@ function serialWrite(text) {
 }
 
 /**
- * This method sends a POST-Message to the file `webview_IOCheck.ts` to write the analog Data
+ * This method sends a POST-Message to the file `webviewIoCheck.ts` to write the analog Data
  * @param pin '1' write to AO1, '2' write to AO2
  * @param value value between 0 and 4095 (12 bit value)
  */
@@ -257,7 +257,7 @@ function analogWrite(pin, value) {
 }
 
 /**
- * This method sends a POST-Message to the file `webview_IOCheck.ts` to read the switch on the CC100
+ * This method sends a POST-Message to the file `webviewIoCheck.ts` to read the switch on the CC100
  */
 function readSwitch() {
     vscode.postMessage({

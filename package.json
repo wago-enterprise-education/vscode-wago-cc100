@@ -48,7 +48,7 @@
     "type": "git",
     "url": "https://github.com/wago-enterprise-education/vscode-wago-cc100.git"
   },
-  "icon": "res/images/WAGO_W.png",
+  "icon": "res/images/WAGOW.png",
   "type": "commonjs",
   "engines": {
     "vscode": "^1.63.0"
@@ -130,7 +130,7 @@
         {
           "id": "CC100",
           "title": "WAGO CC100",
-          "icon": "res/images/WAGO_W.png"
+          "icon": "res/images/WAGOW.png"
         }
       ]
     },

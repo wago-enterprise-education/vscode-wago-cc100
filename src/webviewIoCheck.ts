@@ -107,14 +107,14 @@ export class webviewIoCheck {
                     );
 
                     // Webview Tab Icon
-                    this.ioCheckPanel.iconPath = vscode.Uri.joinPath(this.context.extensionUri, 'res/images/WAGO_W.png');
+                    this.ioCheckPanel.iconPath = vscode.Uri.joinPath(this.context.extensionUri, 'res/images/WAGOW.png');
 
                     // Reset when the current panel is closed
                     this.ioCheckPanel.onDidDispose(() => {
                         // this.test = false;
                         this.ioCheckPanel = undefined;
                         ssh.disconnectSsh();
-                        this.window_closed = true
+                        this.windowClosed = true
                         ssh.ssh2Disconnect();
 
                     },
@@ -248,12 +248,12 @@ export class webviewIoCheck {
                                 let dataArray = this.splitDataToStringArray(data);
                                 dataArray[0] = this.convertDigital(Number(dataArray[0]), 'IN').toString(); // DI
                                 dataArray[1] = this.convertDigital(Number(dataArray[1]), 'OUT').toString(); // DO
-                                dataArray[2] = this.calcCalibrated_values(Number(dataArray[2]), this.calibData[3]).toString(); // AI1
-                                dataArray[3] = this.calcCalibrated_values(Number(dataArray[3]), this.calibData[4]).toString(); // AI2
-                                dataArray[4] = this.calcCalibrated_ao_value(Number(dataArray[4]), this.calibData[5]).toString(); // AO1
-                                dataArray[5] = this.calcCalibrated_ao_value(Number(dataArray[5]), this.calibData[6]).toString(); // AO2
-                                dataArray[6] = this.calcCelsius(this.calcCalibrated_values(Number(dataArray[6]), this.calibData[1])); // PT1
-                                dataArray[7] = this.calcCelsius(this.calcCalibrated_values(Number(dataArray[7]), this.calibData[2])); // PT2
+                                dataArray[2] = this.calcCalibratedValues(Number(dataArray[2]), this.calibData[3]).toString(); // AI1
+                                dataArray[3] = this.calcCalibratedValues(Number(dataArray[3]), this.calibData[4]).toString(); // AI2
+                                dataArray[4] = this.calcCalibratedAoValue(Number(dataArray[4]), this.calibData[5]).toString(); // AO1
+                                dataArray[5] = this.calcCalibratedAoValue(Number(dataArray[5]), this.calibData[6]).toString(); // AO2
+                                dataArray[6] = this.calcCelsius(this.calcCalibratedValues(Number(dataArray[6]), this.calibData[1])); // PT1
+                                dataArray[7] = this.calcCelsius(this.calcCalibratedValues(Number(dataArray[7]), this.calibData[2])); // PT2
                                 this.ioCheckPanel?.webview.postMessage({
                                     command: 'readData',
                                     values: dataArray
@@ -285,7 +285,7 @@ export class webviewIoCheck {
                                     value = value + Math.pow(2, index);
                                 }
                             }
-                            await ssh.digital_write(value).then(() => {
+                            await ssh.digitalWrite(value).then(() => {
                                 this.ioCheckPanel?.webview.postMessage({
                                     command: 'buttonClick'
                                 })

@@ -27,8 +27,8 @@ export class SSH {
     password: string
   ) {
     this.sshDirPath = path.join(homedir(), ".ssh");
-    this.privateKeyPath = path.join(this.sshDirPath, "id_rsa_extension");
-    this.publicKeyPath = path.join(this.sshDirPath, "id_rsa_extension.pub");
+    this.privateKeyPath = path.join(this.sshDirPath, "idRsaExtension");
+    this.publicKeyPath = path.join(this.sshDirPath, "idRsaExtension.pub");
     this.ipAdress = ipAdress;
     this.port = port;
     this.username = username;
@@ -159,7 +159,7 @@ export class SSH {
    */
   public async copySshKeyToCC100() {
     try {
-      let cc100AuthorizedKeysPath = "/root/.ssh/authorized_keys";
+      let cc100AuthorizedKeysPath = "/root/.ssh/authorizedKeys";
 
       const privateKeyExists = await this.existsFile(this.privateKeyPath);
       const publicKeyExists = await this.existsFile(this.publicKeyPath);

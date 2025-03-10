@@ -45,7 +45,7 @@ label {
     color: var(--vscode-tab-activeForeground);
 }
 
-#side_nav {
+#sideNav {
     display: flex;
     flex-direction: column;
     min-width: 50px;
@@ -55,12 +55,12 @@ label {
     background-color: var(--vscode-sideBar-background);
 }
 
-#side_nav img {
+#sideNav img {
     padding-left: 5px;
     padding-right: 5px;
 }
 
-.side_items {
+.sideItems {
     display: flex;
     flex-direction: column;
     width: 100%;
@@ -74,11 +74,11 @@ label {
     padding-top: 8px;
 }
 
-.side_icons {
+.sideIcons {
     fill: var(--vscode-tab-activeForeground);
 }
 
-.side_items:hover {
+.sideItems:hover {
     cursor: pointer;
 }
 
@@ -86,12 +86,12 @@ label {
     transform: rotate(90deg);
 }
 
-.side_nav_labels {
+.sideNavLabels {
     margin-bottom: 10px;
     cursor: pointer;
 }
 
-#fill_item {
+#fillItem {
     width: 100%;
     height: 100%;
     border-left: 4px solid;
@@ -109,7 +109,7 @@ label {
     justify-content: flex-start;
 }
 
-#refrash_rate_panel {
+#refrashRatePanel {
     display: flex;
     flex-direction: row;
     justify-content: flex-end;
@@ -124,12 +124,12 @@ label {
     align-content: center;
 }
 
-#refrash_rate_svg {
+#refrashRateSvg {
     text-align: center;
     max-width: 20px;
 }
 
-#refrash_rate {
+#refrashRate {
     margin-top: auto;
     margin-bottom: auto;
     text-align: center;
@@ -143,10 +143,10 @@ label {
     margin-bottom: auto;
 }
 
-#right_params_inputs,
-#right_params_outputs,
-#right_params_serial,
-#right_params_temperature {
+#rightParamsInputs,
+#rightParamsOutputs,
+#rightParamsSerial,
+#rightParamsTemperature {
     z-index: 1;
     display: flex;
     flex-direction: column;
@@ -157,17 +157,17 @@ label {
     background-color: var(--vscode-sideBar-background);
 }
 
-#right_params_outputs {
+#rightParamsOutputs {
     z-index: 2;
     display: none;
 }
 
-#right_params_serial {
+#rightParamsSerial {
     z-index: 3;
     display: none;
 }
 
-#right_params_temperature {
+#rightParamsTemperature {
     z-index: 4;
     display: none;
 }
@@ -178,33 +178,33 @@ label {
     border-bottom: 0.5px solid var(--vscode-sideBar-border);
 }
 
-.digital_header,
-.analog_header {
+.digitalHeader,
+.analogHeader {
     margin-top: 10%;
     margin-left: 10%;
     margin-right: 10%;
     border-bottom: 0.5px solid var(--vscode-sideBar-border);
 }
 
-.digital_panel {
+.digitalPanel {
     display: flex;
     flex-direction: column;
 }
 
-.label_and_button {
+.labelAndButton {
     display: flex;
     flex-direction: row;
     width: 100%;
     margin-top: 20px;
 }
 
-.digital_labels {
+.digitalLabels {
     margin: auto;
     margin-right: 5%;
 }
 
-.btn_do,
-.btn_di {
+.btnDo,
+.btnDi {
     width: 30%;
     margin: auto;
     margin-left: 5%;
@@ -217,19 +217,19 @@ label {
     font-weight: bold;
 }
 
-.btn_di {
+.btnDi {
     cursor: default;
 }
 
-.btn_di:focus {
+.btnDi:focus {
     border: 1px solid var(--color-main-dark);
 }
 
-.btn_do:disabled {
+.btnDo:disabled {
     cursor: default;
 }
 
-.analog_panel {
+.analogPanel {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -247,17 +247,17 @@ label {
     margin-bottom: 5%;
 }
 
-.analog_input_labels,
-.analog_display {
+.analogInputLabels,
+.analogDisplay {
     margin: auto;
 }
 
-.analog_output_labels {
+.analogOutputLabels {
     margin-left: 5px;
     margin-right: 5px;
 }
 
-.text_input {
+.textInput {
     width: 50%;
     height: 100%;
     border: 1px solid var(--color-anthracite-70);
@@ -266,13 +266,13 @@ label {
     font: var(--copy);
 }
 
-.text_input:focus {
+.textInput:focus {
     text-align: center;
     color: var(--color-main-secondary);
     border: 1px solid var(--color-main-primary);
 }
 
-.btn_write {
+.btnWrite {
     display: flex;
     flex-direction: row;
     justify-content: center;
@@ -287,7 +287,7 @@ label {
     height: 8%;
 }
 
-.btn_write:hover {
+.btnWrite:hover {
     border-top: 1px solid var(--color-transparent);
     border-right: 1px solid var(--color-main-primary);
     border-bottom: 1px solid var(--color-main-primary);
@@ -295,7 +295,7 @@ label {
 }
 
 
-.btn_write:active {
+.btnWrite:active {
     border-top: 1px solid var(--color-main-primary);
     border-right: 1px solid var(--color-transparent);
     border-bottom: 1px solid var(--color-transparent);
@@ -309,26 +309,26 @@ label {
     width: auto;
 }
 
-.button_label {
+.buttonLabel {
     color: var(--color-main-primary);
     font-size: 1em;
     margin: auto;
     margin-left: 0;
 }
 
-.btn_write:disabled {
+.btnWrite:disabled {
     color: var(--color-anthracite-15);
     background-color: var(--color-anthracite-7);
     border: 1px solid var(--color-anthracite-7);
 }
 
-#chat_serial {
+#chatSerial {
     width: 100%;
     flex-grow: 1;
     overflow-y: auto;
 }
 
-#send_panel {
+#sendPanel {
     display: flex;
     flex-direction: row;
     width: 100%;
@@ -338,7 +338,7 @@ label {
     margin: 5% auto;
 }
 
-#input_serial {
+#inputSerial {
     width: 60%;
     height: 70%;
     margin: auto 2%;
@@ -346,18 +346,18 @@ label {
     font: var(--copy);
 }
 
-#btn_serial_send {
+#btnSerialSend {
     padding: 2px;
     width: 30%;
     height: 70%;
     margin-left: 2%;
 }
 
-#small_chevron {
+#smallChevron {
     margin-right: 5px;
 }
 
-.button_div {
+.buttonDiv {
     height: 5%;
 }
 

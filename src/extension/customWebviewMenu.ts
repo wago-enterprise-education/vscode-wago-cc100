@@ -22,8 +22,8 @@ export class customWebviewProviderMenu {
 
     constructor(
         private readonly _extensionUri: vscode.Uri,
-        io_check: webviewIoCheck) {
-        this.ioCheck = io_check;
+        ioCheck: webviewIoCheck) {
+        this.ioCheck = ioCheck;
         this.outputChannel = vscode.window.createOutputChannel("CC100 Python"); //, {log:!0});
     }
 
@@ -99,7 +99,7 @@ export class customWebviewProviderMenu {
                 return;
             }
             else if (!resultCheckForLatestPythonVersion) {
-                if (!await this.update_python_version()) {
+                if (!await this.updatePythonVersion()) {
                     vscode.window.showErrorMessage("Error: Could not update Python");
                     progress.report({ increment: 100, message: "ERROR" })
                     return;
@@ -111,7 +111,7 @@ export class customWebviewProviderMenu {
                 await this.ssh.disconnectSsh();
             })
 
-            if (!await this.upload_application(wsPath)) {
+            if (!await this.uploadApplication(wsPath)) {
                 vscode.window.showErrorMessage("Error: Upload failed");
                 progress.report({ increment: 100, message: "ERROR" })
                 return;
@@ -126,7 +126,7 @@ export class customWebviewProviderMenu {
             }
             progress.report({ increment: 5, message: "Created bootapplicaton..." })
             if (debug && vscode.debug.breakpoints.length > 0) {
-                const data: string[] = this.set_breakpoint();
+                const data: string[] = this.setBreakpoint();
                 await this.startDebugging(data[0], data[1]);
                 progress.report({ increment: 100, message: "Debug started" })
             } else {
@@ -156,7 +156,7 @@ export class customWebviewProviderMenu {
      * 
      * @returns `true` if the current python version is installed, otherwise `false`. Returns `void` if an error occured while transferring the necessary package. 
      */
-    private async check_for_latest_python_version(): Promise<Boolean | void> {
+    private async checkForLatestPythonVersion(): Promise<Boolean | void> {
         await this.ssh.sshConnectionWithKey();
         let currentPythonVersionInstalled: boolean;
         let resultGetPythonVersion = await this.ssh.getPythonVersion();
@@ -167,7 +167,7 @@ export class customWebviewProviderMenu {
         else {
             currentPythonVersionInstalled = false;
             console.log("Error: Necessary python version not installed. Doing it now:");
-            let resultTransferIpk = await this.ssh.transferDirectory(__dirname + '/../../res/python_files/python3_3.7.6_armhf.ipk', this.dest_path_to_ipk);
+            let resultTransferIpk = await this.ssh.transferDirectory(__dirname + '/../../res/python_files/python3_3.7.6_armhf.ipk', this.destPathToIpk);
             if (!resultTransferIpk.toString().startsWith('Error')) {
                 console.log(".ipk file successfully transferred");
             }
@@ -224,8 +224,8 @@ export class customWebviewProviderMenu {
         await this.ssh.sshConnectionWithKey().then(async () => {
             await this.ssh.deleteFiles(this.destPath + 'errorLog');
             await this.ssh.killAllTails();
-            await this.ssh.updateTime(this.create_timestamp());
-            let result_upload_application = await this.ssh.transferDirectory(wsPath + "src", this.destPath.substring(0, this.destPath.length - 1));
+            await this.ssh.updateTime(this.createTimestamp());
+            let resultUploadApplication = await this.ssh.transferDirectory(wsPath + "src", this.destPath.substring(0, this.destPath.length - 1));
             if (!resultUploadApplication.startsWith("Error")) {
                 console.log("Application upload successful");
                 uploadedApplication = true;
@@ -241,7 +241,7 @@ export class customWebviewProviderMenu {
     /**
      * Method for killing all running python scripts and start a new one.
      */
-    private async start_application(): Promise<void> {
+    private async startApplication(): Promise<void> {
         await this.ssh.sshConnectionWithKey().then(async () => {
             console.log("Connected to CC100");
             let resultKillAllPythonScripts = await this.ssh.killAllPythonScripts();
@@ -370,7 +370,7 @@ export class customWebviewProviderMenu {
             }
             var debuggingTerminal = vscode.window.createTerminal('Debugging', shell, undefined);
 
-            debuggingTerminal.sendText(`ssh -i ${this._extensionUri.fsPath}/res/.ssh/id_rsa ${this.ssh.username}@${this.ssh.ipAdress} "python3 /home/user/python_bootapplication/main_debug.py"`, true);
+            debuggingTerminal.sendText(`ssh -i ${this._extensionUri.fsPath}/res/.ssh/idRsaExtension ${this.ssh.username}@${this.ssh.ipAdress} "python3 /home/user/python_bootapplication/main_debug.py"`, true);
             debuggingTerminal.show();
             return true;
         }
@@ -389,7 +389,7 @@ export class customWebviewProviderMenu {
         if (!result.includes("Error")) {
             return new Promise(async (resolve, reject) => {
                 resolve(null)
-                await this.ssh.readLog(this.write_log.bind(this.write_log))
+                await this.ssh.readLog(this.writeLog.bind(this.writeLog))
             })
         }
     }
@@ -412,7 +412,7 @@ export class customWebviewProviderMenu {
      * Generates a timestamp for the current time
      * @returns a timestamp with the format MMDDHHmmYYYY.ss
      */
-    private create_timestamp() {
+    private createTimestamp() {
         const now = new Date;
         const year = this.formatNumber(now.getFullYear());
         const month = this.formatNumber(now.getMonth() + 1);

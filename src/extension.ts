@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
-import { custom_webview_provider_menu } from './extension/custom_webview_menu';
-import { webview_IOCheck } from './webviewIoCheck';
+import { customWebviewProviderMenu } from './extension/customWebviewMenu';
+import { webviewIoCheck } from './webviewIoCheck';
 import { YamlCommands } from './extension/yaml';
 import { ControllerProvider } from './extension/view';
 import { Command } from './extension/command';
@@ -21,7 +21,7 @@ export function activate(context: vscode.ExtensionContext) {
 	const webviewIo = new webviewIoCheck(context);
 
 	//show menu
-	const webviewProviderMenu = new customWebviewProviderMenu(context.extensionUri, webview_IO);
+	const webviewProviderMenu = new customWebviewProviderMenu(context.extensionUri, webviewIo);
 	webviewProviderMenu.registerCommands(context);
 	webviewProviderMenu.createStatusBar(context);
 

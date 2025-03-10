@@ -64,7 +64,7 @@ export class Workspace {
             ssh.port = projectSettings.port;
             return ssh;
         }
-        else if (!projectSettings.usb_c.valueOf() && !projectSettings.ethernet.valueOf() && projectSettings.simulator.valueOf()) {
+        else if (!projectSettings.usbC.valueOf() && !projectSettings.ethernet.valueOf() && projectSettings.simulator.valueOf()) {
             ssh.ipAdress = projectSettings.simulationBackend;
             ssh.port = 2222;
             return ssh;
@@ -80,7 +80,7 @@ export class Workspace {
      * Checks if the CC100IO.py libary of the current project is up to date. If not, the user is asked if he wants to update it.
      */
     public async libUpToDate(extensionPath: String): Promise<boolean> {
-        let projectPath = await this.get_project_path()
+        let projectPath = await this.getProjectPath()
         let libPath = extensionPath + "/res/template/src/lib/CC100IO.py"
         if (!projectPath.startsWith("Error")) {
             let libProjectPath = projectPath + "src/lib/CC100IO.py"
@@ -98,7 +98,7 @@ export class Workspace {
         return false;
     }
 
-    public async change_password() {
+    public async changePassword() {
         const passwordInput: string = await vscode.window.showInputBox({
             password: true,
             title: "Password"

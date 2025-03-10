@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="./ioCheck.css">
+	<script type="module" src="../ioCheck.js"></script>
+	<title>IO-Check</title>
+</head>
+
+<body id="body">
+
+
+	<!-- center with CC100 -->
+	<div id="center">
+
+		<div id="refrashRatePanel">
+			<img id="refrashRateSvg" src='res/images/wago-iconsRgbFutureOutlineGreen.svg'>
+			<label id="refrashRate">221 ms</label>
+		</div>
+
+		<svg id="cc100" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1548 1077" width="1000" height="800">
+			<image href="../images/cc100Neu11.png" x="0" y="0" width="1548" height="1077" />
+			<rect id="ledDi1" class="ledDi" x="849" y="420" width="30" height="30" style="fill: white;" />
+			<rect id="ledDi2" class="ledDi" x="898" y="420" width="30" height="30" style="fill: white;" />
+			<rect id="ledDi3" class="ledDi" x="946" y="420" width="30" height="30" style="fill: white;" />
+			<rect id="ledDi4" class="ledDi" x="996" y="420" width="30" height="30" style="fill: white;" />
+			<rect id="ledDi5" class="ledDi" x="1047" y="420" width="30" height="30" style="fill: white;" />
+			<rect id="ledDi6" class="ledDi" x="1095" y="420" width="30" height="30" style="fill: white;" />
+			<rect id="ledDi7" class="ledDi" x="1144" y="420" width="30" height="30" style="fill: white;" />
+			<rect id="ledDi8" class="ledDi" x="1193" y="420" width="30" height="30" style="fill: white;" />
+
+			<rect id="ledDo1" class="ledDo" x="849" y="570" width="30" height="30" style="fill: white;" />
+			<rect id="ledDo2" class="ledDo" x="898" y="570" width="30" height="30" style="fill: white;" />
+			<rect id="ledDo3" class="ledDo" x="947" y="570" width="30" height="30" style="fill: white;" />
+			<rect id="ledDo4" class="ledDo" x="996" y="570" width="30" height="30" style="fill: white;" />
+
+			<rect id="ledSys" class="ledCon" x="251" y="533" width="30" height="30" style="fill: #6EC800;" />
+			<rect id="ledRun" class="ledCon" x="300" y="533" width="30" height="30" style="fill: white;" />
+			<rect id="ledUsr" class="ledCon" x="350" y="533" width="30" height="30" style="fill: white;" />
+			<rect id="ledLact1" class="ledCon" x="400" y="533" width="30" height="30" style="fill: white;" />
+			<rect id="ledLact2" class="ledCon" x="450" y="533" width="30" height="30" style="fill: white;" />
+			<rect id="ledMsd" class="ledCon" x="498" y="533" width="30" height="30" style="fill: white;" />
+
+			<rect x="675" y="375" width="70" height="215" rx="40" ry="30" fill="#D7D7D7"></rect>
+			<image id="switch" href="../images/cc100Schalter.png" x="625" y="395" width="170" height="170" />
+		</svg>
+
+	</div>
+
+
+	<!-- parameters on the right for the temperature -->
+	<div id="rightParamsTemperature">
+
+		<div class="header">
+			<h2>Temperature:</h2>
+		</div>
+
+		<div class="analogPanel">
+			<div class="pt">
+				<label class="analogInputLabels">PT1</label>
+				<label class="analogDisplay" id="textPT1">0.00</label>
+				<label class="analogInputLabels">°C</label>
+			</div>
+			<div class="pt">
+				<label class="analogInputLabels">PT2</label>
+				<label class="analogDisplay" id="textPT2">0.00</label>
+				<label class="analogInputLabels">°C</label>
+			</div>
+		</div>
+	</div>
+
+	<!-- parameters on the right for the inputs -->
+	<div id="rightParamsInputs">
+
+		<div class="header">
+			<h2>Inputs:</h2>
+		</div>
+
+		<div class="digitalHeader">
+			<h3>Digital:</h3>
+		</div>
+
+		<div class="digitalPanel">
+			<div class="labelAndButton">
+				<label class="digitalLabels">DI1</label>
+				<input class="btnDi" id="btnDi1" type="button" value="LOW" disabled="disabled" />
+			</div>
+			<div class="labelAndButton">
+				<label class="digitalLabels">DI2</label>
+				<input class="btnDi" id="btnDi2" type="button" value="LOW" disabled="disabled" />
+			</div>
+			<div class="labelAndButton">
+				<label class="digitalLabels">DI3</label>
+				<input class="btnDi" id="btnDi3" type="button" value="LOW" disabled="disabled" />
+			</div>
+			<div class="labelAndButton">
+				<label class="digitalLabels">DI4</label>
+				<input class="btnDi" id="btnDi4" type="button" value="LOW" disabled="disabled" />
+			</div>
+			<div class="labelAndButton">
+				<label class="digitalLabels">DI5</label>
+				<input class="btnDi" id="btnDi5" type="button" value="LOW" disabled="disabled" />
+			</div>
+			<div class="labelAndButton">
+				<label class="digitalLabels">DI6</label>
+				<input class="btnDi" id="btnDi6" type="button" value="LOW" disabled="disabled" />
+			</div>
+			<div class="labelAndButton">
+				<label class="digitalLabels">DI7</label>
+				<input class="btnDi" id="btnDi7" type="button" value="LOW" disabled="disabled" />
+			</div>
+			<div class="labelAndButton">
+				<label class="digitaLabels">DI8</label>
+				<input class="btnDi" id="btnDi8" type="button" value="LOW" disabled="disabled" />
+			</div>
+		</div>
+
+		<div class="analogHeader">
+			<h3>Analog:</h3>
+		</div>
+
+		<div class="analogPanel">
+			<div class="ai">
+				<label class="analogInputLabels">AI1</label>
+				<label class="analogDisplay" id="AI1">0.00</label>
+				<label class="analogInputLabels">mV</label>
+			</div>
+			<div class="ai">
+				<label class="analogInputLabels">AI2</label>
+				<label class="analogDisplay" id="AI2">0.00</label>
+				<label class="analogInputLabels">mV</label>
+			</div>
+		</div>
+
+	</div>
+
+	<!-- parameters on the right for the outputs -->
+	<div id="rightParamsOutputs">
+
+		<div class="header">
+			<h2>Outputs:</h2>
+		</div>
+
+		<div class="digitalHeader">
+			<h3>Digital:</h3>
+		</div>
+
+		<div class="digitalPanel">
+			<div class="labelAndButton">
+				<label class="digitalLabels">DO1</label>
+				<input class="btnDo" type="button" id="btnDo1" value="LOW">
+			</div>
+			<div class="labelAndButton">
+				<label class="digitalLabels">DO2</label>
+				<input class="btnDo" type="button" id="btnDo2" value="LOW">
+			</div>
+			<div class="labelAndButton">
+				<label class="digitalLabels">DO3</label>
+				<input class="btnDo" type="button" id="btnDo3" value="LOW">
+			</div>
+			<div class="labelAndButton">
+				<label class="digitalLabels">DO4</label>
+				<input class="btnDo" type="button" id="btnDo4" value="LOW">
+			</div>
+		</div>
+
+		<div class="analogHeader">
+			<h3>Analog:</h3>
+		</div>
+
+		<div class="analogPanel">
+			<div class="ao">
+                <label class="analogInputLabels">AO1</label>
+                <label class="analogDisplay" id="valAo1">0.00</label>
+                <label class="analogInputLabels">mV</label>
+            </div>
+			<div class="ao">
+				<!-- <label class="analogOutputLabels">AO1</label> -->
+				<input class="textInput" type="number" id="textAo1">
+				<!-- <label class="analogOutputLabels">mV</label> -->
+			</div>
+
+			<button id="btnAo1Write" class="btnWrite">
+				<img class="chevron" src="res/images/wago-iconsRgbChevronRightOutlineGreen.svg" alt=">">
+				<label class="buttonLabel">Write</label>
+			</button>
+
+			<div class="ao">
+                <label class="analogInputLabels">AO2</label>
+                <label class="analogDisplay" id="valAo2">0.00</label>
+                <label class="analogInputLabels">mV</label>
+            </div>
+			<div class="ao">
+				<!-- <label class="analogOutputLabels">AO2</label> -->
+				<input class="textInput" type="number" id="textAo2">
+				<!-- <label class="analogOutputLabels">mV</label> -->
+			</div>
+
+			<button id="btnAo2Write" class="btnWrite">
+				<img class="chevron" src="res/images/wago-iconsRgbChevronRightOutlineGreen.svg" alt=">">
+				<label class="buttonLabel">Write</label>
+			</button>
+
+		</div>
+
+	</div>
+
+	<!-- parameters on the right for the RS-485 -->
+	<div id="rightParamsSerial">
+
+		<div class="header">
+			<h2>RS-485:</h2>
+		</div>
+
+		<div id="chatSerial"></div>
+
+		<div id="sendPanel">
+			<input type="text" id="inputSerial">
+			<button id="btnSerialSend" class="btnWrite">
+				<img id="smallChevron" class="chevron " src="res/images/wago-iconsRgbChevronRightOutlineGreen.svg"
+					alt=">">
+				<label class="buttonLabel">Send</label>
+			</button>
+		</div>
+	</div>
+	<!-- side-navigation on the right side -->
+	<div id="sideNav">
+		<div id="inputs" class="sideItems">
+			<img class="sideIcons rotate" src="res/images/wago-iconsRgbImportOutlineGreen.svg" data-rotate="90">
+			<label class="sideNavLabels" for="inputs">Inputs</label>
+		</div>
+		<div id="outputs" class="sideItems">
+			<img class="sideIcons rotate" src="res/images/wago-iconsRgbExportOutlineGreen.svg" data-rotate="90">
+			<label class="sideNavLabels" for="outputs">Outputs</label>
+		</div>
+		<div id="serial" class="sideItems">
+			<img class="sideIcons" src="res/images/wago-iconsRgbConnectorsOutlineGreen.svg">
+			<label class="sideNavLabels" for="serial">RS-485</label>
+		</div>
+		<div id="temperature" class="sideItems">
+			<?xml version="1.0" encoding="UTF-8"?>
+			<img class="sideIcons" src="res/images/wago-iconsRgbTemperatureOutlineGreen.svg">
+			<label class="sideNavLabels" for="temperature">Temp.</label>
+		</div>
+		<div id="fillItem"></div>
+	</div>
+</body>
+
+</html>
