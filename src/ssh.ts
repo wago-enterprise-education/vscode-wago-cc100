@@ -744,7 +744,8 @@ export class SSH {
       return "Error: " + error.message;
     }
   }
-  /**
+
+    /**
    * Creates the bootapplication
    * @returns A `String` that either contains 'Successfully' or an error message
    */
