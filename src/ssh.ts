@@ -77,6 +77,20 @@ export class SSH {
     }
   }
 
+  /** 
+   * Starts the codesys runtime when clicking the remove button
+   * @returns A `String` that either contains 'Successfully' or an error message
+   */
+   public async start_codesys_runtime() {
+    try {
+      return await this.ssh.execCommand("codesys3 &").then(function(result: any){
+        vscode.window.showInformationMessage("Startet Codesys");
+        return "Successfully";
+      });
+    } catch (error: any) {
+      return "Error: " + error.message;
+    }
+  }
   /**
    * Checks if the given file exists
    * @param filePath
