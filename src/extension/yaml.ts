@@ -79,6 +79,9 @@ export class YamlCommands {
      * @param id - The ID of the controller to be removed.
      */
     public static removeController(id: number) {
+        //reset Controller to by useable in CodeSys
+        //TODO
+
         //remove from wago.yaml
         let yaml = this.readWagoYaml();
         delete yaml.nodes[id];
