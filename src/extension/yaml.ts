@@ -31,21 +31,15 @@ export class YamlCommands {
      * Creates a new controller by prompting the user for necessary details and updating the `wago.yaml` file.
      * 
      * This function performs the following steps:
-     * 1. Prompts the user to enter the display name, description, engine, and source of the controller.
-     * 2. Finds the next available ID for the new controller.
-     * 3. Adds the new controller details to the `wago.yaml` file.
-     * 4. Copies a template controller file to the appropriate location with the new controller's ID.
+     * 1. Finds the next available ID for the new controller.
+     * 2. Adds the new controller details to the `wago.yaml` file.
+     * 3. Copies a template controller file to the appropriate location with the new controller's ID.
      * 
      * @param context - The extension context provided by VS Code.
      * @returns A promise that resolves when the controller has been created.
      */
-    public static async createController(context: vscode.ExtensionContext) {
+    public static async createController(context: vscode.ExtensionContext, displayname: string, description: string, engine: string, src: string, img: string) {
         
-        //To be converted to attributes of the function
-        let displaynameInput = await window.showInputBox({ prompt: "Enter the displayname of the controller" });
-        let descriptionInput = await window.showInputBox({ prompt: "Enter the description of the controller" }); 
-        let engineInput = await window.showInputBox({ prompt: "Enter the engine of the controller" });
-        let srcInput = await window.showInputBox({ prompt: "Enter the src of the controller" });
 
         //Addition of the Controller to wago.yaml
         let id = this.findNextID();
@@ -53,10 +47,11 @@ export class YamlCommands {
         let obj = {
             nodes: {
                 [id]: {
-                    displayname: [displaynameInput],
-                    description: [descriptionInput],
-                    engine: [engineInput],
-                    src: [srcInput]
+                    displayname: displayname,
+                    description: description,
+                    engine: engine,
+                    src: src,
+                    img: img
                 }
             }
         }

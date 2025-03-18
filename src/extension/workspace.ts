@@ -54,7 +54,7 @@ export class Workspace {
             ssh.password = Workspace.password;
         }
 
-        if (projecSettings.usbC.valueOf() && !projectSettings.ethernet.valueOf() && !projectSettings.simulator.valueOf()) {
+        if (projectSettings.usbC.valueOf() && !projectSettings.ethernet.valueOf() && !projectSettings.simulator.valueOf()) {
             ssh.ipAdress = "192.168.42.42";
             ssh.port = projectSettings.port;
             return ssh;

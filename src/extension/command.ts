@@ -7,11 +7,6 @@ import { YamlCommands } from './yaml';
 const FOLDER_REGEX = '^(?!(?:CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\.[^.]*)?$)[^<>:"/\\|?*\x00-\x1F]*[^<>:"/\\|?*\x00-\x1F\ .]$';
 
 export class Command {
-    /**
-     * 
-     * 
-     * @param context vscode.ExtensionContext
-     */
     public static createCommands(context: vscode.ExtensionContext) {
         const commands = [];
 
@@ -117,7 +112,7 @@ export class Command {
                 vscode.window.showErrorMessage('No workspace is open');
                 return;
             }
-            let controllerId = '';
+            let controllerId = null;
             if(!controller) {
                 const nodes = YamlCommands.readWagoYaml()["nodes"];
                 controller = await vscode.window.showQuickPick(
@@ -139,7 +134,6 @@ export class Command {
             if(!controllerId) return;
 
             try {
-                fs.rmSync(`${vscode.workspace.workspaceFolders[0].uri.fsPath}/controller/${controllerId}.yaml`);
                 YamlCommands.removeController(controllerId);
                 vscode.window.showInformationMessage(`Controller ${controller.label} removed`);
                 ControllerProvider.instance.refresh();

@@ -269,7 +269,7 @@ export class customWebviewProviderMenu {
      * 
      * @returns `true` if the bootapplication was created, otherwise `false`.
      */
-    private async creatBootapplication(): Promise<boolean> {
+    private async createBootapplication(): Promise<boolean> {
         let resultCreatedBootapplication: boolean = false;
         await this.ssh.sshConnectionWithKey()
         let resultUploadBootapplication = await this.ssh.putInit();
@@ -309,7 +309,7 @@ export class customWebviewProviderMenu {
         try {
             let breakpointFilepathParts: string[] = (vscode.debug.breakpoints[0] as vscode.SourceBreakpoint).location.uri.fsPath.split('\\');
             let breakpointFilename: string = breakpointFilepathParts.slice(breakpointFilepathParts.indexOf('src') + 1, breakpointFilepathParts.length).toString();
-            let script: string[] = fs.readFileSync(breakpointFilepatParts.join('\\')).toString().split('\n');
+            let script: string[] = fs.readFileSync(breakpointFilepathParts.join('\\')).toString().split('\n');
 
             let breakpointLines: number[] = [];
             let leadingSpaces: string[] = [];

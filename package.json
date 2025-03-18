@@ -178,7 +178,7 @@
           "group": "inline@3"
         },
         {
-          "command": "vscode-wago-cc100.edit-displayname",
+          "command": "vscode-wago-cc100.edit-setting",
           "when": "view == controller-view && viewItem == controller",
           "group": "inline@2"
         },
