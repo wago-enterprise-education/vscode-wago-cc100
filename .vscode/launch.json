@@ -6,26 +6,29 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
-			"name": "Run Extension",
-			"type": "extensionHost",
-			"request": "launch",
-			"args": [
-				"--extensionDevelopmentPath=${workspaceFolder}"
-			],
-			"outFiles": [
-				"${workspaceFolder}/out/**/*.js"
-			],
-			"preLaunchTask": "${defaultBuildTask}"
-		},
-		{
             "name": "Custom DAP Debugging",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "main.py",
             "connect": {
                 "host": "localhost",
                 "port": 5678
             }
+        },
+        {
+            "name": "Python Debugger: Attach",
+            "type": "debugpy",
+            "request": "attach",
+            "connect": {
+              "host": "192.168.42.42",
+              "port": 5678,
+              "pathMappings": [
+                {
+                    "localRoot": "${workspaceFolder}",
+                    "remoteRoot": "/home/extension/main.py"
+                }
+	        ]
+            }
         }
-	]
+    ]
 }
