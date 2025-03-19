@@ -1,8 +1,8 @@
 version: 0.2.0
 nodes: 
-    - id: 1
-      displayname: Controller1
-      description: WAGO 0751-9301 Compact Controller 100
-      engine: wago-cc100-v0.1
-      src: src
-      imageVersion: 1.0.0
+  1: 
+    displayname: Controller1
+    description: WAGO 0751-9301 Compact Controller 100
+    engine: wago-cc100-v0.1
+    src: src
+    imageVersion: 1.0.0
