@@ -3,7 +3,7 @@ import socket
 import debugpy
 # pip install --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org debugpy
 
-HOST = '0.0.0.0'  # Korrigierte IP-Adresse
+HOST = '0.0.0.0'  # correctet IP-Adresse
 PORT = 5678
 LOG_FILE = "dap_log.json"
 BREAKPOINTS_FILE = "breakpoints.json"
@@ -55,7 +55,7 @@ def handle_dap_request(request):
     elif command == "setBreakpoints":
         try:
             breakpoints = request_json["arguments"]["breakpoints"]
-            save_breakpoints(breakpoints)  # Speichert Breakpoints in JSON-Datei
+            save_breakpoints(breakpoints)  # saves breakpoints in json file 
             response = {
                 "seq": request_json.get("seq", 0),
                 "type": "response",
