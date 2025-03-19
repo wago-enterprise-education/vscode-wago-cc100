@@ -14,7 +14,7 @@ export class Workspace {
      * @returns The path to the project or a error message.
      */
     public async getProjectPath(): Promise<string> {
-        let ws = (await vscode.workspace.findFiles('*/*/CC100IO.py', null, 1)).at(0);
+        let ws = (await vscode.workspace.findFiles('wago.yaml', null, 1)).at(0);
         let wsPath: string;
 
         if (ws !== undefined) { //Check if a CC100 project is opened in the explorer

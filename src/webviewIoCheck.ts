@@ -44,94 +44,142 @@ export class webviewIoCheck {
             // The commandId parameter must match the command field in package.json
 
             vscode.commands.registerCommand('vscode-wago-cc100.iocheck', async () => {
-                // The code you place here will be executed every time your command is executed
-                let ws = (await vscode.workspace.findFiles('*/*/CC100IO.py', null, 1)).at(0);
-                this.wsPath = await this.Workspace.getProjectPath();
-                //Check if a CC100 project is opened in the explorer
-                if (ws !== undefined) {
 
-                    await this.Workspace.readSettingsWriteSshProperties(this.wsPath, ssh).then(result => {
-                        if (typeof result !== 'boolean') {
-                            ssh = result;
-                        }
-                        else {
-                            return result;
-                        }
-                    });
+                this.wsPath = await this.Workspace.getProjectPath();
+
+                if (this.wsPath !== "Error: Could not find a project") {
+                    // Check if an activeTextEditor is there, either it exists or it is undefined
+                    const columnToShowIn = vscode.window.activeTextEditor
+                    ? vscode.window.activeTextEditor.viewColumn
+                    : undefined;
+
+                    if (this.ioCheckPanel) {
+                        // If we already have a panel, show it in the target column
+                        this.ioCheckPanel.reveal(columnToShowIn);
+                    } else {
+                        this.canLoadPanel = false;
+                        // create IO-Check Webview panel 
+
+                        this.ioCheckPanel = vscode.window.createWebviewPanel("iocheck", "IO-Check", columnToShowIn || vscode.ViewColumn.One, {
+                            enableScripts: true,
+                            retainContextWhenHidden: true,
+                            localResourceRoots: [vscode.Uri.joinPath(this.context.extensionUri, 'src'), vscode.Uri.joinPath(this.context.extensionUri, 'out'),
+                            vscode.Uri.joinPath(this.context.extensionUri, 'res')]
+                        });
+
+                        this.ioCheckPanel.webview.html = this.getIOCheckWebviewContent();
+
+                        // Webview Tab Icon
+                        this.ioCheckPanel.iconPath = vscode.Uri.joinPath(this.context.extensionUri, 'res/images/WAGOW.png');
+
+                        // Reset when the current panel is closed
+                        this.ioCheckPanel.onDidDispose(() => {
+                            // this.test = false;
+                            this.ioCheckPanel = undefined;
+                            this.windowClosed = true
+
+                        },
+                            null,
+                            this.context.subscriptions
+                        );
+                    }
                 }
                 else {
                     vscode.window.showErrorMessage(this.wsPath);
                     return;
                 }
 
-                // Check if an activeTextEditor is there, either it exists or it is undefined
-                const columnToShowIn = vscode.window.activeTextEditor
-                    ? vscode.window.activeTextEditor.viewColumn
-                    : undefined;
 
-                if (this.ioCheckPanel) {
-                    if (!await ssh.isConnected()) {
-                        if (!await this.Connection.checkConnection(ssh)) {
-                            console.log("IO Check exists")
-                            return;
-                        }
-                    }
-                    // If we already have a panel, show it in the target column
-                    this.ioCheckPanel.reveal(columnToShowIn);
-                } else {
-                    this.canLoadPanel = false;
-                    // create IO-Check Webview panel 
-                    if (!await this.Connection.checkConnection(ssh)) {
-                        this.canLoadPanel = true;
-                        return;
-                    }
 
-                    this.ioCheckPanel = vscode.window.createWebviewPanel("iocheck", "IO-Check", columnToShowIn || vscode.ViewColumn.One, {
-                        enableScripts: true,
-                        retainContextWhenHidden: true,
-                        localResourceRoots: [vscode.Uri.joinPath(this.context.extensionUri, 'src'), vscode.Uri.joinPath(this.context.extensionUri, 'out'),
-                        vscode.Uri.joinPath(this.context.extensionUri, 'res')]
-                    });
 
-                    this.ioCheckPanel.webview.html = this.getIOCheckWebviewContent();
 
-                    this.ioCheckPanel.webview.onDidReceiveMessage(
-                        async message => {
-                            switch (message.command) {
-                                case 'windowLoaded': {
-                                    this.canLoadPanel = true;
-                                    break;
-                                }
-                            }
-                        }
-                    );
+                // // The code you place here will be executed every time your command is executed
+                // this.wsPath = await this.Workspace.getProjectPath();
+                // //Check if a CC100 project is opened in the explorer
+                // if (this.wsPath !== "Error: Could not find a project") {
 
-                    // Webview Tab Icon
-                    this.ioCheckPanel.iconPath = vscode.Uri.joinPath(this.context.extensionUri, 'res/images/WAGOW.png');
+                //     await this.Workspace.readSettingsWriteSshProperties(this.wsPath, ssh).then(result => {
+                //         if (typeof result !== 'boolean') {
+                //             ssh = result;
+                //         }
+                //         else {
+                //             return result;
+                //         }
+                //     });
+                // }
+                // else {
+                //     vscode.window.showErrorMessage(this.wsPath);
+                //     return;
+                // }
 
-                    // Reset when the current panel is closed
-                    this.ioCheckPanel.onDidDispose(() => {
-                        // this.test = false;
-                        this.ioCheckPanel = undefined;
-                        ssh.disconnectSsh();
-                        this.windowClosed = true
-                        ssh.ssh2Disconnect();
+                // // Check if an activeTextEditor is there, either it exists or it is undefined
+                // const columnToShowIn = vscode.window.activeTextEditor
+                //     ? vscode.window.activeTextEditor.viewColumn
+                //     : undefined;
 
-                    },
-                        null,
-                        this.context.subscriptions
-                    );
-                    ssh.sshConnectionWithKey().then(() => {
-                        if (this.ioCheckPanel) {
-                            try {
-                                this.updateIoCheck();
-                            }
-                            catch (error: any) {
-                                this.ioCheckPanel.dispose();
-                            }
-                        }
-                    });
-                }
+                // if (this.ioCheckPanel) {
+                //     if (!await ssh.isConnected()) {
+                //         if (!await this.Connection.checkConnection(ssh)) {
+                //             console.log("IO Check exists")
+                //             return;
+                //         }
+                //     }
+                //     // If we already have a panel, show it in the target column
+                //     this.ioCheckPanel.reveal(columnToShowIn);
+                // } else {
+                //     this.canLoadPanel = false;
+                //     // create IO-Check Webview panel 
+                //     if (!await this.Connection.checkConnection(ssh)) {
+                //         this.canLoadPanel = true;
+                //         return;
+                //     }
+
+                //     this.ioCheckPanel = vscode.window.createWebviewPanel("iocheck", "IO-Check", columnToShowIn || vscode.ViewColumn.One, {
+                //         enableScripts: true,
+                //         retainContextWhenHidden: true,
+                //         localResourceRoots: [vscode.Uri.joinPath(this.context.extensionUri, 'src'), vscode.Uri.joinPath(this.context.extensionUri, 'out'),
+                //         vscode.Uri.joinPath(this.context.extensionUri, 'res')]
+                //     });
+
+                //     this.ioCheckPanel.webview.html = this.getIOCheckWebviewContent();
+
+                //     this.ioCheckPanel.webview.onDidReceiveMessage(
+                //         async message => {
+                //             switch (message.command) {
+                //                 case 'windowLoaded': {
+                //                     this.canLoadPanel = true;
+                //                     break;
+                //                 }
+                //             }
+                //         }
+                //     );
+
+                //     // Webview Tab Icon
+                //     this.ioCheckPanel.iconPath = vscode.Uri.joinPath(this.context.extensionUri, 'res/images/WAGOW.png');
+
+                //     // Reset when the current panel is closed
+                //     this.ioCheckPanel.onDidDispose(() => {
+                //         // this.test = false;
+                //         this.ioCheckPanel = undefined;
+                //         ssh.disconnectSsh();
+                //         this.windowClosed = true
+                //         ssh.ssh2Disconnect();
+
+                //     },
+                //         null,
+                //         this.context.subscriptions
+                //     );
+                //     ssh.sshConnectionWithKey().then(() => {
+                //         if (this.ioCheckPanel) {
+                //             try {
+                //                 this.updateIoCheck();
+                //             }
+                //             catch (error: any) {
+                //                 this.ioCheckPanel.dispose();
+                //             }
+                //         }
+                //     });
+                // }
             })
         );
     }
@@ -187,6 +235,11 @@ export class webviewIoCheck {
         return html;
     }
 
+
+
+
+
+    
     /**
      * This method updates the UI via POST-Messages and the CC100 via SSH
      */

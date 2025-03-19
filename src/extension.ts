@@ -11,23 +11,23 @@ export function activate(context: vscode.ExtensionContext) {
 	//Register TreeDataProvider for sidebar
 	vscode.window.registerTreeDataProvider('controller-view', ControllerProvider.instance);
 
+	//create IO-Check
+	new webviewIoCheck(context);
+
 	//Create Commands
 	Command.createCommands(context);
 
 	//Check if project is valid
 	verifyProject();
 
-	//create IO-Check
-	const webviewIo = new webviewIoCheck(context);
-
 	//show menu
-	const webviewProviderMenu = new customWebviewProviderMenu(context.extensionUri, webviewIo);
-	webviewProviderMenu.registerCommands(context);
-	webviewProviderMenu.createStatusBar(context);
+	// const webviewProviderMenu = new customWebviewProviderMenu(context.extensionUri, webviewIo);
+	// webviewProviderMenu.registerCommands(context);
+	// webviewProviderMenu.createStatusBar(context);
 
-	/*//register yaml commands
-	const test = new YamlCommands();
-	test.registerYamlCommands(context); */
+	// register yaml commands
+	// const test = new YamlCommands();
+	// test.registerYamlCommands(context);
 }
 
 // This method is called when your extension is deactivated
