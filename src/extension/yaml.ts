@@ -15,6 +15,15 @@ export class YamlCommands {
     }
 
     /**
+     * Function to read the content of the Controller.yaml file.
+     * 
+     * @returns The content of the Controller.yaml file as a JS object
+     */
+    public static readControllerYaml(controllerId: number) {
+        return YAML.parse(fs.readFileSync(`${vscode.workspace.workspaceFolders![0].uri.fsPath}/controller${controllerId}.yaml`, 'utf8'));
+    }
+
+    /**
      * Method for changing a attribute of a yaml file.
      * 
      * @param path Path where the operating file is located.

@@ -3,10 +3,12 @@ import * as fs from 'fs';
 import yaml from 'yaml';
 import { ControllerProvider } from './view';
 import { YamlCommands } from './yaml';
+import { SSH }from '../ssh';
 
 const FOLDER_REGEX = '^(?!(?:CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\.[^.]*)?$)[^<>:"/\\|?*\x00-\x1F]*[^<>:"/\\|?*\x00-\x1F\ .]$';
 
 export class Command {
+
     public static createCommands(context: vscode.ExtensionContext) {
         const commands = [];
 
@@ -132,8 +134,27 @@ export class Command {
                 if(value === 'Yes') controllerId = controller.id;
             });
             if(!controllerId) return;
-
+            
+            let controllerSettings = YamlCommands.readControllerYaml(controllerId);
+            let ssh = new SSH(controllerSettings.ip_adress, controllerSettings.port, controllerSettings.username, 'wago');
+            let filenameOnStartup: string = 'S99_python_runtime';
+            let destPath: string = '/home/user/python_bootapplication/';
+            let pathToFileOnStartup: string = '/etc/init.d/' + filenameOnStartup;
+            let pathToSymbolicLink: string = '/etc/rc.d/' + filenameOnStartup;
             try {
+
+
+                await ssh.killAllPythonScripts();
+                await ssh.deleteFiles(destPath);
+                await ssh.deleteFiles(pathToFileOnStartup);
+                await ssh.deleteFiles(pathToSymbolicLink);
+                await ssh.digitalWrite(0);
+                await ssh.analogWrite(1, 0);
+                await ssh.analogWrite(2, 0);
+                await ssh.turnOffRunLed();
+                await ssh.killAllTails();
+                await ssh.startCodesysRuntime();
+                await ssh.disconnectSsh();
                 YamlCommands.removeController(controllerId);
                 vscode.window.showInformationMessage(`Controller ${controller.label} removed`);
                 ControllerProvider.instance.refresh();
