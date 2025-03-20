@@ -2,8 +2,7 @@ import * as vscode from 'vscode';
 import fs from 'fs';
 import { YamlCommands } from './yaml';
 import { ConnectionManager } from './connectionManager';
-import { createHash } from 'crypto';
-import { Stream } from 'stream';
+import path from 'path';
 
 //Roadmap for the extension
 //+1. Get Path to the file structure to be uploaded -> Throw Error if not available
@@ -39,28 +38,41 @@ export class Upload {
         }
     }
 
-    private async compareHashes(id: number) {
-        let controllers = YamlCommands.readWagoYaml();
-        let src = controllers.nodes.$(id).src;
-        let path = `${vscode.workspace.workspaceFolders![0].uri.fsPath}/${src}`;
+    private compareFolders(id: number, src: string, localPath: string) {
+        try {
+            // Read the contents of both folders
+            let localFolderContents: string[] = [];
+            fs.readdir(localPath, (err, files) => {
+                if (err) {
+                    console.error('Error reading folder:', err);
+                    return;
+                }
+                localFolderContents = files;
+                return;
+            });
+
+            const remoteFolderContents = fs.readdir(folder2);
+        
+            for (const file of localFolderContents) {
+                if (remoteFolderContents.includes(file)) {
+                    const localPath = path.join(localPath, file);
+                    const remotePath = path.join(folder2, file);
+        
+                    const statsLocal = fs.stat(file1Path);
+                    const statsRemote = fs.stat(file2Path);
+        
+                    // Compare file timestamps
+                    if (statsLocal.isFile() && statsRemote.isFile()) {
+                        //timestamp comparison
+                    }
+              } else {
+                return false;
+              }
+            }
+          } catch (error) {
+            console.error('Error comparing folders:', error);
+          }
         
     }
-
-    private createFileHash(path: string) {
-        let sum = "";
-        let fd = fs.createReadStream('/some/file/name.txt');
-        let hash = createHash('sha1');
-        hash.setEncoding('hex');
-    
-        fs.createReadStream(`${path}`)
-            .pipe(createHash('sha1')
-            .setEncoding('hex'))
-            .on('finish', () => {
-                sum = hash.read();
-        });
-    
-        return sum;
-    }
-
 
 }
