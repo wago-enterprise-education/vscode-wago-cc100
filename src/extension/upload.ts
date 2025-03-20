@@ -13,9 +13,9 @@ import { Stream } from 'stream';
 //5. Integrate File Upload in Case of older Version
 
 const uploadPath = "/home/user/python_bootapplication";
-let connectionManager = ConnectionManager.getInstance();
+let connectionManager = ConnectionManager.instance;
 
-export class upload {
+export class Upload {
 
     /**
      * This Method uploads the corresponding file to the WAGO Controller.
