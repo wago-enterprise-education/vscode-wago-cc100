@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import fs from 'fs';
 import { YamlCommands } from './yaml';
 import { ConnectionManager } from './connectionManager';
-import path from 'path';
+import crypto from 'crypto';
 
 //Roadmap for the extension
 //+1. Get Path to the file structure to be uploaded -> Throw Error if not available
@@ -38,41 +38,44 @@ export class Upload {
         }
     }
 
-    private compareFolders(id: number, src: string, localPath: string) {
+    /**
+     * This method is used to compare the contents of a folder on the WAGO Controller with the local folder, 
+     * using Hashes to compare the contents.
+     * 
+     * @param id 
+     * @param src 
+     * @param localPath 
+     * @returns True, if folder contents are equivalent, false if not
+     */
+    
+    private async compareFolders(id:number, src: string, localPath: string): Promise<Boolean> {
         try {
-            // Read the contents of both folders
-            let localFolderContents: string[] = [];
-            fs.readdir(localPath, (err, files) => {
-                if (err) {
-                    console.error('Error reading folder:', err);
-                    return;
-                }
-                localFolderContents = files;
-                return;
-            });
+            // Get Array of remote Hashes
+            let remoteHashes = await connectionManager.executeCommand(id, `find ${src} -type f -exec md5sum {} +`);
+            remoteHashes = remoteHashes
+                .replaceAll('\n', ' ')
+                .split(' ')
+                .filter((value, index) => {
+                    return index % 2 !== 0;
+                })
+                .sort((a, b) => a.localeCompare(b))
+                .toString();
+            let remoteHash = crypto
+                .createHash('md5')
+                .update(remoteHashes)
+                .digest('hex');
+            
+            //Get Array of local Hashes
+            
 
-            const remoteFolderContents = fs.readdir(folder2);
-        
-            for (const file of localFolderContents) {
-                if (remoteFolderContents.includes(file)) {
-                    const localPath = path.join(localPath, file);
-                    const remotePath = path.join(folder2, file);
-        
-                    const statsLocal = fs.stat(file1Path);
-                    const statsRemote = fs.stat(file2Path);
-        
-                    // Compare file timestamps
-                    if (statsLocal.isFile() && statsRemote.isFile()) {
-                        //timestamp comparison
-                    }
-              } else {
-                return false;
-              }
-            }
-          } catch (error) {
+            return Promise.resolve(localHash === remoteHash);
+            
+        } catch (error) {
             console.error('Error comparing folders:', error);
-          }
+            return Promise.reject(error);
+        }
         
     }
+
 
 }
