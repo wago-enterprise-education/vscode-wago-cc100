@@ -3,6 +3,7 @@ import fs from 'fs';
 import { YamlCommands } from './yaml';
 import { ConnectionManager } from './connectionManager';
 import crypto from 'crypto';
+import path from 'path';
 
 //Roadmap for the extension
 //+1. Get Path to the file structure to be uploaded -> Throw Error if not available
@@ -17,25 +18,28 @@ let connectionManager = ConnectionManager.instance;
 export class Upload {
 
     /**
-     * This Method uploads the corresponding file to the WAGO Controller.
+     * This Method uploads the corresponding files to the WAGO Controller.
      * 
      * @param context 
      * @param id 
      */
 
-    public async uploadFile(context: vscode.ExtensionContext, id: number) {
+    public async uploadFile(id: number) {
         
         let controllers = YamlCommands.readWagoYaml();
         let src = controllers.nodes.$(id).src;
         let path = `${vscode.workspace.workspaceFolders![0].uri.fsPath}/${src}`;
         
-        if (fs.existsSync(`${path}/main.py`)) { 
-            let command = "cp " + path + " " + uploadPath;
-            await connectionManager.executeCommand(id, command);
-        } else {
+        if (!fs.existsSync(`${path}/main.py`)) { 
             vscode.window.showErrorMessage("The files to be uploaded do not exist.");
             return;
         }
+        if(await this.compareFolders(id, path)) {
+            vscode.window.showInformationMessage(`The files on ${controllers.nodes.$(id).displayname} are already up to date.`);
+            return;
+        }
+
+        await connectionManager.executeCommand(id, `cp ${path} ${uploadPath}`);
     }
 
     /**
@@ -48,10 +52,10 @@ export class Upload {
      * @returns True, if folder contents are equivalent, false if not
      */
     
-    private async compareFolders(id:number, src: string, localPath: string): Promise<Boolean> {
+    private async compareFolders(id:number, localPath: string): Promise<Boolean> {
         try {
             // Get Array of remote Hashes
-            let remoteHashes = await connectionManager.executeCommand(id, `find ${src} -type f -exec md5sum {} +`);
+            let remoteHashes = await connectionManager.executeCommand(id, `find ${uploadPath} -type f -exec md5sum {} +`);
             remoteHashes = remoteHashes
                 .replaceAll('\n', ' ')
                 .split(' ')
@@ -66,7 +70,20 @@ export class Upload {
                 .digest('hex');
             
             //Get Array of local Hashes
-            
+            let localHashes = await this.getLocalHashes(localPath);
+            localHashes = localHashes
+                .replaceAll('\n', ' ')
+                .split(' ')
+                .filter((value, index) => {
+                    return index % 2 !== 0;
+                })
+                .sort((a, b) => a.localeCompare(b))
+                .toString();
+
+            let localHash = crypto
+                .createHash('md5')
+                .update(remoteHashes)
+                .digest('hex');
 
             return Promise.resolve(localHash === remoteHash);
             
@@ -77,5 +94,74 @@ export class Upload {
         
     }
 
+    /**
+     * This Method is used to get the Hashes of all files in a directory
+     * It is made to resemble the output of the following linux command:
+     * find ${src} -type f -exec md5sum {} +
+     * 
+     * @param path 
+     * @returns A String with Hahes and Paths to all files in the directory
+     */
+
+    private async getLocalHashes(path: string): Promise<string> {
+        try {
+            const localFiles = await this.getFilesInDirectory(path);
+            const localHashes = "";
+
+            //For Each File from Path in localFiles Array create Hash and add to localHashes
+            for (const file of localFiles) {
+                let fileContent = fs.readFileSync(file);
+                let hash = crypto.createHash('md5')
+                    .update(fileContent)
+                    .digest('hex');
+                localHashes.concat(`${hash} ${file} \n`);
+            }
+
+            return Promise.resolve(localHashes);
+
+        } catch (error) {
+            console.error('Error getting local hashes:', error);
+            return Promise.reject(error);
+        }
+    }
+
+    /**
+     * This Method is used to get Paths to every file in the current directory
+     * 
+     * @param dirPath 
+     * @returns An Array with all Paths to files in the directory
+     */
+
+    private async getFilesInDirectory(dirPath: string): Promise<string[]> {
+        
+        try {
+            const files: string[] = [];
+            fs.readdir(dirPath, (err, files) => {
+                files = files;
+            });
+            
+            for (const file of files) {
+                const fullPath = path.join(dirPath, file);
+                let stat = fs.statSync(fullPath);
+                fs.stat(fullPath, (err, stats) => {
+                    stat = stats;
+                });
+            
+                if (stat.isDirectory()) {
+                    const subDirFiles = await this.getFilesInDirectory(fullPath);
+                    files.push(...subDirFiles);
+                } else if (stat.isFile()) {
+                    // If it's a file, add it to the list
+                    files.push(fullPath);
+                }
+            }
+
+            return files;
+
+        } catch (error) {
+            console.error('Error getting files in directory:', error);
+            return Promise.reject(error);
+        }
+    }
 
 }
