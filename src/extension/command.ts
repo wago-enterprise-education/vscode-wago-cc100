@@ -4,6 +4,7 @@ import yaml from 'yaml';
 import { ControllerProvider } from './view';
 import { YamlCommands } from './yaml';
 import { SSH }from '../ssh';
+import { constrainedMemory } from 'process';
 
 const FOLDER_REGEX = '^(?!(?:CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\.[^.]*)?$)[^<>:"/\\|?*\x00-\x1F]*[^<>:"/\\|?*\x00-\x1F\ .]$';
 
@@ -142,21 +143,31 @@ export class Command {
             let pathToFileOnStartup: string = '/etc/init.d/' + filenameOnStartup;
             let pathToSymbolicLink: string = '/etc/rc.d/' + filenameOnStartup;
             try {
+                //Erkennung welche Version?! Andere Methode in Arbeit
+                
+                //if Version = Version01:
+                    await ssh.killAllPythonScripts();
+                    await ssh.deleteFiles(destPath);
+                    await ssh.deleteFiles(pathToFileOnStartup);
+                    await ssh.deleteFiles(pathToSymbolicLink);           
+                    await ssh.killAllTails();
 
+                //elif Version = Version02:
+                //stoppen constainer manager.instance.executeCommant(controllerId, 'docker container stop #Container name')
+                //Container löschen manager.instance.executeCommant(controllerId, 'docker rm #Container name')
+                //image löschen manager.instance.executeCommant(controllerId, 'docker irm #Image name')
+                //Debugger jason Löschen await aah.deleteFiles( Path zur Datei);
 
-                await ssh.killAllPythonScripts();
-                await ssh.deleteFiles(destPath);
-                await ssh.deleteFiles(pathToFileOnStartup);
-                await ssh.deleteFiles(pathToSymbolicLink);
                 await ssh.digitalWrite(0);
                 await ssh.analogWrite(1, 0);
                 await ssh.analogWrite(2, 0);
                 await ssh.turnOffRunLed();
-                await ssh.killAllTails();
                 await ssh.startCodesysRuntime();
-                await ssh.disconnectSsh();
+                //Source Löschen await ssh.deleteFiles(Path zur Datei);
+                
                 YamlCommands.removeController(controllerId);
                 vscode.window.showInformationMessage(`Controller ${controller.label} removed`);
+
                 ControllerProvider.instance.refresh();
             } catch (error: any) {
                 vscode.window.showErrorMessage('Error removing controller');
