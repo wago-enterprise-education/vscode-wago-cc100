@@ -162,4 +162,26 @@ export class Upload {
         }
     }
 
+    /**
+     * This Method is used to update the docker-container on the WAGO Controller
+     * 
+     * @param id The id of the used controller
+     */
+
+    private async updateContainer(id: number) {
+        
+        /* Check latest available version 
+            => Registry where they are available or will it be in the Extension files?
+        */
+
+        /* Check current version on controller
+            => Read from a file in the container?
+        */
+
+        /* Compare Versions and update if necessary
+            => Stop and 'Delete and Upload' or 'Override' current container
+        */
+
+    }
+
 }
