@@ -4,6 +4,7 @@ import { YamlCommands } from './yaml';
 import { ConnectionManager } from './connectionManager';
 import crypto from 'crypto';
 import path from 'path';
+import { versionNr } from './helper'
 
 //Roadmap for the extension
 //+1. Get Path to the file structure to be uploaded -> Throw Error if not available
@@ -19,6 +20,7 @@ export class Upload {
 
     /**
      * This Method uploads the corresponding files to the WAGO Controller.
+     * The Procedure of the upload is determined by the versionNr of the Project
      * 
      * @param id The id of the used controller
      */
@@ -33,12 +35,30 @@ export class Upload {
             vscode.window.showErrorMessage("The files to be uploaded do not exist.");
             return;
         }
-        if(await this.compareFolders(id, path)) {
-            vscode.window.showInformationMessage(`The files on ${controllers.nodes.$(id).displayname} are already up to date.`);
-            return;
-        }
 
-        await connectionManager.executeCommand(id, `cp ${path} ${uploadPath}`);
+        if (versionNr == 0.2) {
+            if(await this.compareFolders(id, path)) {
+                vscode.window.showInformationMessage(`The files on ${controllers.nodes.$(id).displayname} are already up to date.`);
+                return;
+            }
+
+            await connectionManager.executeCommand(id, `cp ${path} ${uploadPath}`);
+        } else if (versionNr == 0.1) {
+            if(await this.compareFolders(id, path)) {
+                vscode.window.showInformationMessage(`The files on ${controllers.nodes.$(id).displayname} are already up to date.`);
+                return;
+            }
+
+            //Upload Files
+            await connectionManager.executeCommand(id, `cp ${path} ${uploadPath}`);
+            //Create bootapplication
+            await connectionManager.executeCommand(id, "echo '#!/bin/sh\n\npython3 /home/user/python_bootapplication/lib/runtimeCC.py &\nstty -F /dev/ttySTM1 cstopb brkint -icrnl -ixon -opost -isig icanon -iexten -echo' > /etc/init.d/S99_python_runtime");
+            //Execute File
+            await connectionManager.executeCommand(id, `python3 /home/user/python_bootapplication/lib/runtimeCC.py`);
+
+        } else {
+            console.error(`Unknown Project Version (${versionNr})`);
+        }
     }
 
     /**
