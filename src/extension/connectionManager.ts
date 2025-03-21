@@ -227,6 +227,29 @@ export class ConnectionManager {
     public getConnection(controllerId: number): Connection {
         return this.getControllerConnections(controllerId)[0].duplicate();
     }
+
+    /**
+     * Ping controller and return the time in milliseconds
+     * 
+     * @param controllerId Unique identifier of the controller
+     * @returns Promise<number> Time in milliseconds to ping the controller
+     */
+    public async ping(controllerId: number): Promise<number> {
+        let connection: Connection;
+        try {
+            connection = await this.getFreeConnection(controllerId);
+        } catch (error) {
+            throw error;
+        }
+
+        try {
+            let before = Date.now();
+            await connection.executeCommand('echo "ping"');
+            return Date.now() - before;
+        } catch (error) {
+            throw error;
+        }
+    }
 }
 
 

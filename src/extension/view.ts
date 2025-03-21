@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import * as yaml from 'yaml';
 import { YamlCommands } from './yaml';
+import { ConnectionManager } from './connectionManager';
 
 /**
  * Tree data provider for the controller view.
@@ -40,9 +41,16 @@ export class ControllerProvider implements vscode.TreeDataProvider<Controller | 
             let controllers = YamlCommands.getWagoYaml();
             if (!controllers) return Promise.resolve([]);
 
-            return Promise.resolve(
-                Object.keys(controllers.nodes).map(key => {
-                    return new Controller(key, controllers.nodes[key].displayname);
+            return Promise.all(
+                Object.keys(controllers.nodes).map(async (key) => {
+                    let online = false;
+                    try {
+                        await ConnectionManager.instance.ping(Number.parseInt(key));
+                        online = true;
+                    } catch (error) {
+                        console.debug(`Controller ${key} is offline`);
+                    }
+                    return new Controller(key, controllers.nodes[key].displayname, online);
                 })
             );
         } else {
@@ -88,10 +96,13 @@ export class Controller extends vscode.TreeItem {
      */
     constructor(
         public readonly id: string,
-        public readonly label: string
+        public readonly label: string,
+        public readonly online: boolean
     ) {
         super(label, vscode.TreeItemCollapsibleState.Collapsed);
         this.contextValue = 'controller';
+        this.tooltip = `ID: ${id} \nLabel: ${label} \nOnline: ${online}`;
+        this.iconPath = new vscode.ThemeIcon('circle-filled', new vscode.ThemeColor(online ? 'wagocc100.green' : 'wagocc100.red'));
     }
 }
 

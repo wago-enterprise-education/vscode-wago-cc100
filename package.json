@@ -63,6 +63,24 @@
   "activationEvents": [],
   "main": "./out/extension.js",
   "contributes": {
+    "colors": [
+      {
+        "id": "wagocc100.green",
+        "description": "WAGO Green",
+        "defaults": {
+          "dark": "#6EC800",
+          "light": "#6EC800"
+        }
+      },
+      {
+        "id": "wagocc100.red",
+        "description": "Red",
+        "defaults": {
+          "dark": "#c80000",
+          "light": "#c80000"
+        }
+      }
+    ],
     "commands": [
       {
         "command": "vscode-wago-cc100.application_upload",
