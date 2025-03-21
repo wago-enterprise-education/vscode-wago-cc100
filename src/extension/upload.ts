@@ -9,8 +9,8 @@ import path from 'path';
 //+1. Get Path to the file structure to be uploaded -> Throw Error if not available
 //+2. Create Command to send to the Connection Manager
 //+3. Integrate Hash-Comparison of files
-//4. Integrate Containerversion Check and update
-//5. Integrate File Upload in Case of older Version
+//4. Integrate File Upload in Case of older Version
+//5. Integrate Containerversion Check and update
 
 const uploadPath = "/home/user/python_bootapplication";
 let connectionManager = ConnectionManager.instance;
@@ -162,26 +162,31 @@ export class Upload {
         }
     }
 
-    /**
+}
+
+
+/**
      * This Method is used to update the docker-container on the WAGO Controller
+     * 
+     * The development of this method is planned for a later date due to time registrations
      * 
      * @param id The id of the used controller
      */
-
-    private async updateContainer(id: number) {
+/*
+private async updateContainer(id: number) {
         
-        /* Check latest available version 
-            => Registry where they are available or will it be in the Extension files?
-        */
+    Check latest available version 
+        => Location of the Container still unknown on this date, 
+        it is planned to be outside of the extension to preserve space,
+        perhaps in the registry on the external wago education Github
 
-        /* Check current version on controller
-            => Read from a file in the container?
-        */
+    Check current version on controller
+        => Version of the Image is readable from the name of the image,
 
-        /* Compare Versions and update if necessary
-            => Stop and 'Delete and Upload' or 'Override' current container
-        */
-
-    }
-
+    Compare Versions and update if necessary
+        => Stop the Program and the Container, 
+        remove the old Image, pull the new Image, 
+        start the Container, everything else is handled by the container itself
+    
 }
+*/
