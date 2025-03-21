@@ -43,8 +43,14 @@ RUN mkdir -p /app/bindvolumen
 
 # RUN python3 -m pip install -e /app/lib 
 
+COPY find_main_auf_controller.sh /app
+
 COPY main.py /app/
 
 COPY lib /app/lib
 
-CMD [ "python3","/app/main.py" ]
+COPY debugstart.sh /app
+
+RUN chmod +x debugstart.sh
+
+CMD [ "/app/debugstart.sh"]
