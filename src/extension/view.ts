@@ -101,7 +101,7 @@ export class Controller extends vscode.TreeItem {
     ) {
         super(label, vscode.TreeItemCollapsibleState.Collapsed);
         this.contextValue = 'controller';
-        this.tooltip = `ID: ${id} \nLabel: ${label} \nOnline: ${online}`;
+        this.tooltip = `ID: ${id} \nOnline: ${online}`;
         this.iconPath = new vscode.ThemeIcon('circle-filled', new vscode.ThemeColor(online ? 'wagocc100.green' : 'wagocc100.red'));
     }
 }

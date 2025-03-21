@@ -103,7 +103,17 @@
       {
         "command": "vscode-wago-cc100.upload",
         "title": "Upload",
-        "icon": "$(cloud-upload)"
+        "icon": "$(play)"
+      },
+      {
+        "command": "vscode-wago-cc100.upload-all",
+        "title": "Upload All",
+        "icon": "$(run-all)"
+      },
+      {
+        "command": "vscode-wago-cc100.debug",
+        "title": "Debug",
+        "icon": "$(debug-alt-small)"
       },
       {
         "command": "vscode-wago-cc100.edit-setting",
@@ -111,17 +121,25 @@
         "icon": "$(pencil)"
       },
       {
-        "command": "vscode-wago-cc100.remove-controller",
-        "title": "Remove Controller",
-        "icon": "$(remove)"
+        "command": "vscode-wago-cc100.rename-controller",
+        "title": "Rename"
       },
       {
         "command": "vscode-wago-cc100.reset-controller",
-        "title": "Remove Controller"
+        "title": "Reset"
+      },
+      {
+        "command": "vscode-wago-cc100.remove-controller",
+        "title": "Remove",
+        "icon": "$(remove)"
+      },
+      {
+        "command": "vscode-wago-cc100.remove-reset-controller",
+        "title": "Remove & Reset"
       },
       {
         "command": "vscode-wago-cc100.refresh-view",
-        "title": "Refresh View",
+        "title": "Refresh",
         "icon": "$(sync)"
       },
       {
@@ -180,6 +198,11 @@
         {
           "command": "vscode-wago-cc100.add-controller",
           "when": "view == controller-view",
+          "group": "navigation@3"
+        },
+        {
+          "command": "vscode-wago-cc100.upload-all",
+          "when": "view == controller-view",
           "group": "navigation@2"
         },
         {
@@ -192,22 +215,37 @@
         {
           "command": "vscode-wago-cc100.upload",
           "when": "view == controller-view  && viewItem == controller",
-          "group": "inline@4"
+          "group": "inline@3"
+        },
+        {
+          "command": "vscode-wago-cc100.debug",
+          "when": "view == controller-view  && viewItem == controller",
+          "group": "inline@2"
         },
         {
           "command": "vscode-wago-cc100.iocheck",
           "when": "view == controller-view && viewItem == controller",
-          "group": "inline@3"
+          "group": "inline@1"
         },
         {
-          "command": "vscode-wago-cc100.edit-setting",
+          "command": "vscode-wago-cc100.rename-controller",
           "when": "view == controller-view && viewItem == controller",
-          "group": "inline@2"
+          "group": "@1"
         },
+        {
+          "command": "vscode-wago-cc100.reset-controller",
+          "when": "view == controller-view && viewItem == controller",
+          "group": "remove@1"
+        }, 
         {
           "command": "vscode-wago-cc100.remove-controller",
           "when": "view == controller-view && viewItem == controller",
-          "group": "inline@1"
+          "group": "remove@2"
+        },
+        {
+          "command": "vscode-wago-cc100.remove-reset-controller",
+          "when": "view == controller-view && viewItem == controller",
+          "group": "remove@3"
         },
         {
           "command": "vscode-wago-cc100.edit-setting",
