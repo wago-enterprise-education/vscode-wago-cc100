@@ -5,6 +5,8 @@ import { ControllerProvider } from './view';
 import { YamlCommands } from './yaml';
 import { SSH }from '../ssh';
 import { constrainedMemory } from 'process';
+import {versionNr} from './helper'
+import { ConnectionManager } from './connectionManager';
 
 const FOLDER_REGEX = '^(?!(?:CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\.[^.]*)?$)[^<>:"/\\|?*\x00-\x1F]*[^<>:"/\\|?*\x00-\x1F\ .]$';
 
@@ -110,6 +112,70 @@ export class Command {
             ControllerProvider.instance.refresh();
         }));
 
+        commands.push(vscode.commands.registerCommand('vscode-wago-cc100.reset-controller', async (controller) => {
+            if(!vscode.workspace.workspaceFolders) {
+                vscode.window.showErrorMessage('No workspace is open');
+                return;
+            }
+            let controllerId = null;
+            if(!controller) {
+                const nodes = YamlCommands.readWagoYaml()["nodes"];
+                controller = await vscode.window.showQuickPick(
+                    Object.keys(nodes).map((key: any) => ({
+                        id: key,	
+                        label: nodes[key].displayname,
+                        description: nodes[key].description
+                    })),
+                    {
+                        title: 'Reset Controller',
+                        canPickMany: false
+                    }
+                );
+                if (!controller) return;
+            } 
+            await vscode.window.showWarningMessage(`Reset ${controller.label}`, 'Yes', 'No').then((value) => {
+                if(value === 'Yes') controllerId = controller.id;
+            });
+            if(!controllerId) return;
+            
+            let controllerSettings = YamlCommands.readControllerYaml(controllerId);
+            let ssh = new SSH(controllerSettings.ip_adress, controllerSettings.port, controllerSettings.username, 'wago');
+            let filenameOnStartup: string = 'S99_python_runtime';
+            let destPath: string = '/home/user/python_bootapplication/';
+            let pathToFileOnStartup: string = '/etc/init.d/' + filenameOnStartup;
+            let pathToSymbolicLink: string = '/etc/rc.d/' + filenameOnStartup;
+
+            try {
+                if (versionNr == 1.0){
+                    await ssh.killAllPythonScripts();
+                    await ssh.deleteFiles(destPath);
+                    await ssh.deleteFiles(pathToFileOnStartup);
+                    await ssh.deleteFiles(pathToSymbolicLink);           
+                    await ssh.killAllTails();
+                }
+
+                else if (versionNr == 2.0){
+                    ConnectionManager .instance.executeCommand(controllerId, 'docker container stop #Container name')
+                    ConnectionManager.instance.executeCommand(controllerId, 'docker rm #Container name')
+                    ConnectionManager.instance.executeCommand(controllerId, 'docker irm #Image name')
+                    await ssh.deleteFiles('#Path zur Datei');
+                }
+
+                await ssh.digitalWrite(0);
+                await ssh.analogWrite(1, 0);
+                await ssh.analogWrite(2, 0);
+                await ssh.turnOffRunLed();
+                await ssh.startCodesysRuntime();
+                await ssh.deleteFiles('#Path zur Datei');
+                
+                vscode.window.showInformationMessage(`Controller ${controller.label} reset`);
+
+                ControllerProvider.instance.refresh();
+            } catch (error: any) {
+                vscode.window.showErrorMessage('Error reseting controller');
+            }
+        }));
+
         commands.push(vscode.commands.registerCommand('vscode-wago-cc100.remove-controller', async (controller) => {
             if(!vscode.workspace.workspaceFolders) {
                 vscode.window.showErrorMessage('No workspace is open');
@@ -137,34 +203,7 @@ export class Command {
             if(!controllerId) return;
             
             let controllerSettings = YamlCommands.readControllerYaml(controllerId);
-            let ssh = new SSH(controllerSettings.ip_adress, controllerSettings.port, controllerSettings.username, 'wago');
-            let filenameOnStartup: string = 'S99_python_runtime';
-            let destPath: string = '/home/user/python_bootapplication/';
-            let pathToFileOnStartup: string = '/etc/init.d/' + filenameOnStartup;
-            let pathToSymbolicLink: string = '/etc/rc.d/' + filenameOnStartup;
             try {
-                //Erkennung welche Version?! Andere Methode in Arbeit
-                
-                //if Version = Version01:
-                    await ssh.killAllPythonScripts();
-                    await ssh.deleteFiles(destPath);
-                    await ssh.deleteFiles(pathToFileOnStartup);
-                    await ssh.deleteFiles(pathToSymbolicLink);           
-                    await ssh.killAllTails();
-
-                //elif Version = Version02:
-                //stoppen constainer manager.instance.executeCommant(controllerId, 'docker container stop #Container name')
-                //Container löschen manager.instance.executeCommant(controllerId, 'docker rm #Container name')
-                //image löschen manager.instance.executeCommant(controllerId, 'docker irm #Image name')
-                //Debugger jason Löschen await aah.deleteFiles( Path zur Datei);
-
-                await ssh.digitalWrite(0);
-                await ssh.analogWrite(1, 0);
-                await ssh.analogWrite(2, 0);
-                await ssh.turnOffRunLed();
-                await ssh.startCodesysRuntime();
-                //Source Löschen await ssh.deleteFiles(Path zur Datei);
-                
                 YamlCommands.removeController(controllerId);
                 vscode.window.showInformationMessage(`Controller ${controller.label} removed`);
 

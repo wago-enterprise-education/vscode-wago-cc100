@@ -1,6 +1,8 @@
 import * as vscode from 'vscode';
 import { ControllerProvider } from './view';
 
+export let versionNr = 0;
+
 /**
  * Check if the project is valid by checking if the wago.yaml file is present in the root folder.
  */
@@ -16,8 +18,25 @@ function findWagoYaml() {
     vscode.workspace.findFiles('**/wago.yaml', '', 1).then((files) => {
         if(files.length > 0 && checkIfInRootFolder(files[0])) {
             vscode.commands.executeCommand('setContext', 'wagoYamlPresent', true);
+            versionNr = 2.0
         } else {
             vscode.commands.executeCommand('setContext', 'wagoYamlPresent', false);
+            findSettingsJson();
+        }
+        ControllerProvider.instance.refresh();
+    });
+}
+
+/**
+ * Find the settings.json file in the workspace.
+ */
+function findSettingsJson() {
+    vscode.workspace.findFiles('**/setting,json', '', 1).then((files) => {
+        if(files.length > 0 && checkIfInRootFolder(files[0])) {
+            vscode.commands.executeCommand('setContext', 'settingsJsonPresent', true);
+            versionNr = 1.0
+        } else {
+            vscode.commands.executeCommand('setContext', 'settingsJsonPresent', false);       
         }
         ControllerProvider.instance.refresh();
     });

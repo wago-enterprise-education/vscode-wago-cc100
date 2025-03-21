@@ -98,6 +98,10 @@
         "icon": "$(remove)"
       },
       {
+        "command": "vscode-wago-cc100.reset-controller",
+        "title": "Remove Controller"
+      },
+      {
         "command": "vscode-wago-cc100.refresh-view",
         "title": "Refresh View",
         "icon": "$(sync)"
