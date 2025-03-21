@@ -20,8 +20,7 @@ export class Upload {
     /**
      * This Method uploads the corresponding files to the WAGO Controller.
      * 
-     * @param context 
-     * @param id 
+     * @param id The id of the used controller
      */
 
     public async uploadFile(id: number) {
@@ -46,10 +45,9 @@ export class Upload {
      * This method is used to compare the contents of a folder on the WAGO Controller with the local folder, 
      * using Hashes to compare the contents.
      * 
-     * @param id 
-     * @param src 
-     * @param localPath 
-     * @returns True, if folder contents are equivalent, false if not
+     * @param id The id of the used controller
+     * @param localPath The Path to the local folder with the python program
+     * @returns Returns true, if folder contents are equivalent, false if not
      */
     
     private async compareFolders(id:number, localPath: string): Promise<Boolean> {
@@ -99,8 +97,8 @@ export class Upload {
      * It is made to resemble the output of the following linux command:
      * find ${src} -type f -exec md5sum {} +
      * 
-     * @param path 
-     * @returns A String with Hahes and Paths to all files in the directory
+     * @param path The Path to the directory to get the Hashes from
+     * @returns Returns a String with Hashes and Paths to all files in the directory
      */
 
     private async getLocalHashes(path: string): Promise<string> {
@@ -128,8 +126,8 @@ export class Upload {
     /**
      * This Method is used to get Paths to every file in the current directory
      * 
-     * @param dirPath 
-     * @returns An Array with all Paths to files in the directory
+     * @param dirPath The current folder to be iterated
+     * @returns Returns an Array with all Paths to files in the directory
      */
 
     private async getFilesInDirectory(dirPath: string): Promise<string[]> {
