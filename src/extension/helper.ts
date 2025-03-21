@@ -18,7 +18,7 @@ function findWagoYaml() {
     vscode.workspace.findFiles('**/wago.yaml', '', 1).then((files) => {
         if(files.length > 0 && checkIfInRootFolder(files[0])) {
             vscode.commands.executeCommand('setContext', 'wagoYamlPresent', true);
-            versionNr = 2.0
+            versionNr = 0.2
         } else {
             vscode.commands.executeCommand('setContext', 'wagoYamlPresent', false);
             findSettingsJson();
@@ -34,7 +34,7 @@ function findSettingsJson() {
     vscode.workspace.findFiles('**/setting,json', '', 1).then((files) => {
         if(files.length > 0 && checkIfInRootFolder(files[0])) {
             vscode.commands.executeCommand('setContext', 'settingsJsonPresent', true);
-            versionNr = 1.0
+            versionNr = 0.1
         } else {
             vscode.commands.executeCommand('setContext', 'settingsJsonPresent', false);       
         }
