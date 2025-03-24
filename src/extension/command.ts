@@ -139,7 +139,7 @@ export class Command {
             if(!controllerId) return;
             
             let controllerSettings = YamlCommands.getControllerYaml(controllerId);
-            let ssh = new SSH(controllerSettings.ip_adress, controllerSettings.port, controllerSettings.username, 'wago');
+            let ssh = new SSH(controllerSettings.ip_adress, controllerSettings.port, controllerSettings.username, '');
             let filenameOnStartup: string = 'S99_python_runtime';
             let destPath: string = '/home/user/python_bootapplication/';
             let pathToFileOnStartup: string = '/etc/init.d/' + filenameOnStartup;
