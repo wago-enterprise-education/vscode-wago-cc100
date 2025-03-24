@@ -6,25 +6,28 @@ export let versionNr = 0;
 /**
  * Check if the project is valid by checking if the wago.yaml file is present in the root folder.
  */
-export function verifyProject() {
-    findWagoYaml();
+export async function verifyProject(): Promise<Boolean> {
+    let wagoProject = await findWagoYaml();
     listenOnFileChangeWagoYaml();
+    return wagoProject;
 }
 
 /**
  * Find the wago.yaml file in the workspace.
  */
-function findWagoYaml() {
-    vscode.workspace.findFiles('**/wago.yaml', '', 1).then((files) => {
+async function findWagoYaml(): Promise<Boolean> {
+    let wagoProject = await vscode.workspace.findFiles('**/wago.yaml', '', 1).then((files) => {
         if(files.length > 0 && checkIfInRootFolder(files[0])) {
-            vscode.commands.executeCommand('setContext', 'wagoYamlPresent', true);
             versionNr = 0.2
+            return true;
         } else {
-            vscode.commands.executeCommand('setContext', 'wagoYamlPresent', false);
             findSettingsJson();
+            return false;
         }
-        ControllerProvider.instance.refresh();
     });
+    vscode.commands.executeCommand('setContext', 'wagoYamlPresent', wagoProject);
+    ControllerProvider.instance.refresh();
+    return wagoProject;
 }
 
 /**
@@ -38,8 +41,9 @@ function findSettingsJson() {
         } else {
             vscode.commands.executeCommand('setContext', 'settingsJsonPresent', false);       
         }
-        ControllerProvider.instance.refresh();
+        return false;
     });
+    
 }
 
 /**

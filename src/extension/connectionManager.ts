@@ -46,9 +46,16 @@ export class ConnectionManager {
      * @param password Password to connect to the controller (optional)
      * @throws Error if the controller already exists
      */
-    public addController(controllerId: number, urn: string, username: string, password?: string | undefined) {   
-        if(!this.connections.find(connection => connection.controllerId === controllerId)) throw new Error('Controller already exists');
-        this.connections.push(new Connection(controllerId, urn, username, password));
+    public async addController(controllerId: number, urn: string, username: string, password?: string | undefined) {
+        if(this.connections.find(connection => connection.controllerId === controllerId) !== undefined) throw new Error('Controller already exists');
+        const connection = new Connection(controllerId, urn, username)
+        connection.init(password)
+            .then(() => {
+                this.connections.push(connection)
+            })
+            .catch((error) => {
+                throw error
+            })
     }
 
     /**
@@ -275,20 +282,34 @@ class Connection {
      * @param username - The username used for authentication.
      * @param password - (Optional) The password for authentication. If not provided, SSH key authentication is used.
      */
-    constructor(controllerId: number, urn: string, username: string, password?: string | undefined) {
+    constructor(controllerId: number, urn: string, username: string) {
         this.controllerId = controllerId;
         this.urn = urn;
         this.username = username;
 
-        this.client = new Client();
-        
-        (async () => {
+        this.client = new Client()
+    }
+
+    public init(password?: string | undefined): Promise<void> {
+        return new Promise((resolve, reject) => {
             if(password) {
-                await this.connectWithPassword(password);
+                this.connectWithPassword(password)
+                    .then(() => {
+                        resolve()
+                    })
+                    .catch((error) => {
+                        reject(error)
+                    })
             } else {
-                await this.connect();
+                this.connect()
+                    .then(() => {
+                        resolve()
+                    })
+                    .catch((error) => {
+                        reject(error)
+                    })
             }
-        })();
+        })
     }
 
     /**
@@ -338,28 +359,51 @@ class Connection {
      * 
      * @param password - The password for authentication.
      */
-    private async connectWithPassword(password: string) {
-        this.client.connect({
-            host: this.urn.split(':')[0],
-            port: parseInt(this.urn.split(':')[1]),
-            username: this.username,
-            password: password
-        })
-        this.sendSSHKey();
+    private connectWithPassword(password: string): Promise<void> {
+        return new Promise((resolve, reject) => {
+            this.client
+                .on('ready', () => {
+                    console.debug(`Connected to ${this.urn}`)
+                    this.sendSSHKey();
+                    resolve();
+                })
+                .on('error', (error) => {
+                    console.log("error")
+                    reject(error)
+                })
+                .connect({
+                    host: "192.168.42.42",
+                    port: 22,
+                    username: "root",
+                    password: password
+                })
+            }
+        )
     }
+
 
     /**
      * Establishes a connection to the remote controller using an SSH key.
      */
-    private async connect() {
+    private connect(): Promise<void> {
         this.generateSSHKey();
 
-        this.client.connect({
-            host: this.urn.split(':')[0],
-            port: parseInt(this.urn.split(':')[1]),
-            username: this.username,
-            privateKey: fs.readFileSync(privateKeyPath)
-        })
+        return new Promise((resolve, reject) => {
+            this.client
+                .on('ready', () => {
+                    console.debug(`Connected to ${this.urn}`)
+                    resolve()
+                })
+                .on('error', (error) => {
+                    reject()
+                })
+                .connect({
+                    host: this.urn.split(':')[0],
+                    port: parseInt(this.urn.split(':')[1]),
+                    username: this.username,
+                    privateKey: fs.readFileSync(privateKeyPath)
+                })
+        }) 
     }
 
     /**

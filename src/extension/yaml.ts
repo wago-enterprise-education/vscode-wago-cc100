@@ -115,7 +115,7 @@ export class YamlCommands {
      *
      * @returns {number} The next available controller ID.
      */
-    private static findNextID() {
+    private static findNextID(): number {
         let yaml = this.getWagoYaml();
         let id = 1;
         while (yaml.controllers[id] != undefined) {
@@ -146,7 +146,7 @@ export enum wagoSettings {
 export enum controllerSettings {
     version = 'version',
     connection = 'connection',
-    ip_adress = 'ip_adress',
+    ip = 'ip',
     port = 'port',
     user = 'user',
     autoupdate = 'autoupdate'

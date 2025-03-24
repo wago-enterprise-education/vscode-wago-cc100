@@ -1,6 +1,6 @@
 version: 0.2.0
 connection: usb-c
-ip_adress: 192.168.42.42
+ip: 192.168.42.42
 port: 22
 user: root
 autoupdate: on
