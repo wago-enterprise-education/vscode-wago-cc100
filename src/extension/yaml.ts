@@ -1,6 +1,5 @@
 import fs from 'fs'
 import YAML from 'yaml'
-import { window } from 'vscode'
 import * as vscode from 'vscode'
 
 export class YamlCommands {
@@ -118,20 +117,6 @@ export class YamlCommands {
         return id;
     }
 
-    /*public registerYamlCommands(context: vscode.ExtensionContext) {
-        context.subscriptions.push(vscode.commands.registerCommand("vscode-wago-cc100.create-controller", async () => {
-            
-            await YamlCommands.createController(context);
-
-        }));
-
-        // context.subscriptions.push(vscode.commands.registerCommand("vscode-wago-cc100.write-controller", async () => {
-
-        //     let yaml = (`${vscode.workspace.workspaceFolders![0].uri.fsPath}/controller/controller1.yaml`);
-        //     await YamlCommands.write(yaml, settings.user, "test");
-
-        // }));
-    } */
 }
 
 
