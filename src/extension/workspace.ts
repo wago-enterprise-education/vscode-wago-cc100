@@ -25,7 +25,7 @@ export class Workspace {
                 wsPath = ws.path.toString().substring(0, ws.path.toString().length - this.pathToLibFile.length);
             }
 
-            return wsPath;
+            return ws.fsPath;
         }
         else {
             return "Error: Could not find a project";

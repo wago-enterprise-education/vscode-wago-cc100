@@ -79,7 +79,7 @@ export class ControllerProvider implements vscode.TreeDataProvider<Controller | 
  * Represents a controller item in a VS Code tree view.
  * Extends the `vscode.TreeItem` class.
  */
-class Controller extends vscode.TreeItem {
+export class Controller extends vscode.TreeItem {
     /**
      * Creates an instance of the Controller class.
      * 
