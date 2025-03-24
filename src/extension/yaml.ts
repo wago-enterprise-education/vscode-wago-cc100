@@ -27,7 +27,7 @@ export class YamlCommands {
      * 
      * @param id Id of the controller
      * @param attribute Name of the attribute that is to be changed (enum)
-     * @param value value that is to be written into the attribute (string)
+     * @param value Value that is to be written into the attribute (string)
      */
     public static writeWagoYaml(id: number, attribute: wagoSettings, value: string) {
         let yaml = this.getWagoYaml();
@@ -40,11 +40,11 @@ export class YamlCommands {
      * 
      * @param id Id of the controller
      * @param attribute Name of the attribute that is to be changed (enum)
-     * @param value value that is to be written into the attribute (string)
+     * @param value Value that is to be written into the attribute (string)
      */
-    public static writeController(id: number, attribute: controllerSettings, value: string) {
-        let yaml = this.getWagoYaml();
-        yaml.nodes[id][attribute] = value;
+    public static writeControllerYaml(id: number, attribute: controllerSettings, value: string) {
+        let yaml = this.getControllerYaml(id);
+        yaml[attribute] = value;
         fs.writeFileSync(`${vscode.workspace.workspaceFolders![0].uri.fsPath}/wago.yaml`, YAML.stringify(yaml, null, "\t"));
     }
 
