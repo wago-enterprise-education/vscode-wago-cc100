@@ -27,20 +27,20 @@
                 "port": 5678
             }
         },
-        {
+         {
             "name": "Python Debugger: Attach",
             "type": "debugpy",
             "request": "attach",
             "connect": {
               "host": "192.168.42.42",
-              "port": 8765,
-              "pathMappings": [
-                {
-                    "localRoot": "${workspaceFolder}",
-                    "remoteRoot": "/home/user/python_bootapplication"
-                }
-	        ]
-            }
+              "port": 8765
+            },
+            "pathMappings": [
+    {
+      "localRoot": "${workspaceFolder}",
+      "remoteRoot": "/app"
+    }
+    ]
         }
     ]
 }

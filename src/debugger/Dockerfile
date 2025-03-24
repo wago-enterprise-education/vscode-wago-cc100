@@ -39,18 +39,19 @@ RUN apk --no-cache --no-progress --update add --repository http://dl-cdn.alpinel
 
 RUN pip install debugpy 
 
-RUN mkdir -p /app/bindvolumen
+#RUN mkdir -p /app/bindvolumen
 
 # RUN python3 -m pip install -e /app/lib 
 
-COPY find_main_auf_controller.sh /app
+COPY debugmain.sh /app
 
-COPY main.py /app/
+COPY main.py /app
 
 COPY lib /app/lib
 
 COPY debugstart.sh /app
 
 RUN chmod +x debugstart.sh
+RUN chmod +x /app/debugmain.sh
 
 CMD [ "/app/debugstart.sh"]
