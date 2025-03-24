@@ -3,7 +3,7 @@ import YAML from 'yaml'
 import * as vscode from 'vscode'
 
 export class YamlCommands {
-    
+
     /**
      * Function to read the content of the wago.yaml file.
      * 
@@ -61,7 +61,6 @@ export class YamlCommands {
      */
     public static async createController(context: vscode.ExtensionContext, displayname: string, description: string, engine: string, src: string, img: string) {
         
-
         //Addition of the Controller to wago.yaml
         let id = this.findNextID();
 
@@ -88,7 +87,6 @@ export class YamlCommands {
         });
     }
 
-
     /**
      * Removes a controller configuration by its ID.
      *
@@ -108,7 +106,6 @@ export class YamlCommands {
         //remove Controller configuration file
         fs.unlinkSync(`${vscode.workspace.workspaceFolders![0].uri.fsPath}/controllers/controller${id}.yaml`);
     }
-
     
     /**
      * Finds the next available ID for a controller in the Wago YAML configuration.
@@ -126,7 +123,6 @@ export class YamlCommands {
         }
         return id;
     }
-
 }
 
 /**
@@ -155,4 +151,3 @@ export enum controllerSettings {
     user = 'user',
     autoupdate = 'autoupdate'
 }
-
