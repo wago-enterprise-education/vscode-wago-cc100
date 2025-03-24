@@ -227,16 +227,16 @@ export class webviewIoCheck {
             await ConnectionManager.instance.executeCommand(id,"cat /etc/calib").then((tmp: string) => {
                 this.convertAnalogData(tmp);
             });
-
-            await this.startEventForSerialCommunication();
-            // await this.startEventForSwitch();
-            // await ssh.setupSerialInterface();
+            // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            // später die Serial Kommuniaktion abändern
+            // await this.startEventForSerialCommunication();
+            // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            await this.startEventForSwitch(id);
+            await ssh.setupSerialInterface();
+            await ConnectionManager.instance.executeCommand(id,"stty -F /dev/ttySTM1 cstopb brkint -icrnl -ixon -opost -isig icanon -iexten -echo");
             this.ioCheckPanel.webview.postMessage({
                 command: 'start'
             })
-
-
-
             this.ioCheckPanel.webview.onDidReceiveMessage(
                 async message => {
                     if (this.connectionLost) {
@@ -244,7 +244,7 @@ export class webviewIoCheck {
                             command: 'connection_lost'
                         })
                         vscode.window.showErrorMessage('Connection lost')
-                        await this.tryToConnect()
+                        // await this.tryToConnect()
                         return
                     }
                     switch (message.command) {
@@ -485,47 +485,47 @@ export class webviewIoCheck {
      * 
      * @returns void if a connection can be established
      */
-    private async tryToConnect() {
-        this.windowClosed = false;
-        let connectionSuccesful: boolean = false
-        let resultConnection: string
+    // private async tryToConnect() {
+    //     this.windowClosed = false;
+    //     let connectionSuccesful: boolean = false
+    //     let resultConnection: string
 
-        while (!connectionSuccesful) {
-            resultConnection = (await ssh.sshConnectionWithoutKey()).toString()
-            console.log(resultConnection)
-            if (!resultConnection.startsWith("Error")) {
-                connectionSuccesful = true
-                this.connectionLost = false
-                await this.startEventForSerialCommunication();
-                await this.startEventForSwitch();
-                await ssh.setupSerialInterface();
-                this.ioCheckPanel?.webview.postMessage({
-                    command: 'start'
-                })
-                vscode.window.showInformationMessage("Connected to CC100")
-                return
-            }
+    //     while (!connectionSuccesful) {
+    //         resultConnection = (await ssh.sshConnectionWithoutKey()).toString()
+    //         console.log(resultConnection)
+    //         if (!resultConnection.startsWith("Error")) {
+    //             connectionSuccesful = true
+    //             this.connectionLost = false
+    //             await this.startEventForSerialCommunication();
+    //             await this.startEventForSwitch();
+    //             await ssh.setupSerialInterface();
+    //             this.ioCheckPanel?.webview.postMessage({
+    //                 command: 'start'
+    //             })
+    //             vscode.window.showInformationMessage("Connected to CC100")
+    //             return
+    //         }
 
-            await this.Workspace.readSettingsWriteSshProperties(this.wsPath, ssh).then(result => {
-                if (typeof result !== 'boolean') {
-                    ssh = result;
-                }
-                else {
-                    return result;
-                }
-            });
+    //         await this.Workspace.readSettingsWriteSshProperties(this.wsPath, ssh).then(result => {
+    //             if (typeof result !== 'boolean') {
+    //                 ssh = result;
+    //             }
+    //             else {
+    //                 return result;
+    //             }
+    //         });
 
-            if (this.windowClosed) {
-                this.connectionLost = false
-                return
-            }
-        }
-    }
+    //         if (this.windowClosed) {
+    //             this.connectionLost = false
+    //             return
+    //         }
+    //     }
+    // }
 
     private async startEventForSerialCommunication() {
         let data;
         await ssh.killAllCat();
-        await ssh.ssh2Connect()
+        await ssh.ssh2Connect();
         await ssh.serialRead((rxData: Buffer) => {
             data = this.removeAdditionalData(rxData.toString())
             this.ioCheckPanel?.webview.postMessage({
@@ -535,18 +535,15 @@ export class webviewIoCheck {
         });
     }
 
-    private async startEventForSwitch() {
-        ssh.readSwitchStatus((switch1: Buffer[]) => {
-            if (switch1[10].toString() != this.switchStatus) {
-                this.switchStatus = switch1[10].toString()
-            }
-        }).then((switch2: any) => {
-            if (switch2 == 'run') {
+    private async startEventForSwitch(id: number) {
+        await ConnectionManager.instance.executeCommand(id,"./etc/config-tools/get_run_stop_switch_value").then((tmp: string) => {
+            if (tmp == 'run') {
                 this.switchStatus = '1'
             }
             else {
                 this.switchStatus = '2'
             }
-        })
+        });
+
     }
 }
