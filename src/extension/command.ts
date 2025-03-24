@@ -155,10 +155,9 @@ export class Command {
                 }
 
                 else if (versionNr == 2.0){
-                    ConnectionManager .instance.executeCommand(controllerId, 'docker container stop #Container name')
+                    ConnectionManager.instance.executeCommand(controllerId, 'docker container stop #Container name')
                     ConnectionManager.instance.executeCommand(controllerId, 'docker rm #Container name')
                     ConnectionManager.instance.executeCommand(controllerId, 'docker irm #Image name')
-                    await ssh.deleteFiles('#Path zur Datei');
                 }
 
                 await ssh.digitalWrite(0);

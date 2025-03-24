@@ -8,7 +8,7 @@ export let versionNr = 0;
  */
 export function verifyProject() {
     findWagoYaml();
-    listenOnFileChange();
+    listenOnFileChangeWagoYaml();
 }
 
 /**
@@ -45,7 +45,7 @@ function findSettingsJson() {
 /**
  * Listen for changes on the workspace and check if the wago.yaml file is present.
  */
-function listenOnFileChange() {
+function listenOnFileChangeWagoYaml() {
     const fileWatcher = vscode.workspace.createFileSystemWatcher('**/wago.yaml');
 
     fileWatcher.onDidChange((uri: vscode.Uri) => {
@@ -61,6 +61,29 @@ function listenOnFileChange() {
     fileWatcher.onDidDelete((uri: vscode.Uri) => {
         if(!checkIfInRootFolder(uri)) return
         vscode.commands.executeCommand('setContext', 'wagoYamlPresent', false);
+        ControllerProvider.instance.refresh();
+    });
+}
+
+/**
+ * Listen for changes on the workspace and check if the setting.json file is present.
+ */
+function listenOnFileChangeSettingsJson() {
+    const fileWatcher = vscode.workspace.createFileSystemWatcher('**/setting.json');
+
+    fileWatcher.onDidChange((uri: vscode.Uri) => {
+        vscode.commands.executeCommand('setContext', 'settingJsonPresent', checkIfInRootFolder(uri));
+        ControllerProvider.instance.refresh();
+    });
+
+    fileWatcher.onDidCreate((uri: vscode.Uri) => {
+        vscode.commands.executeCommand('setContext', 'settingJsonPresent', checkIfInRootFolder(uri));
+        ControllerProvider.instance.refresh();
+    });
+
+    fileWatcher.onDidDelete((uri: vscode.Uri) => {
+        if(!checkIfInRootFolder(uri)) return
+        vscode.commands.executeCommand('setContext', 'settingJsonPresent', false);
         ControllerProvider.instance.refresh();
     });
 }
