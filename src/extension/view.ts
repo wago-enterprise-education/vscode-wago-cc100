@@ -37,7 +37,7 @@ export class ControllerProvider implements vscode.TreeDataProvider<Controller | 
      */
     getChildren(element?: Controller | ControllerItem | undefined): vscode.ProviderResult<Controller[] | ControllerItem[]> {
         if(!element) {
-            let controllers = YamlCommands.readWagoYaml();
+            let controllers = YamlCommands.getWagoYaml();
             if (!controllers) return Promise.resolve([]);
 
             return Promise.resolve(
@@ -50,7 +50,7 @@ export class ControllerProvider implements vscode.TreeDataProvider<Controller | 
                 const settings = yaml.parse(`${vscode.workspace.workspaceFolders![0].uri.fsPath}/controller/${element.id}.yaml`);
                 if (!settings) return Promise.resolve([]);
                 
-                const nodes = YamlCommands.readWagoYaml()["nodes"];
+                const nodes = YamlCommands.getWagoYaml()["nodes"];
 
                 const settingArray = []
 

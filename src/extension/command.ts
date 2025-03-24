@@ -67,7 +67,7 @@ export class Command {
                     if(!RegExp(FOLDER_REGEX).test(value)) {
                         return 'Invalid controller name';
                     }
-                    if(YamlCommands.readWagoYaml()?.nodes[value]) {
+                    if(YamlCommands.getWagoYaml()?.nodes[value]) {
                         return 'Controller already exists';
                     }
                     return null;
@@ -119,7 +119,7 @@ export class Command {
             }
             let controllerId = null;
             if(!controller) {
-                const nodes = YamlCommands.readWagoYaml()["nodes"];
+                const nodes = YamlCommands.getWagoYaml()["nodes"];
                 controller = await vscode.window.showQuickPick(
                     Object.keys(nodes).map((key: any) => ({
                         id: key,	
@@ -138,7 +138,7 @@ export class Command {
             });
             if(!controllerId) return;
             
-            let controllerSettings = YamlCommands.readControllerYaml(controllerId);
+            let controllerSettings = YamlCommands.getControllerYaml(controllerId);
             let ssh = new SSH(controllerSettings.ip_adress, controllerSettings.port, controllerSettings.username, 'wago');
             let filenameOnStartup: string = 'S99_python_runtime';
             let destPath: string = '/home/user/python_bootapplication/';
@@ -183,7 +183,7 @@ export class Command {
             }
             let controllerId = null;
             if(!controller) {
-                const nodes = YamlCommands.readWagoYaml()["nodes"];
+                const nodes = YamlCommands.getWagoYaml()["nodes"];
                 controller = await vscode.window.showQuickPick(
                     Object.keys(nodes).map((key: any) => ({
                         id: key,	
@@ -202,7 +202,7 @@ export class Command {
             });
             if(!controllerId) return;
             
-            let controllerSettings = YamlCommands.readControllerYaml(controllerId);
+            let controllerSettings = YamlCommands.getControllerYaml(controllerId);
             try {
                 YamlCommands.removeController(controllerId);
                 vscode.window.showInformationMessage(`Controller ${controller.label} removed`);
