@@ -239,21 +239,31 @@ export class webviewIoCheck {
             })
             this.ioCheckPanel.webview.onDidReceiveMessage(
                 async message => {
-                    if (this.connectionLost) {
-                        this.ioCheckPanel?.webview.postMessage({
-                            command: 'connection_lost'
-                        })
-                        vscode.window.showErrorMessage('Connection lost')
-                        // await this.tryToConnect()
-                        return
-                    }
                     switch (message.command) {
                         case 'alert': {
                             vscode.window.showErrorMessage(message.text);
                             return;
                         }
                         case 'readData': {
-                            await ssh.readCC100().then((data: any) => {
+                            await ConnectionManager.instance.executeCommand(id,
+                                "cat /sys/devices/platform/soc/44009000.spi/spi_master/spi0/spi0.0/din " + // DI
+                                "/sys/kernel/dout_drv/DOUT_DATA " + // DO
+                                "/sys/bus/iio/devices/iio:device3/in_voltage3_raw " + // AI1
+                                "/sys/bus/iio/devices/iio:device3/in_voltage0_raw " + // AI2
+                                "/sys/bus/iio/devices/iio:device0/out_voltage1_raw " + // AO1
+                                "/sys/bus/iio/devices/iio:device1/out_voltage2_raw " + // AO2
+                                "/sys/bus/iio/devices/iio:device2/in_voltage13_raw " + // PT1
+                                "/sys/bus/iio/devices/iio:device2/in_voltage1_raw " + // PT2
+                                "/dev/leds/sys-green/brightness " + // SYS LED green
+                                "/dev/leds/sys-red/brightness " + // SYS LED red
+                                "/dev/leds/run-green/brightness " + // RUN LED green
+                                "/dev/leds/run-red/brightness " + // RUN LED red
+                                "/dev/leds/u1-green/brightness " + // USR LED green
+                                "/dev/leds/u1-red/brightness " + // USR LED red
+                                "/dev/leds/led-mmc/brightness &&" + // µSD LED
+                                'ethtool ethX1 | grep "Link detected*" &&' + // LNK ACT1 | Das Auslesen der Ethernet-LEDs hat die zyklische Abfrage in IO-Check verdoppelt
+                                'ethtool ethX2 | grep "Link detected*"') // LNK ACT2
+                                .then((data: any) => {
                                 /**
                                  * `[0]` => digital inputs
                                  * `[1]` => digital outputs
