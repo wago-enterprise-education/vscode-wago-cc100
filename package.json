@@ -83,17 +83,9 @@
     ],
     "commands": [
       {
-        "command": "vscode-wago-cc100.application_upload",
-        "title": "Upload application to CC100"
-      },
-      {
         "command": "vscode-wago-cc100.iocheck",
         "title": "IO-Check",
         "icon": "$(eye)"
-      },
-      {
-        "command": "vscode-wago-cc100.testSSH",
-        "title": "Test SSH"
       },
       {
         "command": "vscode-wago-cc100.add-controller",
