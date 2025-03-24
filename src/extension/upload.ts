@@ -27,7 +27,7 @@ export class Upload {
 
     public async uploadFile(id: number) {
         
-        let controllers = YamlCommands.readWagoYaml();
+        let controllers = YamlCommands.getWagoYaml();
         let src = controllers.nodes.$(id).src;
         let path = `${vscode.workspace.workspaceFolders![0].uri.fsPath}/${src}`;
         

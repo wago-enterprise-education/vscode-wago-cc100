@@ -9,30 +9,43 @@ export class YamlCommands {
      * 
      * @returns The content of the wago.yaml file as a JS object
      */
-    public static readWagoYaml() {
+    public static getWagoYaml() {
         return YAML.parse(fs.readFileSync(`${vscode.workspace.workspaceFolders![0].uri.fsPath}/wago.yaml`, 'utf8'));
     }
 
     /**
-     * Function to read the content of the Controller.yaml file.
+     * Function to read the content of the wago.yaml file.
      * 
-     * @returns The content of the Controller.yaml file as a JS object
+     * @returns The content of the wago.yaml file as a JS object
      */
-    public static readControllerYaml(controllerId: number) {
-        return YAML.parse(fs.readFileSync(`${vscode.workspace.workspaceFolders![0].uri.fsPath}/controller${controllerId}.yaml`, 'utf8'));
+    public static getControllerYaml(id: number) {
+        return YAML.parse(fs.readFileSync(`${vscode.workspace.workspaceFolders![0].uri.fsPath}/controller/controller${id}.yaml`, 'utf8'));
     }
 
     /**
-     * Method for changing a attribute of a yaml file.
+     * Method for changing the contents of the wago.yaml
      * 
-     * @param path Path where the operating file is located.
-     * @param attribute The attibute of the yaml file to be changed
-     * @param value The new value of the attribute
+     * @param id Id of the controller
+     * @param attribute Name of the attribute that is to be changed (enum)
+     * @param value value that is to be written into the attribute (string)
      */
-    public static write(path: string, attribute: settings, value: string | boolean) {
-        let yaml = YAML.parse(fs.readFileSync(path, 'utf8'));
-        yaml[attribute] = value;
-        fs.writeFileSync(path, YAML.stringify(yaml, null, "\t"))
+    public static writeWagoYaml(id: number, attribute: wagoSettings, value: string) {
+        let yaml = this.getWagoYaml();
+        yaml.nodes[id][attribute] = value;
+        fs.writeFileSync(`${vscode.workspace.workspaceFolders![0].uri.fsPath}/wago.yaml`, YAML.stringify(yaml, null, "\t"));
+    }
+
+    /**
+     * Method for changing the contents of the controller.yaml
+     * 
+     * @param id Id of the controller
+     * @param attribute Name of the attribute that is to be changed (enum)
+     * @param value value that is to be written into the attribute (string)
+     */
+    public static writeController(id: number, attribute: controllerSettings, value: string) {
+        let yaml = this.getWagoYaml();
+        yaml.nodes[id][attribute] = value;
+        fs.writeFileSync(`${vscode.workspace.workspaceFolders![0].uri.fsPath}/wago.yaml`, YAML.stringify(yaml, null, "\t"));
     }
 
     /**
@@ -64,7 +77,7 @@ export class YamlCommands {
             }
         }
 
-        let yaml = this.readWagoYaml();
+        let yaml = this.getWagoYaml();
         yaml.nodes[id] = obj.nodes[id];
 
         fs.writeFileSync(`${vscode.workspace.workspaceFolders![0].uri.fsPath}/wago.yaml`, YAML.stringify(yaml, null, "\t"));
@@ -87,11 +100,8 @@ export class YamlCommands {
      * @param id - The ID of the controller to be removed.
      */
     public static removeController(id: number) {
-        //reset Controller to by useable in CodeSys
-        //TODO
-
         //remove from wago.yaml
-        let yaml = this.readWagoYaml();
+        let yaml = this.getWagoYaml();
         delete yaml.nodes[id];
         fs.writeFileSync(`${vscode.workspace.workspaceFolders![0].uri.fsPath}/wago.yaml`, YAML.stringify(yaml, null, "\t"));
 
@@ -109,7 +119,7 @@ export class YamlCommands {
      * @returns {number} The next available controller ID.
      */
     private static findNextID() {
-        let yaml = this.readWagoYaml();
+        let yaml = this.getWagoYaml();
         let id = 1;
         while (yaml.controllers[id] != undefined) {
             id++;
@@ -119,13 +129,25 @@ export class YamlCommands {
 
 }
 
-
 /**
- * Enum representing various settings for the application.
+ * Enum representing available settings for the wago.yaml.
  * 
  * @enum {string}
  */
-export enum settings {
+export enum wagoSettings {
+    displayname = 'displayname',
+    description = 'description',
+    engine = 'engine',
+    src = 'src',
+    imageVersion = 'imageVersion'
+}
+
+/**
+ * Enum representing available settings for the controller.yaml.
+ * 
+ * @enum {string}
+ */
+export enum controllerSettings {
     version = 'version',
     connection = 'connection',
     ip_adress = 'ip_adress',
@@ -133,3 +155,4 @@ export enum settings {
     user = 'user',
     autoupdate = 'autoupdate'
 }
+
