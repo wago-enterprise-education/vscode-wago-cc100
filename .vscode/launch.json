@@ -17,17 +17,7 @@
 			],
 			"preLaunchTask": "${defaultBuildTask}"
 		},
-		{
-            "name": "Custom DAP Debugging",
-            "type": "debugpy",
-            "request": "launch",
-			"program": "${workspaceFolder}/src/debugger",
-            "connect": {
-                "host": "localhost",
-                "port": 5678
-            }
-        },
-         {
+        {
             "name": "Python Debugger: Attach",
             "type": "debugpy",
             "request": "attach",
@@ -37,7 +27,7 @@
             },
             "pathMappings": [
     {
-      "localRoot": "${workspaceFolder}/src/",
+      "localRoot": "${workspaceFolder}/src",
       "remoteRoot": "/app"
     }
     ]
