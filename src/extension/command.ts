@@ -1,8 +1,8 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import yaml from 'yaml';
-import { ControllerProvider, Controller } from './view';
-import { YamlCommands } from './yaml';
+import { ControllerProvider, Controller, ControllerItem } from './view';
+import { YamlCommands, wagoSettings, controllerSettings } from './yaml';
 import { SSH }from '../ssh';
 import {versionNr} from './helper'
 import { ConnectionManager } from './connectionManager';
@@ -247,15 +247,18 @@ export class Command {
             return;
         }));
 
-        /*commands.push(vscode.commands.registerCommand('vscode-wago-cc100.edit-setting', async (controller) => {
+        commands.push(vscode.commands.registerCommand('vscode-wago-cc100.edit-setting', async (controller: ControllerItem | undefined) => {
             if(!vscode.workspace.workspaceFolders) {
                 vscode.window.showErrorMessage('No workspace is open');
                 return;
             }
-            
-            YamlCommands.writeControllerYaml();
-            YamlCommands.writeWagoYaml();
-        }));*/
+        
+            if(controller === undefined) {
+                
+            } else {
+
+            }
+        }));
 
         context.subscriptions.concat(commands);
     }

@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import * as yaml from 'yaml';
 import { YamlCommands } from './yaml';
 import { ConnectionManager } from './connectionManager';
+import { setting } from './editSettings';
 
 /**
  * Tree data provider for the controller view.
@@ -62,19 +63,19 @@ export class ControllerProvider implements vscode.TreeDataProvider<Controller | 
 
                 const settingArray = []
 
-                settingArray.push(new ControllerItem(`Connection: ${settings.connection === "usb-c" ? 'USB-C' : settings.connection ? 'Ethernet' : 'Simulator'}`, element.id));
+                settingArray.push(new ControllerItem(`Connection: ${settings.connection === "usb-c" ? 'USB-C' : settings.connection ? 'Ethernet' : 'Simulator'}`, element.id, setting.connection));
                 if(settings.ethernet) {
-                    settingArray.push(new ControllerItem(`IP: ${settings.ip_adress}`, element.id));
-                    settingArray.push(new ControllerItem(`Port: ${settings.port}`, element.id));
+                    settingArray.push(new ControllerItem(`IP: ${settings.ip_adress}`, element.id, setting.ip));
+                    settingArray.push(new ControllerItem(`Port: ${settings.port}`, element.id, setting.port));
                 }
-                settingArray.push(new ControllerItem(`Username: ${settings.user}`, element.id));
-                settingArray.push(new ControllerItem(`Auto Update: ${settings.autoupdate}`, element.id));
+                settingArray.push(new ControllerItem(`Username: ${settings.user}`, element.id, setting.user));
+                settingArray.push(new ControllerItem(`Auto Update: ${settings.autoupdate}`, element.id, setting.autoupdate));
 
                 return Promise.resolve([
-                    new ControllerItem(`Description: ${nodes[element.id].description}`, element.id),
-                    new ControllerItem(`Engine: ${nodes[element.id].engine}`, element.id),
-                    new ControllerItem(`Docker Iamge Version: ${nodes[element.id].imgVersion}`, element.id),
-                    new ControllerItem(`Src: ${nodes[element.id].src}`, element.id),
+                    new ControllerItem(`Description: ${nodes[element.id].description}`, element.id, setting.description),
+                    new ControllerItem(`Engine: ${nodes[element.id].engine}`, element.id, setting.engine),
+                    new ControllerItem(`Docker Image Version: ${nodes[element.id].imgVersion}`, element.id, setting.imageVersion),
+                    new ControllerItem(`Src: ${nodes[element.id].src}`, element.id, setting.src),
 
                 ].concat(settingArray));
             }
@@ -110,10 +111,11 @@ export class Controller extends vscode.TreeItem {
  * Represents an item in the tree view for a controller.
  * Extends the `vscode.TreeItem` class.
  */
-class ControllerItem extends vscode.TreeItem {
+export class ControllerItem extends vscode.TreeItem {
     constructor(
         public readonly label: string,
         public readonly id: string,
+        public readonly setting: setting,
     ) {
         super(label, vscode.TreeItemCollapsibleState.None);
         this.contextValue = 'controllerItem';
