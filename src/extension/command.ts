@@ -1,11 +1,12 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import yaml from 'yaml';
-import { ControllerProvider } from './view';
+import { ControllerProvider, Controller } from './view';
 import { YamlCommands } from './yaml';
 import { SSH }from '../ssh';
 import {versionNr} from './helper'
 import { ConnectionManager } from './connectionManager';
+import { Upload } from './upload';
 
 const FOLDER_REGEX = '^(?!(?:CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\.[^.]*)?$)[^<>:"/\\|?*\x00-\x1F]*[^<>:"/\\|?*\x00-\x1F\ .]$';
 
@@ -204,7 +205,6 @@ export class Command {
             });
             if(!controllerId) return;
             
-            let controllerSettings = YamlCommands.getControllerYaml(controllerId);
             try {
                 YamlCommands.removeController(controllerId);
                 vscode.window.showInformationMessage(`Controller ${controller.label} removed`);
@@ -219,14 +219,43 @@ export class Command {
             ControllerProvider.instance.refresh();
         }));
 
-        commands.push(vscode.commands.registerCommand('vscode-wago-cc100.upload', async (controller) => {
-            await new Upload().uploadFile(controller);
+        commands.push(vscode.commands.registerCommand('vscode-wago-cc100.upload', async (controller: Controller | undefined) => {
+            if(!vscode.workspace.workspaceFolders) {
+                vscode.window.showErrorMessage('No workspace is open');
+                return;
+            }
+            
+            const nodes = YamlCommands.getWagoYaml()["nodes"];
+            if (controller === undefined) {
+                let con = await vscode.window.showQuickPick(
+                    Object.keys(nodes).map((key: any) => ({
+                        id: key,	
+                        label: nodes[key].displayname,
+                        description: nodes[key].description,
+                        online: false
+                    })),
+                    {
+                        title: 'Upload to Controller',
+                        canPickMany: false
+                    }
+                );    
+                if (con === undefined) return;
+                controller = con;
+            }
+            
+            await new Upload().uploadFile(Number.parseInt(controller.id));
+            return;
         }));
 
-        commands.push(vscode.commands.registerCommand('vscode-wago-cc100.edit-setting', async (controller) => {
+        /*commands.push(vscode.commands.registerCommand('vscode-wago-cc100.edit-setting', async (controller) => {
+            if(!vscode.workspace.workspaceFolders) {
+                vscode.window.showErrorMessage('No workspace is open');
+                return;
+            }
+            
             YamlCommands.writeControllerYaml();
             YamlCommands.writeWagoYaml();
-        }));
+        }));*/
 
         context.subscriptions.concat(commands);
     }
