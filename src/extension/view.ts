@@ -62,19 +62,19 @@ export class ControllerProvider implements vscode.TreeDataProvider<Controller | 
 
                 const settingArray = []
 
-                settingArray.push(new ControllerItem(`Connection: ${settings.connection === "usb-c" ? 'USB-C' : settings.connection ? 'Ethernet' : 'Simulator'}`));
+                settingArray.push(new ControllerItem(`Connection: ${settings.connection === "usb-c" ? 'USB-C' : settings.connection ? 'Ethernet' : 'Simulator'}`, Number.parseInt(element.id)));
                 if(settings.ethernet) {
-                    settingArray.push(new ControllerItem(`IP: ${settings.ip_adress}`));
-                    settingArray.push(new ControllerItem(`Port: ${settings.port}`));
+                    settingArray.push(new ControllerItem(`IP: ${settings.ip_adress}`, element.id));
+                    settingArray.push(new ControllerItem(`Port: ${settings.port}`, element.id));
                 }
-                settingArray.push(new ControllerItem(`Username: ${settings.user}`));
-                settingArray.push(new ControllerItem(`Auto Update: ${settings.autoupdate}`));
+                settingArray.push(new ControllerItem(`Username: ${settings.user}`, element.id));
+                settingArray.push(new ControllerItem(`Auto Update: ${settings.autoupdate}`, element.id));
 
                 return Promise.resolve([
-                    new ControllerItem(`Description: ${nodes[element.id].description}`),
-                    new ControllerItem(`Engine: ${nodes[element.id].engine}`),
-                    new ControllerItem(`Docker Iamge Version: ${nodes[element.id].imgVersion}`),
-                    new ControllerItem(`Src: ${nodes[element.id].src}`),
+                    new ControllerItem(`Description: ${nodes[element.id].description}`, element.id),
+                    new ControllerItem(`Engine: ${nodes[element.id].engine}`, element.id),
+                    new ControllerItem(`Docker Iamge Version: ${nodes[element.id].imgVersion}`, element.id),
+                    new ControllerItem(`Src: ${nodes[element.id].src}`, element.id),
 
                 ].concat(settingArray));
             }
@@ -113,8 +113,13 @@ export class Controller extends vscode.TreeItem {
 class ControllerItem extends vscode.TreeItem {
     constructor(
         public readonly label: string,
+        public readonly id: string,
     ) {
         super(label, vscode.TreeItemCollapsibleState.None);
         this.contextValue = 'controllerItem';
+    }
+
+    public getId(): number {
+        return Number.parseInt(id)
     }
 }
