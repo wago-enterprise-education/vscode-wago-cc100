@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { webviewIoCheck } from './webviewIoCheck';
-import { YamlCommands, settings } from './extension/yaml';
+import { YamlCommands } from './extension/yaml';
 import { ControllerProvider } from './extension/view';
 import { Command } from './extension/command';
 import { verifyProject } from './extension/helper';
@@ -18,9 +18,9 @@ export async function activate(context: vscode.ExtensionContext) {
 	Command.createCommands(context);
 
 	if(await verifyProject()) {
-		const controller = YamlCommands.readWagoYaml();
+		const controller = YamlCommands.getWagoYaml();
 		Object.keys(controller.nodes).forEach(async (key) => {
-			const settings = YamlCommands.readControllerYaml(Number.parseInt(key));
+			const settings = YamlCommands.getControllerYaml(Number.parseInt(key));
 			await ConnectionManager.instance.addController(Number.parseInt(key), `${settings.ip}:${settings.port}`, settings.user)
 		})
 	}

@@ -4,7 +4,6 @@ import yaml from 'yaml';
 import { ControllerProvider } from './view';
 import { YamlCommands } from './yaml';
 import { SSH }from '../ssh';
-import { constrainedMemory } from 'process';
 import {versionNr} from './helper'
 import { ConnectionManager } from './connectionManager';
 
