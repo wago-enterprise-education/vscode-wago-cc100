@@ -1,9 +1,9 @@
 export class EditSettings {
     
-    public static commands() {
-        
+    public static editSetting(setting: string, content: string) {
+        //Check for the name of the setting and call the according function
+        //Add QuickPicks for Settings where it can be used
     }
-
 
 }
 
