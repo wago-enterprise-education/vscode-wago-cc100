@@ -219,6 +219,15 @@ export class Command {
             ControllerProvider.instance.refresh();
         }));
 
+        commands.push(vscode.commands.registerCommand('vscode-wago-cc100.upload', async (controller) => {
+            await new Upload().uploadFile(controller);
+        }));
+
+        commands.push(vscode.commands.registerCommand('vscode-wago-cc100.edit-setting', async (controller) => {
+            YamlCommands.writeControllerYaml();
+            YamlCommands.writeWagoYaml();
+        }));
+
         context.subscriptions.concat(commands);
     }
 }
