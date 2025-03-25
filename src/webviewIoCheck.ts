@@ -29,7 +29,8 @@ export class webviewIoCheck {
     ['14106', '2494', '41873', '7492'],
     ['1050', '350', '8978', '3000'],
     ['1044', '350', '8970', '3000']];
-    private switchStatus: string
+    private switchStatus: string;
+    private serialConnection: any;
 
     constructor(private con: vscode.ExtensionContext) {
         this.context = con;
@@ -229,7 +230,7 @@ export class webviewIoCheck {
             });
             // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             // später die Serial Kommuniaktion abändern
-            // await this.startEventForSerialCommunication();
+            await this.startEventForSerialCommunication(id);
             // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             await this.startEventForSwitch(id);
             await ssh.setupSerialInterface();
@@ -324,8 +325,7 @@ export class webviewIoCheck {
                                     value = value + Math.pow(2, index);
                                 }
                             }
-                            await ConnectionManager.instance.executeCommand(id,"echo " + value + " >> /sys/kernel/dout_drv/DOUT_DATA");
-                            await ConnectionManager.instance.executeCommand(id,"cat /sys/kernel/dout_drv/DOUT_DATA").then(()=> {
+                            await ConnectionManager.instance.executeCommand(id,"echo " + value + " >> /sys/kernel/dout_drv/DOUT_DATA").then(()=> {
                                 this.ioCheckPanel?.webview.postMessage({
                                     command: 'buttonClick'
                                 })
@@ -336,7 +336,7 @@ export class webviewIoCheck {
                             console.log('AnalogWrite Value: ' + message.value);
                             console.log('AnalogWrite Pin: ' + message.pin);
                             var value = this.calcCalibratedValues(message.value, this.calibData[message.pin + 4]);
-                            await ssh.analogWrite(message.pin, value).then(() => {
+                            await ConnectionManager.instance.executeCommand(id,"").then(()=> {
                                 this.ioCheckPanel?.webview.postMessage({
                                     command: 'buttonClick',
                                     pin: message.pin
@@ -345,16 +345,13 @@ export class webviewIoCheck {
                             break;
                         }
                         case 'serialWrite': {
-                            await ssh.ssh2Disconnect();
                             let text = sanitizeHtml(message.text, { allowedTags: [], allowedAttributes: {} });
-                            await ssh.serialWrite(text).then(() => {
+                            await ConnectionManager.instance.executeCommand(id,"echo " + '"' + text + '"' + " >> /dev/ttySTM1").then(() => {
                                 this.ioCheckPanel?.webview.postMessage({
                                     command: 'serialWrite',
                                     text: text
                                 })
                             });
-
-                            await ssh.ssh2Connect()
                             break;
                         }
                     }
@@ -533,17 +530,36 @@ export class webviewIoCheck {
     //     }
     // }
 
-    private async startEventForSerialCommunication() {
+    private async startEventForSerialCommunication(id: number) {
         let data;
-        await ssh.killAllCat();
-        await ssh.ssh2Connect();
-        await ssh.serialRead((rxData: Buffer) => {
+        this.serialConnection = ConnectionManager.instance.getConnection(id); 
+        await this.serialRead((rxData: Buffer) => {
             data = this.removeAdditionalData(rxData.toString())
             this.ioCheckPanel?.webview.postMessage({
                 command: 'serialRead',
                 text: data.replace(/(?:\r\n|\r|\n)/g, '')
             });
         });
+        
+    }
+
+    private async serialRead(callback: (dataBuffer: Buffer) => void) {
+        this.serialConnection.client.on("ready", () => {
+            this.serialConnection.client.shell((err: any, stream: any) => {
+              if (err) throw err;
+      
+              stream
+                .on("close", () => {
+                    this.serialConnection.client.end();
+                })
+                .on("data", (data: Buffer) => {
+                  callback(data);
+                });
+      
+              // Hier kannst du Befehle senden, wenn der Stream bereit ist
+              stream.write("cat /dev/ttySTM1\n");
+            });
+        }); 
     }
 
     private async startEventForSwitch(id: number) {

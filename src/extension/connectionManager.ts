@@ -242,7 +242,7 @@ class Connection {
     public readonly username: string;
     public lastUsed: number = Date.now();
     public bussy: boolean = false;
-    private client: Client;
+    public client: Client;
 
     /**
      * Creates a new `Connection` instance.
