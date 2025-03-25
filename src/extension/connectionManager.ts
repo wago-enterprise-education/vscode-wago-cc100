@@ -280,7 +280,6 @@ class Connection {
      * @param controllerId - The unique identifier of the controller.
      * @param urn - The URN of the controller, including host and port.
      * @param username - The username used for authentication.
-     * @param password - (Optional) The password for authentication. If not provided, SSH key authentication is used.
      */
     constructor(controllerId: number, urn: string, username: string) {
         this.controllerId = controllerId;
@@ -290,6 +289,12 @@ class Connection {
         this.client = new Client()
     }
 
+    /**
+     * Initializes the connection to the remote controller.
+     * 
+     * @param password - (Optional) The password for authentication. If not provided, SSH key authentication is used.
+     * @returns - Promise that resolves when the connection is established.
+     */
     public init(password?: string | undefined): Promise<void> {
         return new Promise((resolve, reject) => {
             if(password) {
