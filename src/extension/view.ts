@@ -62,7 +62,7 @@ export class ControllerProvider implements vscode.TreeDataProvider<Controller | 
 
                 const settingArray = []
 
-                settingArray.push(new ControllerItem(`Connection: ${settings.connection === "usb-c" ? 'USB-C' : settings.connection ? 'Ethernet' : 'Simulator'}`, Number.parseInt(element.id)));
+                settingArray.push(new ControllerItem(`Connection: ${settings.connection === "usb-c" ? 'USB-C' : settings.connection ? 'Ethernet' : 'Simulator'}`, element.id));
                 if(settings.ethernet) {
                     settingArray.push(new ControllerItem(`IP: ${settings.ip_adress}`, element.id));
                     settingArray.push(new ControllerItem(`Port: ${settings.port}`, element.id));
@@ -120,6 +120,6 @@ class ControllerItem extends vscode.TreeItem {
     }
 
     public getId(): number {
-        return Number.parseInt(id)
+        return Number.parseInt(this.id)
     }
 }
