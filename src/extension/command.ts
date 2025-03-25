@@ -2,11 +2,12 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import yaml from 'yaml';
 import { ControllerProvider, Controller, ControllerItem } from './view';
-import { YamlCommands, wagoSettings, controllerSettings } from './yaml';
+import { YamlCommands } from './yaml';
 import { SSH }from '../ssh';
 import {versionNr} from './helper'
 import { ConnectionManager } from './connectionManager';
 import { Upload } from './upload';
+import { EditSettings, setting } from './editSettings';
 
 const FOLDER_REGEX = '^(?!(?:CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\.[^.]*)?$)[^<>:"/\\|?*\x00-\x1F]*[^<>:"/\\|?*\x00-\x1F\ .]$';
 
@@ -253,11 +254,30 @@ export class Command {
                 return;
             }
         
-            if(controller === undefined) {
-                
-            } else {
+            let settingToEdit: string;
 
+            if(controller === undefined) {
+                settingToEdit = await vscode.window.showQuickPick(
+                    Object.values(setting),
+                    {
+                        title: 'Choose Setting',
+                        canPickMany: false
+                    }
+                ) || '';
+                if (!settingToEdit) return;
+
+                let content = await vscode.window.showInputBox({
+                    prompt: 'Enter the value the Setting should be set to',
+                    title: 'Set Setting Value'
+                }) || '';
+                if (!content) return;
+
+                EditSettings.editSetting(settingToEdit, content);
+            } else {
+                
             }
+
+            //Regular Check - Case for every Setting type with function writeCon or writeWago
         }));
 
         context.subscriptions.concat(commands);
