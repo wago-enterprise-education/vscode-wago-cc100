@@ -8,15 +8,15 @@ export class EditSettings {
 }
 
 export enum setting {
-    displayname = 'displayname',
-    description = 'description',
-    engine = 'engine',
-    src = 'src',
-    imageVersion = 'imageVersion',
-    version = 'version',
-    connection = 'connection',
-    ip = 'ip',
-    port = 'port',
-    user = 'user',
-    autoupdate = 'autoupdate'
+    displayname = 'Name',
+    description = 'Description',
+    engine = 'Engine',
+    src = 'Src',
+    imageVersion = 'Docker Image Version',
+    version = 'Version',
+    connection = 'Connection',
+    ip = 'IP',
+    port = 'Port',
+    user = 'User',
+    autoupdate = 'Autoupdate'
 }

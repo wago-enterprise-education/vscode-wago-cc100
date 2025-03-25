@@ -63,19 +63,19 @@ export class ControllerProvider implements vscode.TreeDataProvider<Controller | 
 
                 const settingArray = []
 
-                settingArray.push(new ControllerItem(`Connection: ${settings.connection === "usb-c" ? 'USB-C' : settings.connection ? 'Ethernet' : 'Simulator'}`, element.id, setting.connection));
+                settingArray.push(new ControllerItem(element.id, setting.connection, settings.connection));
                 if(settings.ethernet) {
-                    settingArray.push(new ControllerItem(`IP: ${settings.ip_adress}`, element.id, setting.ip));
-                    settingArray.push(new ControllerItem(`Port: ${settings.port}`, element.id, setting.port));
+                    settingArray.push(new ControllerItem(element.id, setting.ip, settings.ip_adress));
+                    settingArray.push(new ControllerItem(element.id, setting.port, settings.port));
                 }
-                settingArray.push(new ControllerItem(`Username: ${settings.user}`, element.id, setting.user));
-                settingArray.push(new ControllerItem(`Auto Update: ${settings.autoupdate}`, element.id, setting.autoupdate));
+                settingArray.push(new ControllerItem(element.id, setting.user, settings.user));
+                settingArray.push(new ControllerItem(element.id, setting.autoupdate, settings.autoupdate));
 
                 return Promise.resolve([
-                    new ControllerItem(`Description: ${nodes[element.id].description}`, element.id, setting.description),
-                    new ControllerItem(`Engine: ${nodes[element.id].engine}`, element.id, setting.engine),
-                    new ControllerItem(`Docker Image Version: ${nodes[element.id].imgVersion}`, element.id, setting.imageVersion),
-                    new ControllerItem(`Src: ${nodes[element.id].src}`, element.id, setting.src),
+                    new ControllerItem(element.id, setting.description, nodes[element.id].description),
+                    new ControllerItem(element.id, setting.engine, nodes[element.id].engine),
+                    new ControllerItem(element.id, setting.imageVersion, nodes[element.id].imgVersion),
+                    new ControllerItem(element.id, setting.src, nodes[element.id].src),
 
                 ].concat(settingArray));
             }
@@ -113,11 +113,11 @@ export class Controller extends vscode.TreeItem {
  */
 export class ControllerItem extends vscode.TreeItem {
     constructor(
-        public readonly label: string,
         public readonly id: string,
         public readonly setting: setting,
+        public readonly content: string,
     ) {
-        super(label, vscode.TreeItemCollapsibleState.None);
+        super(`${setting}: ${content}`, vscode.TreeItemCollapsibleState.None);
         this.contextValue = 'controllerItem';
     }
 
