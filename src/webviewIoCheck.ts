@@ -324,7 +324,8 @@ export class webviewIoCheck {
                                     value = value + Math.pow(2, index);
                                 }
                             }
-                            await ssh.digitalWrite(value).then(() => {
+                            await ConnectionManager.instance.executeCommand(id,"echo " + value + " >> /sys/kernel/dout_drv/DOUT_DATA");
+                            await ConnectionManager.instance.executeCommand(id,"cat /sys/kernel/dout_drv/DOUT_DATA").then(()=> {
                                 this.ioCheckPanel?.webview.postMessage({
                                     command: 'buttonClick'
                                 })
