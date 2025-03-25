@@ -21,7 +21,7 @@
             "name": "Custom DAP Debugging",
             "type": "debugpy",
             "request": "launch",
-			"program": "${workspaceFolder}/src/debugger/main.py",
+			"program": "${workspaceFolder}/src/debugger",
             "connect": {
                 "host": "localhost",
                 "port": 5678
@@ -37,7 +37,7 @@
             },
             "pathMappings": [
     {
-      "localRoot": "${workspaceFolder}",
+      "localRoot": "${workspaceFolder}/src/",
       "remoteRoot": "/app"
     }
     ]
