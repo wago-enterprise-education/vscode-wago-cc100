@@ -247,13 +247,7 @@ export class Command {
                 ) || '';
                 if (!settingToEdit) return;
 
-                let content = await vscode.window.showInputBox({
-                    prompt: 'Enter the value the Setting should be set to',
-                    title: 'Set Setting Value'
-                }) || '';
-                if (!content) return;
-
-                EditSettings.editSetting(id, settingToEdit, content);
+                EditSettings.editSetting(id, settingToEdit);
             } else {
                 
             }

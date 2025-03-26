@@ -51,7 +51,7 @@ export class YamlCommands {
      * @param value Value that is to be written into the attribute (string)
      */
     public static writeWagoYaml(id: number, attribute: wagoSettings, value: string) {
-       let yaml = this.getWagoYaml();
+        let yaml = this.getWagoYaml();
         yaml.nodes[id][attribute] = value;
         fs.writeFileSync(`${vscode.workspace.workspaceFolders![0].uri.fsPath}/wago.yaml`, YAML.stringify(yaml, null, "\t"));
     }
