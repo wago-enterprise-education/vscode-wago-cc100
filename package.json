@@ -133,7 +133,9 @@
       {
         "command": "vscode-wago-cc100.remove-controller",
         "title": "Remove",
-        "icon": "$(remove)"
+        "category": "Controller",
+        "icon": "$(remove)",
+        "when": "controllerCount > 0"
       },
       {
         "command": "vscode-wago-cc100.remove-reset-controller",

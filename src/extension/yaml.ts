@@ -123,7 +123,8 @@ export class YamlCommands {
         fs.writeFileSync(`${vscode.workspace.workspaceFolders![0].uri.fsPath}/wago.yaml`, YAML.stringify(yaml, null, "\t"));
 
         //remove Controller configuration file
-        fs.unlinkSync(`${vscode.workspace.workspaceFolders![0].uri.fsPath}/controllers/controller${id}.yaml`);
+        let controllerPath = `${vscode.workspace.workspaceFolders![0].uri.fsPath}/controller/controller${id}.yaml`;
+        if(fs.existsSync(controllerPath)) fs.unlinkSync(controllerPath);
     }
     
     /**

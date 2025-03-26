@@ -180,42 +180,6 @@ export class Command {
             }
         }));
 
-        commands.push(vscode.commands.registerCommand('vscode-wago-cc100.remove-controller', async (controller) => {
-            if(!vscode.workspace.workspaceFolders) {
-                vscode.window.showErrorMessage('No workspace is open');
-                return;
-            }
-            let controllerId = null;
-            if(!controller) {
-                const nodes = YamlCommands.getWagoYaml()["nodes"];
-                controller = await vscode.window.showQuickPick(
-                    Object.keys(nodes).map((key: any) => ({
-                        id: key,	
-                        label: nodes[key].displayname,
-                        description: nodes[key].description
-                    })),
-                    {
-                        title: 'Remove Controller',
-                        canPickMany: false
-                    }
-                );
-                if (!controller) return;
-            } 
-            await vscode.window.showWarningMessage(`Remove ${controller.label}`, 'Yes', 'No').then((value) => {
-                if(value === 'Yes') controllerId = controller.id;
-            });
-            if(!controllerId) return;
-            
-            try {
-                YamlCommands.removeController(controllerId);
-                vscode.window.showInformationMessage(`Controller ${controller.label} removed`);
-
-                ControllerProvider.instance.refresh();
-            } catch (error: any) {
-                vscode.window.showErrorMessage('Error removing controller');
-            }
-        }));
-
         commands.push(vscode.commands.registerCommand('vscode-wago-cc100.refresh-view', async () => {
             ControllerProvider.instance.refresh();
         }));
@@ -316,6 +280,41 @@ export class Command {
             if(!controllerName) return;
 
             YamlCommands.writeWagoYaml(Number.parseInt(newController.id), wagoSettings.displayname, controllerName);
+        }));
+
+        commands.push(vscode.commands.registerCommand('vscode-wago-cc100.remove-controller', async (controller: Controller | undefined, showConfirmation = true) => {
+            let selcetedController;
+            if(controller) {
+                selcetedController = controller;
+            } else {
+                selcetedController = await vscode.window.showQuickPick(
+                    YamlCommands.getControllers().map((controller) => ({
+                        id: controller.id,	
+                        label: controller.displayname,
+                        description: controller.description
+                    })),
+                    {
+                        title: 'Remove Controller',
+                        canPickMany: false
+                    }
+                );
+                if (!selcetedController) return;
+            } 
+
+            let controllerId
+            if(showConfirmation){
+                await vscode.window.showWarningMessage(`Remove ${selcetedController.label}`, 'Yes', 'No').then((value) => {
+                    if(value === 'Yes') controllerId = selcetedController.id;
+                });
+                if(!controllerId) return;
+            } else {
+                controllerId = selcetedController.id;
+            }
+            
+            YamlCommands.removeController(Number.parseInt(controllerId));
+            vscode.window.showInformationMessage(`Controller ${selcetedController.label} removed`);
+
+            ControllerProvider.instance.refresh();
         }));
 
         context.subscriptions.concat(commands);
