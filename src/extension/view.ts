@@ -113,7 +113,7 @@ export class Controller extends vscode.TreeItem {
  */
 export class ControllerItem extends vscode.TreeItem {
     constructor(
-        public readonly id: string,
+        public readonly controllerId: string,
         public readonly setting: setting,
         public readonly content: string,
     ) {
@@ -122,6 +122,6 @@ export class ControllerItem extends vscode.TreeItem {
     }
 
     public getId(): number {
-        return Number.parseInt(this.id)
+        return Number.parseInt(this.controllerId)
     }
 }
