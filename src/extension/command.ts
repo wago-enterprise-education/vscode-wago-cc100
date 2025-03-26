@@ -80,33 +80,37 @@ export class Command {
                 title: 'Add Controller'
             }) || '';
 
-            const controllerEngine = await vscode.window.showQuickPick(['Python', 'C++'], {
+            const controllerEngine = await vscode.window.showQuickPick(['CC100-v1.0', 'CC100-v2.0'], {
                 title: 'Add Controller',
                 canPickMany: false
-            }) || '';
+            }) || 'CC100-v2.0';
 
+            const workspacePath = vscode.workspace.workspaceFolders![0].uri.fsPath
             const controllerSrc = await vscode.window.showQuickPick(
-                vscode.workspace.workspaceFolders.map((folder: any) => {
-                        if (fs.existsSync(`${folder.uri.fsPath}/main.py`)) {
-                            return `${folder.uri.fsPath}`;
+                fs.readdirSync(workspacePath)
+                    .map((folder) => {
+                        if (fs.existsSync(`${workspacePath}/${folder}/main.py`)) {
+                            return {
+                                label: `${folder}`,
+                                description: `${folder}/main.py`
+                            };
                         }
-                        return undefined;
+                        return { label: "" }
                     })
-                    .filter((path: string | undefined): path is string => path !== undefined),
+                    .filter((path) => path.label.length > 0 ? true : false)
+                    .concat({ label: "New", description: 'Create a new folder' }),
                 {
                     title: 'Add Controller',
                     canPickMany: false
                 }
-            ) || '';
-
+            ) || { label: "src" };
+        
             const controllerImg = await vscode.window.showInputBox({
                 prompt: 'Enter the docker image version of the controller',
                 title: 'Add Controller'
-            }) || '';
+            }) || 'latest';
 
-            if(!controllerImg) return;
-
-            YamlCommands.createController(context, controllerName, controllerDescription, controllerEngine, controllerSrc, controllerImg);
+            YamlCommands.createController(context, controllerName, controllerDescription, controllerEngine, controllerSrc.label, controllerImg);
             vscode.window.showInformationMessage(`Controller ${controllerName} added`);
             ControllerProvider.instance.refresh();
         }));

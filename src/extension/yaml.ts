@@ -118,7 +118,7 @@ export class YamlCommands {
     private static findNextID(): number {
         let yaml = this.getWagoYaml();
         let id = 1;
-        while (yaml.controllers[id] != undefined) {
+        while (yaml.nodes[id] != undefined) {
             id++;
         }
         return id;
