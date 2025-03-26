@@ -147,27 +147,29 @@ export class YamlCommands {
 
 /**
  * Enum representing available settings for the wago.yaml.
+ * Wago.yaml-half of the split "setting" from editSettings.ts
  * 
  * @enum {string}
  */
 export enum wagoSettings {
-    displayname = 'displayname',
-    description = 'description',
-    engine = 'engine',
-    src = 'src',
-    imageVersion = 'imageVersion'
+    displayname = 'Name',
+    description = 'Description',
+    engine = 'Engine',
+    src = 'Src',
+    imageVersion = 'Docker Image Version'
 }
 
 /**
  * Enum representing available settings for the controller.yaml.
+ * Controller-half of the split "setting" from editSettings.ts
  * 
  * @enum {string}
  */
 export enum controllerSettings {
-    version = 'version',
-    connection = 'connection',
-    ip = 'ip',
-    port = 'port',
-    user = 'user',
-    autoupdate = 'autoupdate'
+    version = 'Version',
+    connection = 'Connection',
+    ip = 'IP',
+    port = 'Port',
+    user = 'User',
+    autoupdate = 'Autoupdate'
 }
