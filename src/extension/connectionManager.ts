@@ -3,6 +3,7 @@ import { homedir, userInfo } from 'os';
 import * as vscode from 'vscode';
 import * as Path  from 'path';
 import * as fs from 'fs';
+import { ControllerProvider } from './view';
 
 const publicKeyPath = Path.join(homedir(), '.ssh', 'id_rsa_wago.pub');
 const privateKeyPath = Path.join(homedir(), '.ssh', 'id_rsa_wago');
@@ -10,6 +11,8 @@ const scriptPath = `${vscode.extensions.getExtension('wago-education.vscode-wago
 const maxConnections = 3;
 const garbageCollectorInterval = 300_000;
 const timeout = 10_000;
+const reconnectionTimeout = 10_000;
+
 
 /**
  * The `ConnectionManager` class is a singleton that manages a pool of connections to controllers.
@@ -52,6 +55,7 @@ export class ConnectionManager {
         connection.init("wago")
             .then(() => {
                 this.connections.push(connection)
+                ControllerProvider.instance.refresh()
             })
             .catch((error) => {
                 throw error
@@ -297,23 +301,43 @@ class Connection {
      */
     public init(password?: string | undefined): Promise<void> {
         return new Promise((resolve, reject) => {
-            if(password) {
-                this.connectWithPassword(password)
-                    .then(() => {
-                        resolve()
-                    })
-                    .catch((error) => {
-                        reject(error)
-                    })
-            } else {
-                this.connect()
-                    .then(() => {
-                        resolve()
-                    })
-                    .catch((error) => {
-                        reject(error)
-                    })
+            const attemptConnection = () => {
+                this.generateSSHKey();
+                if(password) {
+                    this.client.connect({
+                        host: this.urn.split(':')[0],
+                        port: parseInt(this.urn.split(':')[1]),
+                        username: this.username,
+                        password: password
+                    });
+                } else {
+                    this.client.connect({
+                        host: this.urn.split(':')[0],
+                        port: parseInt(this.urn.split(':')[1]),
+                        username: this.username,
+                        privateKey: fs.readFileSync(privateKeyPath)
+                    });
+                }
             }
+
+            this.client
+                .on('ready', () => {
+                    console.debug(`Connected to ${this.urn}`)
+                    if(password) {
+                        this.sendSSHKey();
+                        password = undefined;
+                    }
+                    ControllerProvider.instance.refresh()
+                    resolve()
+                })
+                .on('error', (error) => {
+                    console.error(`Error connecting to ${this.urn}: ${error.message}`)
+                    setTimeout(attemptConnection, reconnectionTimeout);
+                    ControllerProvider.instance.refresh()
+                    reject(error)
+                })
+
+            setTimeout(attemptConnection, 0);
         })
     }
 
@@ -356,59 +380,6 @@ class Connection {
         this.client.exec(`echo "${publicKey}" >> ~/.ssh/authorized_keys`, (err) => {
             if(err) throw err
         })
-    }
-
-    /**
-     * Establishes a connection to the remote controller using a password.
-     * After connecting, it sends the SSH key for future passwordless authentication.
-     * 
-     * @param password - The password for authentication.
-     */
-    private connectWithPassword(password: string): Promise<void> {
-        return new Promise((resolve, reject) => {
-            this.client
-                .on('ready', () => {
-                    console.debug(`Connected to ${this.urn}`)
-                    this.sendSSHKey();
-                    resolve();
-                })
-                .on('error', (error) => {
-                    console.log("error")
-                    reject(error)
-                })
-                .connect({
-                    host: "192.168.42.42",
-                    port: 22,
-                    username: "root",
-                    password: password
-                })
-            }
-        )
-    }
-
-
-    /**
-     * Establishes a connection to the remote controller using an SSH key.
-     */
-    private connect(): Promise<void> {
-        this.generateSSHKey();
-
-        return new Promise((resolve, reject) => {
-            this.client
-                .on('ready', () => {
-                    console.debug(`Connected to ${this.urn}`)
-                    resolve()
-                })
-                .on('error', (error) => {
-                    reject()
-                })
-                .connect({
-                    host: this.urn.split(':')[0],
-                    port: parseInt(this.urn.split(':')[1]),
-                    username: this.username,
-                    privateKey: fs.readFileSync(privateKeyPath)
-                })
-        }) 
     }
 
     /**
