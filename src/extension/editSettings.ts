@@ -1,4 +1,6 @@
+import { ControllerItem } from "./view";
 import { YamlCommands, wagoSettings, controllerSettings } from "./yaml";
+import fs from 'fs';
 
 export class EditSettings {
     
@@ -20,9 +22,27 @@ export class EditSettings {
 
                 // wago.yaml QuickPick
                 case "engine":
+                    //TODO - No Enums of available engines yet
+                    break;
                 case "src":
+                    const controllerSrc = vscode.window.showQuickPick(
+                        vscode.workspace.workspaceFolders.map((folder: any) => {
+                                if (fs.existsSync(`${folder.uri.fsPath}/main.py`)) {
+                                    return `${folder.uri.fsPath}`;
+                                }
+                                return undefined;
+                            })
+                            .filter((path: string | undefined): path is string => path !== undefined),
+                        {
+                            title: 'Source of Program',
+                            canPickMany: false
+                        }
+                    ) || '';
+                    if (!controllerSrc) return;
+
+                    break;
                 case "imageVersion": 
-    
+                    //TODO - Not yet determined how they will be managed
                     break;
             }
             return;
@@ -61,7 +81,7 @@ export class EditSettings {
         }       
     }
 
-    public static editSettingInline(id: number, settingToEdit: string, content: string) {
+    public static editSettingInline(controller: ControllerItem) {
 
     }
 }
