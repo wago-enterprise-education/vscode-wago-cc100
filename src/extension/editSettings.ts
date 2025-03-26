@@ -1,8 +1,30 @@
 export class EditSettings {
     
-    public static editSetting(setting: string, content: string) {
+    public static editSetting(settingToEdit: string, content: string) {
         //Check for the name of the setting and call the according function
         //Add QuickPicks for Settings where it can be used
+
+        switch (settingToEdit) {
+            // wago.yaml Setting
+            case setting.displayname, setting.description:
+
+                break;
+
+            // controller.yaml Setting
+            case setting.version, setting.connection, setting.ip, setting.port, setting.user:
+
+                break;
+
+            // wago.yaml QuickPick
+            case setting.engine, setting.src, setting.imageVersion: 
+
+                break;
+
+            // controller.yaml QuickPick
+            case setting.autoupdate: 
+            
+                break;
+        }
     }
 
 }
