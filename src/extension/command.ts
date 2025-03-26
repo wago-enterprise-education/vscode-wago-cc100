@@ -211,7 +211,11 @@ export class Command {
             await new Upload().uploadFile(Number.parseInt(controller.id));
             return;
         }));
-
+        commands.push(vscode.commands.registerCommand('vscode-wago-cc100.upload-all', async () => {
+            YamlCommands.getControllers().forEach(async (controller) => {
+                vscode.commands.executeCommand('vscode-wago-cc100.upload',{id: controller.id, label: controller.displayname, online: false});
+            });
+        }));
         commands.push(vscode.commands.registerCommand('vscode-wago-cc100.edit-setting', async (controller: ControllerItem | undefined) => {
             if(!vscode.workspace.workspaceFolders) {
                 vscode.window.showErrorMessage('No workspace is open');
