@@ -221,6 +221,23 @@ export class Command {
             let settingToEdit: string;
 
             if(controller === undefined) {
+                const nodes = YamlCommands.getWagoYaml()["nodes"];
+
+                let con = await vscode.window.showQuickPick(
+                    Object.keys(nodes).map((key: any) => ({
+                        id: key,	
+                        label: nodes[key].displayname,
+                        description: nodes[key].description,
+                        online: false
+                    })),
+                    {
+                        title: 'Pick Controller',
+                        canPickMany: false
+                    }
+                );    
+                if (con === undefined) return;
+                let id = con.id;
+            
                 settingToEdit = await vscode.window.showQuickPick(
                     Object.values(setting),
                     {
@@ -236,7 +253,7 @@ export class Command {
                 }) || '';
                 if (!content) return;
 
-                EditSettings.editSetting(settingToEdit, content);
+                EditSettings.editSetting(id, settingToEdit, content);
             } else {
                 
             }
