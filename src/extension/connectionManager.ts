@@ -55,7 +55,6 @@ export class ConnectionManager {
         connection.init("wago")
             .then(() => {
                 this.connections.push(connection)
-                ControllerProvider.instance.refresh()
             })
             .catch((error) => {
                 throw error
