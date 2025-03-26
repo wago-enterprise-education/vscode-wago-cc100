@@ -82,10 +82,8 @@ export class YamlCommands {
         fs.writeFileSync(`${vscode.workspace.workspaceFolders![0].uri.fsPath}/wago.yaml`, YAML.stringify(yaml, null, "\t"));
 
         //Adding Controller to corresponding controllers/controller[id].yaml file
-        fs.copyFile(`${context.extensionPath}.res/template/controller/controller1.yaml`, `${vscode.workspace.workspaceFolders![0].uri.fsPath}/controllers/controller${id}.yaml`, (err) => {
-            if (err) throw err;
-        });
-    }
+        fs.cpSync(`${context.extensionPath}/res/template/controller/controller1.yaml`, `${vscode.workspace.workspaceFolders![0].uri.fsPath}/controller/controller${id}.yaml`);
+        }
 
     /**
      * Removes a controller configuration by its ID.

@@ -80,10 +80,10 @@ export class Command {
                 title: 'Add Controller'
             }) || '';
 
-            const controllerEngine = await vscode.window.showQuickPick(['CC100-v1.0', 'CC100-v2.0'], {
+            const controllerEngine = await vscode.window.showQuickPick(['CC100-v0.1', 'CC100-v0.2'], {
                 title: 'Add Controller',
                 canPickMany: false
-            }) || 'CC100-v2.0';
+            }) || 'CC100-v0.2';
 
             const workspacePath = vscode.workspace.workspaceFolders![0].uri.fsPath
             const controllerSrc = await vscode.window.showQuickPick(
