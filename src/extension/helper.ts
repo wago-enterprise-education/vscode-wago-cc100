@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { ControllerProvider } from './view';
+import { YamlCommands } from './yaml';
 
 export let versionNr = 0;
 
@@ -9,6 +10,7 @@ export let versionNr = 0;
 export async function verifyProject(): Promise<Boolean> {
     let wagoProject = await findWagoYaml();
     listenOnFileChangeWagoYaml();
+    setControllerCountContext();
     return wagoProject;
 }
 
@@ -54,11 +56,13 @@ function listenOnFileChangeWagoYaml() {
 
     fileWatcher.onDidChange((uri: vscode.Uri) => {
         vscode.commands.executeCommand('setContext', 'wagoYamlPresent', checkIfInRootFolder(uri));
+        setControllerCountContext();
         ControllerProvider.instance.refresh();
     });
 
     fileWatcher.onDidCreate((uri: vscode.Uri) => {
         vscode.commands.executeCommand('setContext', 'wagoYamlPresent', checkIfInRootFolder(uri));
+        setControllerCountContext();
         ControllerProvider.instance.refresh();
     });
 
@@ -108,4 +112,8 @@ function checkIfInRootFolder(uri: vscode.Uri): Boolean {
         }
     }
     return false;
+}
+
+function setControllerCountContext() {
+    vscode.commands.executeCommand('setContext', 'controllerCount', YamlCommands.getControllers().length);
 }

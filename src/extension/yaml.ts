@@ -2,6 +2,15 @@ import fs from 'fs'
 import YAML from 'yaml'
 import * as vscode from 'vscode'
 
+type Controller = {
+    id: string,
+    displayname: string,
+    description: string,
+    engine: string,
+    src: string,
+    img: string
+}
+
 export class YamlCommands {
 
     /**
@@ -20,6 +29,18 @@ export class YamlCommands {
      */
     public static getControllerYaml(id: number) {
         return YAML.parse(fs.readFileSync(`${vscode.workspace.workspaceFolders![0].uri.fsPath}/controller/controller${id}.yaml`, 'utf8'));
+    }
+
+    public static getControllers(): Array<Controller> {
+        const nodes = YamlCommands.getWagoYaml()["nodes"];
+        return Object.keys(nodes).map((key: string) => ({
+            id: key,	
+            displayname: nodes[key].displayname,
+            description: nodes[key].description,
+            engine: nodes[key].engine,
+            src: nodes[key].src,
+            img: nodes[key].img
+        }))
     }
 
     /**

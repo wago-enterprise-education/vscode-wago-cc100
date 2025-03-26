@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import yaml from 'yaml';
 import { ControllerProvider, Controller, ControllerItem } from './view';
-import { YamlCommands } from './yaml';
+import { wagoSettings, YamlCommands } from './yaml';
 import { SSH }from '../ssh';
 import {versionNr} from './helper'
 import { ConnectionManager } from './connectionManager';
@@ -278,6 +278,44 @@ export class Command {
             }
 
             //Regular Check - Case for every Setting type with function writeCon or writeWago
+        }));
+
+
+        // Commands in Context Menu
+        commands.push(vscode.commands.registerCommand('vscode-wago-cc100.rename-controller', async (controller: Controller | undefined) => {
+            let newController;
+            if(controller) {
+                newController = controller;
+            } else {
+                const controllers = YamlCommands.getControllers();
+                if(controllers.length > 1) {
+                    newController = await vscode.window.showQuickPick(controllers.map(controller => {
+                        return {
+                            label: controller.displayname,
+                            description: controller.description,
+                            id: controller.id,
+                        };
+                    }), {
+                        title: 'Rename Controller',
+                        canPickMany: false
+                    });
+                } else {
+                    newController = {
+                        label: controllers[0].displayname,
+                        id: controllers[0].id,
+                    }
+                }
+            }
+            if(!newController) return;
+
+            const controllerName = await vscode.window.showInputBox({
+                prompt: 'Enter the name of the controller',
+                title: 'Rename Controller',
+                value: newController.label,
+            }) || '';
+            if(!controllerName) return;
+
+            YamlCommands.writeWagoYaml(Number.parseInt(newController.id), wagoSettings.displayname, controllerName);
         }));
 
         context.subscriptions.concat(commands);
