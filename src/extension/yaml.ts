@@ -51,7 +51,7 @@ export class YamlCommands {
      * @param value Value that is to be written into the attribute (string)
      */
     public static writeWagoYaml(id: number, attribute: wagoSettings, value: string) {
-        let yaml = this.getWagoYaml();
+       let yaml = this.getWagoYaml();
         yaml.nodes[id][attribute] = value;
         fs.writeFileSync(`${vscode.workspace.workspaceFolders![0].uri.fsPath}/wago.yaml`, YAML.stringify(yaml, null, "\t"));
     }
@@ -152,11 +152,11 @@ export class YamlCommands {
  * @enum {string}
  */
 export enum wagoSettings {
-    displayname = 'Name',
-    description = 'Description',
-    engine = 'Engine',
-    src = 'Src',
-    imageVersion = 'Docker Image Version'
+    displayname = 'displayname',
+    description = 'description',
+    engine = 'engine',
+    src = 'src',
+    imageVersion = 'imageVersion'
 }
 
 /**
@@ -166,10 +166,10 @@ export enum wagoSettings {
  * @enum {string}
  */
 export enum controllerSettings {
-    version = 'Version',
-    connection = 'Connection',
-    ip = 'IP',
-    port = 'Port',
-    user = 'User',
-    autoupdate = 'Autoupdate'
+    version = 'version',
+    connection = 'connection',
+    ip = 'ip',
+    port = 'port',
+    user = 'user',
+    autoupdate = 'autoupdate'
 }

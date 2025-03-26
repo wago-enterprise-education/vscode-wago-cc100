@@ -1,30 +1,53 @@
+import { YamlCommands, wagoSettings, controllerSettings } from "./yaml";
+
 export class EditSettings {
     
-    public static editSetting(settingToEdit: string, content: string) {
-        //Check for the name of the setting and call the according function
-        //Add QuickPicks for Settings where it can be used
-
-        switch (settingToEdit) {
-            // wago.yaml Setting
-            case setting.displayname, setting.description:
-
-                break;
-
-            // controller.yaml Setting
-            case setting.version, setting.connection, setting.ip, setting.port, setting.user:
-
-                break;
-
-            // wago.yaml QuickPick
-            case setting.engine, setting.src, setting.imageVersion: 
-
-                break;
-
-            // controller.yaml QuickPick
-            case setting.autoupdate: 
-            
-                break;
+    public static editSetting(id: number, settingToEdit: string, content: string) {
+        if (!content) {
+            vscode.window.showErrorMessage('No content given');
+            return;
         }
+
+        if (settingToEdit in wagoSettings) {
+            switch (settingToEdit) {
+                // wago.yaml Setting
+                case "displayname": 
+                case "description":
+                    YamlCommands.writeWagoYaml(id, wagoSettings[settingToEdit], content);
+                    break;
+
+                // wago.yaml QuickPick
+                case "engine":
+                case "src":
+                case "imageVersion": 
+    
+                    break;
+            }
+            return;
+
+        } else if (settingToEdit in controllerSettings) {
+            switch (settingToEdit) {
+                // controller.yaml Setting
+                case "version":
+                case "connection":
+                case "ip": 
+                case "port":
+                case "user":
+                    YamlCommands.writeControllerYaml(id, controllerSettings[settingToEdit], content);
+                    break;
+    
+                // controller.yaml QuickPick
+                case "autoupdate": 
+    
+                    break;
+            }
+            return;
+
+        } else {
+            vscode.showErrorMessage("Invalid Attribute Type");
+        }
+
+        
     }
 
 }
