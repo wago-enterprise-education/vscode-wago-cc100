@@ -166,7 +166,6 @@ export enum wagoSettings {
  * @enum {string}
  */
 export enum controllerSettings {
-    version = 'version',
     connection = 'connection',
     ip = 'ip',
     port = 'port',

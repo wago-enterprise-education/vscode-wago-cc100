@@ -50,7 +50,6 @@ export class EditSettings {
         } else if (settingToEdit in controllerSettings) {
             switch (settingToEdit) {
                 // controller.yaml Setting
-                case "version":
                 case "connection":
                 case "ip": 
                 case "port":
@@ -92,7 +91,6 @@ export enum setting {
     engine = 'Engine',
     src = 'Src',
     imageVersion = 'Docker Image Version',
-    version = 'Version',
     connection = 'Connection',
     ip = 'IP',
     port = 'Port',
