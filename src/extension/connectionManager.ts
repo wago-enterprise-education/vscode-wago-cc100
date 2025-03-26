@@ -49,7 +49,7 @@ export class ConnectionManager {
     public async addController(controllerId: number, urn: string, username: string, password?: string | undefined) {
         if(this.connections.find(connection => connection.controllerId === controllerId) !== undefined) throw new Error('Controller already exists');
         const connection = new Connection(controllerId, urn, username)
-        connection.init(password)
+        connection.init("wago")
             .then(() => {
                 this.connections.push(connection)
             })

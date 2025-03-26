@@ -141,7 +141,7 @@ export class webviewIoCheck {
                         );
     
                         // Webview Tab Icon
-                        this.ioCheckPanel.iconPath = vscode.Uri.joinPath(this.context.extensionUri, 'res/images/WAGO_W.png');
+                        this.ioCheckPanel.iconPath = vscode.Uri.joinPath(this.context.extensionUri, 'res/images/WAGOW.png');
     
                         // Reset when the current panel is closed
                         this.ioCheckPanel.onDidDispose(() => {
@@ -200,7 +200,7 @@ export class webviewIoCheck {
         const pathWagoimg3 = this.getPath('res/images/WagoW.png').toString();
         const pathWagoimg4 = this.getPath('res/images/wago-iconsRgbExportOutlineGreen.svg').toString();
         const pathWagoimg5 = this.getPath('res/images/wago-iconsRgbImportOutlineGreen.svg').toString();
-        const pathChevron = this.getPath('res/images/wago-iconsRgbChevron-rightOutlineGreen.svg').toString();
+        const pathChevron = this.getPath('res/images/wago-iconsRgbChevronRightOutlineGreen.svg').toString();
         const pathCycleTime = this.getPath('res/images/wago-iconsRgbFutureOutlineGreen.svg').toString();
 
         html = html.replace("../images/cc100Neu11.png", pathCC100.toString());
@@ -212,7 +212,7 @@ export class webviewIoCheck {
         html = html.replace("../images/WagoW.png", pathWagoimg3.toString());
         html = html.replace("res/images/wago-iconsRgbExportOutlineGreen.svg", pathWagoimg4.toString());
         html = html.replace("res/images/wago-iconsRgbImportOutlineGreen.svg", pathWagoimg5.toString());
-        html = html.replaceAll("res/images/wago-iconsRgbChevron-rightOutlineGreen.svg", pathChevron.toString())
+        html = html.replaceAll("res/images/wago-iconsRgbChevronRightOutlineGreen.svg", pathChevron.toString())
         html = html.replace('res/images/wago-iconsRgbFutureOutlineGreen.svg', pathCycleTime.toString())
         return html;
     }
@@ -299,7 +299,6 @@ export class webviewIoCheck {
                                     values: dataArray
                                 })
                             })
-
                             if (result.includes('Error')) {
                                 this.connectionLost = true;
                             }

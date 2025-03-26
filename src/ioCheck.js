@@ -5,8 +5,8 @@ var displayDoData = [0, 0, 0, 0];
 var doChanged = false;
 var aoData1 = -1;
 var aoData2 = -1;
-var SerialText = '';
-var ledRunOn= false;
+var serialText = '';
+var ledRunOn = false;
 let switchStatus;
 let previousTimestamp = Date.now();
 
@@ -20,8 +20,8 @@ const black = '#000000';
 
 const body = document.getElementById('body');
 
-const elemdo = document.getElementsByClassName('btnDo');
-const ledDo = document.getElementsByClassName('ledDO');
+const elemDo = document.getElementsByClassName('btnDo');
+const ledDo = document.getElementsByClassName('ledDo');
 
 const elemDi = document.getElementsByClassName('btnDi');
 const ledDi = document.getElementsByClassName('ledDi');
@@ -50,10 +50,10 @@ rightParams[3] = document.getElementById('rightParamsTemperature');
 
 var ledSys = document.getElementById('ledSys');
 var ledRun = document.getElementById('ledRun');
-var ledUsr = document.getElementById('ledUrs');
+var ledUsr = document.getElementById('ledUsr');
 var ledLnkAct1 = document.getElementById('ledLact1');
 var ledLnkAct2 = document.getElementById('ledLact2');
-var LEDµSd = document.getElementById('ledMSd');
+var ledµSd = document.getElementById('ledMsd');
 
 var refrashRate = document.getElementById('refrashRate'); 
 
@@ -79,7 +79,6 @@ window.addEventListener('message', event => {
             updateRefrashRate();
             updateEverything(message.values);
             readSwitch();
-            setTimeout(function() {console.log('Delay');}, 5000);
             break;
         }
         case 'readSwitch': {
@@ -89,7 +88,7 @@ window.addEventListener('message', event => {
                 }
                 switchStatus = message.value;
                 updateSwitch(message.value);
-                DoData = displayDoData;
+                doData = displayDoData;
             }
             if (switchStatus == '1') {
                 readData();
@@ -100,13 +99,13 @@ window.addEventListener('message', event => {
             break;
         }
         case 'buttonClick': {
-            if (aoChanged) {
-                digitalWrite(aoData);
-                DoChanged = false;
+            if (doChanged) {
+                digitalWrite(doData);
+                doChanged = false;
             }
-            else if (SerialText != '') {
-                serialWrite(SerialText);
-                SerialText = '';
+            else if (serialText != '') {
+                serialWrite(serialText);
+                serialText = '';
             }
             else if (aoData1 >= 0) {
                 analogWrite(1, aoData1);
@@ -131,7 +130,7 @@ window.addEventListener('message', event => {
             body.style.pointerEvents = 'none';
         }
         case 'reload':{
-            DoData = [0, 0, 0, 0];
+            doData = [0, 0, 0, 0];
         }
     }
 });
@@ -463,10 +462,10 @@ function clickedAo(index) {
 
         elemAoValue[index].value = '';
         if (index == 0) {
-            AoData1 = val;
+            aoData1 = val;
         }
         else {
-            AoData2 = val;
+            aoData2 = val;
         }
     }
     else {
@@ -501,11 +500,11 @@ function clickedNav(index) {
 function clickedDo(index) {
     console.log("DO")
     if (elemDo[index].value == 'HIGH') {
-        DoData[index] = 0;
+        doData[index] = 0;
     } else {
-        DoData[index] = 1;
+        doData[index] = 1;
     }
-    DoChanged = true;
+    doChanged = true;
 }
 
 /**
@@ -513,7 +512,7 @@ function clickedDo(index) {
  */
 function clickedSend() {
     if (transMessage.value) {
-        SerialText = transMessage.value;
+        serialText = transMessage.value;
         transMessage.value = '';
     }
 }
