@@ -66,7 +66,7 @@ export class EditSettings {
                 // controller.yaml QuickPick
                 case "autoupdate": 
                     let status = vscode.window.showQuickPick(['on', 'off'], {
-                        title: 'Add Controller',
+                        title: 'Autoupdate',
                         canPickMany: false
                     }) || '';
                     if (!status) return;
