@@ -8,7 +8,7 @@ type Controller = {
     description: string,
     engine: string,
     src: string,
-    img: string
+    imageVersion: string
 }
 
 export class YamlCommands {
@@ -39,7 +39,7 @@ export class YamlCommands {
             description: nodes[key].description,
             engine: nodes[key].engine,
             src: nodes[key].src,
-            img: nodes[key].img
+            imageVersion: nodes[key].imageVersion
         }))
     }
 
@@ -86,7 +86,7 @@ export class YamlCommands {
      * @param context - The extension context provided by VS Code.
      * @returns A promise that resolves when the controller has been created.
      */
-    public static async createController(context: vscode.ExtensionContext, displayname: string, description: string, engine: string, src: string, img: string) {
+    public static async createController(context: vscode.ExtensionContext, displayname: string, description: string, engine: string, src: string, imageVersion: string) {
         
         //Addition of the Controller to wago.yaml
         let id = this.findNextID();
@@ -98,7 +98,7 @@ export class YamlCommands {
                     description: description,
                     engine: engine,
                     src: src,
-                    img: img
+                    imageVersion: imageVersion
                 }
             }
         }
