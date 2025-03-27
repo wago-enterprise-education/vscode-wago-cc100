@@ -40,6 +40,7 @@ export class EditSettings {
                     ) || '';
                     if (!controllerSrc) return;
 
+                    YamlCommands.writeWagoYaml(id, wagoSettings[settingToEdit], controllerSrc);
                     break;
                 case "imageVersion": 
                     //TODO - Not yet determined how they will be managed-------------------------------------------
