@@ -50,7 +50,13 @@ export class Command {
 
         commands.push(vscode.commands.registerCommand('vscode-wago-cc100.init-project', async () => {
             try {
-                fs.writeFileSync(`${vscode.workspace.workspaceFolders![0].uri.fsPath}/wago.yaml`, yaml.stringify({ version: 1.0 }));
+                if (vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0) {
+                    const destinationPath = `${vscode.workspace.workspaceFolders[0].uri.fsPath}/wago.yaml`;
+                    fs.cpSync(`${context.extensionPath}/res/template/wago.yaml`, destinationPath);
+                } else {
+                    vscode.window.showErrorMessage('No workspace is open');
+                }
+                // fs.writeFileSync(`${vscode.workspace.workspaceFolders![0].uri.fsPath}/wago.yaml`, yaml.stringify({ version: 1.0 }));
             } catch(error: any) {
                 vscode.window.showErrorMessage("Error initializing project");
             }
@@ -142,35 +148,31 @@ export class Command {
                 if(value === 'Yes') controllerId = controller.id;
             });
             if(!controllerId) return;
-            
-            let controllerSettings = YamlCommands.getControllerYaml(controllerId);
-            let ssh = new SSH(controllerSettings.ip_adress, controllerSettings.port, controllerSettings.username, '');
-            let filenameOnStartup: string = 'S99_python_runtime';
-            let destPath: string = '/home/user/python_bootapplication/';
-            let pathToFileOnStartup: string = '/etc/init.d/' + filenameOnStartup;
-            let pathToSymbolicLink: string = '/etc/rc.d/' + filenameOnStartup;
 
             try {
                 if (versionNr == 1.0){
-                    await ssh.killAllPythonScripts();
-                    await ssh.deleteFiles(destPath);
-                    await ssh.deleteFiles(pathToFileOnStartup);
-                    await ssh.deleteFiles(pathToSymbolicLink);           
-                    await ssh.killAllTails();
+                    await ConnectionManager.instance.executeCommand(controllerId, 'killall python3');
+                    await ConnectionManager.instance.executeCommand(controllerId, 'rm -rf /home/user/python_bootapplication/*');
+                    await ConnectionManager.instance.executeCommand(controllerId, 'rm -rf /etc/init.d/S99_python_runtime');
+                    await ConnectionManager.instance.executeCommand(controllerId, 'rm -rf /etc/rc.d/S99_python_runtime');
+                    await ConnectionManager.instance.executeCommand(controllerId, 'killall tail');
                 }
 
                 else if (versionNr == 2.0){
-                    ConnectionManager.instance.executeCommand(controllerId, 'docker container stop #Container name')
-                    ConnectionManager.instance.executeCommand(controllerId, 'docker rm #Container name')
-                    ConnectionManager.instance.executeCommand(controllerId, 'docker irm #Image name')
+                    await ConnectionManager.instance.executeCommand(controllerId, 'docker container stop #Container name');
+                    await ConnectionManager.instance.executeCommand(controllerId, 'docker rm #Container name');
+                    await ConnectionManager.instance.executeCommand(controllerId, 'docker irm #Image name');
+                    await ConnectionManager.instance.executeCommand(controllerId, 'rm -rf /home/user/python_bootapplication/*');
                 }
 
-                await ssh.digitalWrite(0);
-                await ssh.analogWrite(1, 0);
-                await ssh.analogWrite(2, 0);
-                await ssh.turnOffRunLed();
-                await ssh.startCodesysRuntime();
-                await ssh.deleteFiles('#Path zur Datei');
+                // await ConnectionManager.instance.executeCommand(controllerId,);
+
+                // await ssh.digitalWrite(0);
+                // await ssh.analogWrite(1, 0);
+                // await ssh.analogWrite(2, 0);
+                // await ssh.turnOffRunLed();
+                // await ssh.startCodesysRuntime();
+                // await ssh.deleteFiles('#Path zur Datei');
                 
                 vscode.window.showInformationMessage(`Controller ${controller.label} reset`);
 
