@@ -22,7 +22,7 @@ export class EditSettings {
 
                 // wago.yaml QuickPick
                 case "engine":
-                    //TODO - No Enums of available engines yet
+                    //TODO - No Enums of available engines yet----------------------------------------------
                     break;
                 case "src":
                     const controllerSrc = vscode.window.showQuickPick(
@@ -42,7 +42,7 @@ export class EditSettings {
 
                     break;
                 case "imageVersion": 
-                    //TODO - Not yet determined how they will be managed
+                    //TODO - Not yet determined how they will be managed-------------------------------------------
                     break;
             }
             return;
