@@ -53,6 +53,7 @@ export class EditSettings {
                         title: 'Connection Type',
                         canPickMany: false
                     }) || '';
+                    if (!conType) return;
                     if (conType === 'usb-c') YamlCommands.writeControllerYaml(id, controllerSettings.ip, '192.168.42.42');
                     YamlCommands.writeControllerYaml(id, controllerSettings[settingToEdit], conType);
                     break;
