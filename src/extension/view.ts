@@ -117,7 +117,7 @@ export class ControllerItem extends vscode.TreeItem {
     constructor(
         public readonly controllerId: string,
         public readonly setting: setting,
-        public readonly content: string,
+        public readonly content: any,
     ) {
         super(`${setting}: ${content}`, vscode.TreeItemCollapsibleState.None);
         this.contextValue = 'controllerItem';

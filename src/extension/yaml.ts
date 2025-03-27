@@ -62,11 +62,17 @@ export class YamlCommands {
      * @param id Id of the controller
      * @param attribute Name of the attribute that is to be changed (enum)
      * @param value Value that is to be written into the attribute (string)
+     * 
+     * In Case of the Port attribute, the String is autmatically converted to a number
      */
     public static writeControllerYaml(id: number, attribute: controllerSettings, value: string) {
         let yaml = this.getControllerYaml(id);
-        yaml[attribute] = value;
-        fs.writeFileSync(`${vscode.workspace.workspaceFolders![0].uri.fsPath}/wago.yaml`, YAML.stringify(yaml, null, "\t"));
+        if (attribute = controllerSettings.port) {
+            yaml[attribute] = Number(value);
+        } else {
+            yaml[attribute] = value;
+        }
+        fs.writeFileSync(`${vscode.workspace.workspaceFolders![0].uri.fsPath}/controller/controller${id}.yaml`, YAML.stringify(yaml, null, "\t"));
     }
 
     /**

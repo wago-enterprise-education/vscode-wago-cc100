@@ -253,9 +253,9 @@ export class Command {
                 ) || '';
                 if (!settingToEdit) return;
 
-                EditSettings.editSetting(id, settingToEdit);
+                EditSettings.editSetting(id, settingAdapter[settingToEdit as keyof typeof settingAdapter]);
             } else {
-                EditSettings.editSetting(controller.getId(), controller.setting);
+                EditSettings.editSetting(controller.getId(), settingAdapter[controller.setting as keyof typeof settingAdapter]);
             }
         }));
 

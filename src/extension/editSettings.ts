@@ -12,12 +12,8 @@ export class EditSettings {
                 // wago.yaml Setting
                 case "displayname": 
                 case "description":
-                    let content = await vscode.window.showInputBox({
-                        prompt: 'Enter the value the Setting should be set to',
-                        title: 'Set Setting Value'
-                    }) || '';
+                    let content = await this.getInput();
                     if (!content) return;
-
                     YamlCommands.writeWagoYaml(id, wagoSettings[settingToEdit], content);
                     break;
 
@@ -53,26 +49,33 @@ export class EditSettings {
             switch (settingToEdit) {
                 // controller.yaml Setting
                 case "connection":
+                    let conType = await vscode.window.showQuickPick(['usb-c', 'ethernet'], {
+                        title: 'Connection Type',
+                        canPickMany: false
+                    }) || '';
+                    if (conType === 'usb-c') YamlCommands.writeControllerYaml(id, controllerSettings.ip, '192.168.42.42');
+                    YamlCommands.writeControllerYaml(id, controllerSettings[settingToEdit], conType);
+                    break;
+
                 case "ip": 
+                    YamlCommands.writeControllerYaml(id, controllerSettings.connection, 'ethernet');
+
                 case "port":
                 case "user":
-                    let content = await vscode.window.showInputBox({
-                        prompt: 'Enter the value the Setting should be set to',
-                        title: 'Set Setting Value'
-                    }) || '';
+                    let content = await this.getInput();
                     if (!content) return;
-
                     YamlCommands.writeControllerYaml(id, controllerSettings[settingToEdit], content);
                     break;
     
                 // controller.yaml QuickPick
                 case "autoupdate": 
-                    let status = vscode.window.showQuickPick(['on', 'off'], {
+                    let status = await vscode.window.showQuickPick(['on', 'off'], {
                         title: 'Autoupdate',
                         canPickMany: false
                     }) || '';
                     if (!status) return;
 
+                    YamlCommands.writeControllerYaml(id, controllerSettings[settingToEdit], status);
                     break;
             }
             return;
@@ -82,8 +85,12 @@ export class EditSettings {
         }       
     }
 
-    public static editSettingInline(controller: ControllerItem) {
-
+    private static async getInput(): Promise<string> {
+        let input = await vscode.window.showInputBox({
+            prompt: 'Enter the value the Setting should be set to',
+            title: 'Set Setting Value'
+        }) || '';
+        return input;
     }
 }
 
