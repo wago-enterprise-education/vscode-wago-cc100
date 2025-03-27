@@ -66,7 +66,7 @@ export class ControllerProvider implements vscode.TreeDataProvider<Controller | 
                 const settingArray = []
 
                 settingArray.push(new ControllerItem(element.id, setting.connection, settings.connection));
-                if(settings.ethernet) {
+                if(settings.connection === 'ethernet') {
                     settingArray.push(new ControllerItem(element.id, setting.ip, settings.ip));
                     settingArray.push(new ControllerItem(element.id, setting.port, settings.port));
                 }
@@ -76,7 +76,7 @@ export class ControllerProvider implements vscode.TreeDataProvider<Controller | 
                 return Promise.resolve([
                     new ControllerItem(element.id, setting.description, nodes[element.id].description),
                     new ControllerItem(element.id, setting.engine, nodes[element.id].engine),
-                    new ControllerItem(element.id, setting.imageVersion, nodes[element.id].imgVersion),
+                    new ControllerItem(element.id, setting.imageVersion, nodes[element.id].imageVersion),
                     new ControllerItem(element.id, setting.src, nodes[element.id].src),
 
                 ].concat(settingArray));
