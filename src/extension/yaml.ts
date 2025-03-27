@@ -67,7 +67,7 @@ export class YamlCommands {
      */
     public static writeControllerYaml(id: number, attribute: controllerSettings, value: string) {
         let yaml = this.getControllerYaml(id);
-        if (attribute = controllerSettings.port) {
+        if (attribute === controllerSettings.port) {
             yaml[attribute] = Number(value);
         } else {
             yaml[attribute] = value;

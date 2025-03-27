@@ -59,6 +59,10 @@ export class EditSettings {
 
                 case "ip": 
                     YamlCommands.writeControllerYaml(id, controllerSettings.connection, 'ethernet');
+                    let adress = await this.getInput();
+                    if (!adress) return;
+                    YamlCommands.writeControllerYaml(id, controllerSettings[settingToEdit], adress);
+                    break;
 
                 case "port":
                 case "user":
