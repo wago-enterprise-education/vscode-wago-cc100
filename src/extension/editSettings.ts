@@ -1,17 +1,18 @@
+import vscode from "vscode";
 import { ControllerItem } from "./view";
 import { YamlCommands, wagoSettings, controllerSettings } from "./yaml";
-import fs from 'fs';
+import fs from "fs";
 
 export class EditSettings {
     
-    public static editSetting(id: number, settingToEdit: string) {
+    public static async editSetting(id: number, settingToEdit: string) {
         
         if (settingToEdit in wagoSettings) {
             switch (settingToEdit) {
                 // wago.yaml Setting
                 case "displayname": 
                 case "description":
-                    let content = vscode.window.showInputBox({
+                    let content = await vscode.window.showInputBox({
                         prompt: 'Enter the value the Setting should be set to',
                         title: 'Set Setting Value'
                     }) || '';
@@ -25,8 +26,8 @@ export class EditSettings {
                     //TODO - No Enums of available engines yet----------------------------------------------
                     break;
                 case "src":
-                    const controllerSrc = vscode.window.showQuickPick(
-                        vscode.workspace.workspaceFolders.map((folder: any) => {
+                    const controllerSrc = await vscode.window.showQuickPick(
+                        vscode.workspace.workspaceFolders!.map((folder: any) => {
                                 if (fs.existsSync(`${folder.uri.fsPath}/main.py`)) {
                                     return `${folder.uri.fsPath}`;
                                 }
@@ -38,7 +39,7 @@ export class EditSettings {
                             canPickMany: false
                         }
                     ) || '';
-                    if (!controllerSrc) return;
+                    if (!controllerSrc || controllerSrc === undefined) return;
 
                     YamlCommands.writeWagoYaml(id, wagoSettings[settingToEdit], controllerSrc);
                     break;
@@ -55,7 +56,7 @@ export class EditSettings {
                 case "ip": 
                 case "port":
                 case "user":
-                    let content = vscode.window.showInputBox({
+                    let content = await vscode.window.showInputBox({
                         prompt: 'Enter the value the Setting should be set to',
                         title: 'Set Setting Value'
                     }) || '';
@@ -77,7 +78,7 @@ export class EditSettings {
             return;
 
         } else {
-            vscode.showErrorMessage("Invalid Attribute Type");
+            vscode.window.showErrorMessage("Invalid Attribute Type");
         }       
     }
 
@@ -90,11 +91,24 @@ export enum setting {
     displayname = 'Name',
     description = 'Description',
     engine = 'Engine',
-    src = 'Src',
+    src = 'Source',
     imageVersion = 'Docker Image Version',
     connection = 'Connection',
     ip = 'IP',
     port = 'Port',
     user = 'User',
     autoupdate = 'Autoupdate'
+}
+
+export enum settingAdapter {
+    Name = "displayname",
+    Description = "description",
+    Engine = "engine",
+    Source = "src",
+    'Docker Image Version' = "imageVersion",
+    Connection = "connection",
+    IP = "ip",
+    Port = "port",
+    User = "user",
+    Autoupdate = "autoupdate"
 }

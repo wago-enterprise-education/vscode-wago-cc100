@@ -7,7 +7,7 @@ import { SSH }from '../ssh';
 import {versionNr} from './helper'
 import { ConnectionManager } from './connectionManager';
 import { Upload } from './upload';
-import { EditSettings, setting } from './editSettings';
+import { EditSettings, setting, settingAdapter } from './editSettings';
 
 const FOLDER_REGEX = '^(?!(?:CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\.[^.]*)?$)[^<>:"/\\|?*\x00-\x1F]*[^<>:"/\\|?*\x00-\x1F\ .]$';
 
@@ -255,8 +255,6 @@ export class Command {
             } else {
                 EditSettings.editSetting(controller.getId(), controller.setting);
             }
-
-            //Regular Check - Case for every Setting type with function writeCon or writeWago
         }));
 
 
