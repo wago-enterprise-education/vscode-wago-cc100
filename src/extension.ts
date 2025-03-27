@@ -6,7 +6,6 @@ import { Command } from './extension/command';
 import { Manager } from './extensionCore/manager';
 
 
-
 export async function activate(context: vscode.ExtensionContext) {
 	//Register TreeDataProvider for sidebar
 	vscode.window.registerTreeDataProvider('controller-view', ControllerProvider.instance);

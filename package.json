@@ -321,5 +321,23 @@
     "@types/vscode": "^1.63.0",
     "@types/yaml": "^1.9.6",
     "@vscode/vsce": "^3.2.1"
-  }
+  },
+  "debugSettings": {
+      "pythonAttach": {
+        "name": "Python Debugger: Attach",
+        "type": "debugpy",
+        "request": "attach",
+        "connect": {
+          "host": "192.168.42.42",
+          "port": 8765
+        },
+        "pathMappings": [
+          {
+            "localRoot": "${workspaceFolder}/src/debugger",
+            "remoteRoot": "/app"
+          }
+        ]
+      }
+    }
+ 
 }
