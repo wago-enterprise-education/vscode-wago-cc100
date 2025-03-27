@@ -59,14 +59,9 @@ export class EditSettings {
                     break;
 
                 case "ip": 
-                    YamlCommands.writeControllerYaml(id, controllerSettings.connection, 'ethernet');
-                    let adress = await this.getInput();
-                    if (!adress) return;
-                    YamlCommands.writeControllerYaml(id, controllerSettings[settingToEdit], adress);
-                    break;
-
                 case "port":
                 case "user":
+                    if (settingToEdit === controllerSettings.ip) YamlCommands.writeControllerYaml(id, controllerSettings.connection, 'usb-c');
                     let content = await this.getInput();
                     if (!content) return;
                     YamlCommands.writeControllerYaml(id, controllerSettings[settingToEdit], content);
