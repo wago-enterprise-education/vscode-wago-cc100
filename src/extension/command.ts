@@ -253,7 +253,7 @@ export class Command {
 
                 EditSettings.editSetting(id, settingToEdit);
             } else {
-                EditSettings.editSettingInline(controller);
+                EditSettings.editSetting(controller.getId(), controller.setting);
             }
 
             //Regular Check - Case for every Setting type with function writeCon or writeWago
