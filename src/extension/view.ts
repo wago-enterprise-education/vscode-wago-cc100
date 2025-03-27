@@ -49,7 +49,7 @@ export class ControllerProvider implements vscode.TreeDataProvider<Controller | 
                         await ConnectionManager.instance.ping(Number.parseInt(key));
                         online = true;
                     } catch (error) {
-                        console.debug(`Controller ${key} is offline`);
+                        console.debug(`Controller ${key} is offline. Reason: ${error}`);
                     }
                     return new Controller(key, controllers.nodes[key].displayname, online);
                 })

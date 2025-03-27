@@ -47,17 +47,15 @@ export class ConnectionManager {
      * @param urn IP address and port of the controller in the format 'ip:port'
      * @param username User to connect to the controller
      * @param password Password to connect to the controller (optional)
-     * @throws Error if the controller already exists
+     * @throws Error if the controller already exists or if first connection attempt fails
      */
     public async addController(controllerId: number, urn: string, username: string, password?: string | undefined) {
-        if(this.connections.find(connection => connection.controllerId === controllerId) !== undefined) throw new Error('Controller already exists');
+        if(this.connections.find(connection => connection.controllerId === controllerId)) throw new Error('Controller already exists');
         const connection = new Connection(controllerId, urn, username)
-        connection.init("wago")
-            .then(() => {
-                this.connections.push(connection)
-            })
+        this.connections.push(connection)
+        connection.init(password)
             .catch((error) => {
-                throw error
+                throw error;
             })
     }
 
@@ -82,9 +80,9 @@ export class ConnectionManager {
     }
 
     /**
-     * Get a free connection of the controller or create a new one if all connections are bussy.
+     * Get a free connection of the controller or create a new one if all connections are busy.
      * Does not create a new connection if the maximum number of connections is reached.
-     * Waits for a free connection if all connections are bussy.
+     * Waits for a free connection if all connections are busy.
      * 
      * @param controllerId Unique identifier of the controller
      * @returns Promise<Connection> A free connection of the controller
@@ -93,14 +91,17 @@ export class ConnectionManager {
     private getFreeConnection(controllerId: number): Promise<Connection> {
         let controllerConnections = this.getControllerConnections(controllerId);
         if(!controllerConnections) throw new Error('Controller does not exist');
-        let freeConnection = controllerConnections.find(connection => !connection.bussy);
+
+        if(!controllerConnections.find(connection => connection.connected)) return Promise.reject(new Error('Connection failed'));
+
+        let freeConnection = controllerConnections.find(connection => !connection.busy);
         if(freeConnection) return Promise.resolve(freeConnection);
         return this.newConnection(controllerId);
     }
 
     /**
      * Create a new connection for the controller if the maximum number of connections is not reached.
-     * Waits for a free connection if all connections are bussy.
+     * Waits for a free connection if all connections are busy.
      * 
      * @param controllerId Unique identifier of the controller
      * @returns Promise<Connection> A free connection of the controller
@@ -109,13 +110,13 @@ export class ConnectionManager {
     private newConnection(controllerId: number): Promise<Connection> {
         const controllerConnections = this.getControllerConnections(controllerId);
         if(controllerConnections.length < maxConnections) {
-            return Promise.resolve(controllerConnections[0].duplicate());
+            return this.getConnection(controllerId);
         }
 
         return new Promise<Connection>((resolve, reject) => {
             const startTime = Date.now();
             let interval = setInterval(() => {
-                let connection = controllerConnections.find(connection => !connection.bussy);
+                let connection = controllerConnections.find(connection => !connection.busy);
                 if (connection) {
                     clearInterval(interval);
                     resolve(connection);
@@ -234,7 +235,7 @@ export class ConnectionManager {
      * @param controllerId Unique identifier of the controller
      * @returns Connection A connection of the controller
      */
-    public getConnection(controllerId: number): Connection {
+    public async getConnection(controllerId: number): Promise<Connection> {
         return this.getControllerConnections(controllerId)[0].duplicate();
     }
 
@@ -274,7 +275,8 @@ class Connection {
     public readonly urn: string;
     public readonly username: string;
     public lastUsed: number = Date.now();
-    public bussy: boolean = false;
+    public busy: boolean = false;
+    public connected: boolean = false;
     public client: Client;
 
     /**
@@ -299,26 +301,26 @@ class Connection {
      * @returns - Promise that resolves when the connection is established.
      */
     public init(password?: string | undefined): Promise<void> {
-        return new Promise((resolve, reject) => {
-            const attemptConnection = () => {
-                this.generateSSHKey();
-                if(password) {
-                    this.client.connect({
-                        host: this.urn.split(':')[0],
-                        port: parseInt(this.urn.split(':')[1]),
-                        username: this.username,
-                        password: password
-                    });
-                } else {
-                    this.client.connect({
-                        host: this.urn.split(':')[0],
-                        port: parseInt(this.urn.split(':')[1]),
-                        username: this.username,
-                        privateKey: fs.readFileSync(privateKeyPath)
-                    });
-                }
+        const attemptConnection = () => {
+            this.generateSSHKey();
+            if(password) {
+                this.client.connect({
+                    host: this.urn.split(':')[0],
+                    port: parseInt(this.urn.split(':')[1]),
+                    username: this.username,
+                    password: password
+                });
+            } else {
+                this.client.connect({
+                    host: this.urn.split(':')[0],
+                    port: parseInt(this.urn.split(':')[1]),
+                    username: this.username,
+                    privateKey: fs.readFileSync(privateKeyPath)
+                });
             }
+        }
 
+        return new Promise((resolve, reject) => {
             this.client
                 .on('ready', () => {
                     console.debug(`Connected to ${this.urn}`)
@@ -326,10 +328,12 @@ class Connection {
                         this.sendSSHKey();
                         password = undefined;
                     }
+                    this.connected = true;
                     ControllerProvider.instance.refresh()
                     resolve()
                 })
                 .on('error', (error) => {
+                    this.connected = false;
                     console.error(`Error connecting to ${this.urn}: ${error.message}`)
                     setTimeout(attemptConnection, reconnectionTimeout);
                     ControllerProvider.instance.refresh()
@@ -345,8 +349,17 @@ class Connection {
      * 
      * @returns A new `Connection` instance with the same properties as the current one.
      */
-    public duplicate(): Connection {
-        return new Connection(this.controllerId, this.urn, this.username);
+    public async duplicate(): Promise<Connection> {
+        const connection = new Connection(this.controllerId, this.urn, this.username);
+        return new Promise<Connection>((resolve, reject) => {
+            connection.init()
+                .then(() => {
+                    resolve(connection);
+                })
+                .catch((error) => {
+                    reject(error);
+                })
+        })
     }
 
     /**
@@ -390,7 +403,7 @@ class Connection {
     public executeCommand(cmd: string): Promise<string> {
         return new Promise<string>((resolve, reject) => {
             this.client.exec(cmd, (err, stream) => {
-                this.bussy = true;
+                this.busy = true;
                 if (err) return reject(err);
 
                 let output = '';
@@ -400,7 +413,7 @@ class Connection {
                 });
 
                 stream.on('close', () => {
-                    this.bussy = false;
+                    this.busy = false;
                     this.lastUsed = Date.now();
                     resolve(output);
                 });
