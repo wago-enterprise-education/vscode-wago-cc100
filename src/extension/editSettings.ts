@@ -1,11 +1,14 @@
-import vscode from "vscode";
-import { ControllerItem } from "./view";
+import * as vscode from 'vscode';
+import * as fs from "fs";
 import { YamlCommands, wagoSettings, controllerSettings } from "./yaml";
-import fs from "fs";
 
 export class EditSettings {
     
     public static async editSetting(id: number, settingToEdit: string) {
+        if(!vscode.workspace.workspaceFolders) {
+            vscode.window.showErrorMessage('No workspace is open');
+            return;
+        }
         
         if (settingToEdit in wagoSettings) {
             switch (settingToEdit) {
@@ -21,23 +24,32 @@ export class EditSettings {
                 case "engine":
                     //TODO - No Enums of available engines yet----------------------------------------------
                     break;
+
                 case "src":
+                    const workspacePath = vscode.workspace.workspaceFolders![0].uri.fsPath;
                     const controllerSrc = await vscode.window.showQuickPick(
-                        vscode.workspace.workspaceFolders!.map((folder: any) => {
-                                if (fs.existsSync(`${folder.uri.fsPath}/main.py`)) {
-                                    return `${folder.uri.fsPath}`;
+                        fs.readdirSync(workspacePath)
+                            .map((folder) => {
+                                if (fs.existsSync(`${workspacePath}/${folder}/main.py`)) {
+                                    return {
+                                        label: `${folder}`,
+                                        description: `${folder}/main.py`
+                                    };
                                 }
-                                return undefined;
+                                return { label: "" };
                             })
-                            .filter((path: string | undefined): path is string => path !== undefined),
+                            .filter((path) => path.label.length > 0 ? true : false)
+                            .concat({ label: "New", description: 'Create a new folder' }),
                         {
-                            title: 'Source of Program',
+                            title: 'Add Controller',
                             canPickMany: false
                         }
-                    ) || '';
-                    if (!controllerSrc || controllerSrc === undefined) return;
+                    ) || { label: "" };
+                    //if (!controllerSrc) return;
+                    
+                    //TODO - Actually Create New Folder-----------------------------
 
-                    YamlCommands.writeWagoYaml(id, wagoSettings[settingToEdit], controllerSrc);
+                    YamlCommands.writeWagoYaml(id, wagoSettings[settingToEdit], controllerSrc.label);
                     break;
                 case "imageVersion": 
                     //TODO - Not yet determined how they will be managed-------------------------------------------

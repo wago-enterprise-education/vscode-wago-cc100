@@ -1,10 +1,8 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
-import yaml from 'yaml';
 import { ControllerProvider, Controller, ControllerItem } from './view';
 import { wagoSettings, YamlCommands } from './yaml';
-import { SSH }from '../ssh';
-import {versionNr} from './helper'
+import { versionNr } from './helper'
 import { ConnectionManager } from './connectionManager';
 import { Upload } from './upload';
 import { EditSettings, setting, settingAdapter } from './editSettings';
@@ -93,7 +91,7 @@ export class Command {
                 canPickMany: false
             }) || 'CC100-v0.2';
 
-            const workspacePath = vscode.workspace.workspaceFolders![0].uri.fsPath
+            const workspacePath = vscode.workspace.workspaceFolders![0].uri.fsPath;
             const controllerSrc = await vscode.window.showQuickPick(
                 fs.readdirSync(workspacePath)
                     .map((folder) => {
@@ -103,7 +101,7 @@ export class Command {
                                 description: `${folder}/main.py`
                             };
                         }
-                        return { label: "" }
+                        return { label: "" };
                     })
                     .filter((path) => path.label.length > 0 ? true : false)
                     .concat({ label: "New", description: 'Create a new folder' }),
