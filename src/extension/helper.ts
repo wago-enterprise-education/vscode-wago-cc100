@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { ControllerProvider } from './view';
 import { YamlCommands } from './yaml';
 
-export let versionNr = 0;
+export let versionNr: number = 0.2;
 
 /**
  * Check if the project is valid by checking if the wago.yaml file is present in the root folder.
@@ -39,7 +39,7 @@ function findSettingsJson() {
     vscode.workspace.findFiles('**/setting,json', '', 1).then((files) => {
         if(files.length > 0 && checkIfInRootFolder(files[0])) {
             vscode.commands.executeCommand('setContext', 'settingsJsonPresent', true);
-            versionNr = 0.1
+            versionNr = 0.1;
         } else {
             vscode.commands.executeCommand('setContext', 'settingsJsonPresent', false);       
         }
