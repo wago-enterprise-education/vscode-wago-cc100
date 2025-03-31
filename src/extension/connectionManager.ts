@@ -61,6 +61,23 @@ export class ConnectionManager {
     }
 
     /**
+     * Update the credentials of a controller in the connection pool
+     * 
+     * @param controllerId Unique identifier of the controller
+     * @param urn IP address and port of the controller in the format 'ip:port'
+     * @param username User to connect to the controller
+     * @throws Error if the controller does not exist
+     */
+    public async updateController(controllerId: number, urn: string, username: string) {
+        let controllerConnections = this.getControllerConnections(controllerId);
+        if(!controllerConnections) throw new Error('Controller does not exist');
+        if(controllerConnections[0].urn === urn && controllerConnections[0].username === username) return;
+
+        this.removeConnection(controllerId)
+        await this.addController(controllerId, urn, username);
+    }
+
+    /**
      * Check if the controller has only one connection
      * 
      * @param controllerId Unique identifier of the controller
@@ -216,17 +233,12 @@ export class ConnectionManager {
      * @param controllerId Unique identifier of the controller
      */
     public removeConnection(controllerId: number) {
-        const removedConnection: number[] = [];
         this.connections
-            .filter(connection => connection.controllerId === controllerId)
             .forEach((connection, index) => {
+                if(connection.controllerId !== controllerId) return;
                 connection.disconnect();
-                removedConnection.push(index);
+                this.connections.splice(index, 1);
             });
-
-        removedConnection.forEach(index => {
-            this.connections.splice(index, 1);
-        })
     }
 
     /**
@@ -454,6 +466,7 @@ class Connection {
      * Disconnects the client from the remote controller
      */
     public disconnect() {
+        this.client.removeAllListeners();
         this.client.end();
     }
 }

@@ -39,24 +39,26 @@ export class ControllerProvider implements vscode.TreeDataProvider<Controller | 
      */
     getChildren(element?: Controller | ControllerItem | undefined): vscode.ProviderResult<Controller[] | ControllerItem[]> {
         if(!element) {
-            let controllers = YamlCommands.getWagoYaml();
+            let controllers = YamlCommands.getControllers();
             if (!controllers) return Promise.resolve([]);
 
             return Promise.all(
-                Object.keys(controllers.nodes).map(async (key) => {
+                controllers.map(async (controller) => {
                     let online = false;
                     try {
-                        await ConnectionManager.instance.ping(Number.parseInt(key));
+                        let settings = YamlCommands.getControllerYaml(Number.parseInt(controller.id));
+                        await ConnectionManager.instance.updateController(Number.parseInt(controller.id), `${settings.ip}:${settings.port}`, settings.user);
+                        await ConnectionManager.instance.ping(Number.parseInt(controller.id));
                         online = true;
                     } catch (error) {
-                        console.debug(`Controller ${key} is offline. Reason: ${error}`);
+                        console.debug(`Controller ${controller.id} is offline. Reason: ${error}`);
                     }
-                    return new Controller(key, controllers.nodes[key].displayname, online);
+                    return new Controller(controller.id, controller.displayname, online);
                 })
             );
         } else {
             if(element instanceof Controller) {
-                const settings = yaml.parse(`${vscode.workspace.workspaceFolders![0].uri.fsPath}/controller/${element.id}.yaml`);
+                const settings = YamlCommands.getControllerYaml(Number.parseInt(element.id));
                 if (!settings) return Promise.resolve([]);
                 
                 const nodes = YamlCommands.getWagoYaml()["nodes"];

@@ -118,7 +118,7 @@ export class Command {
                 title: 'Add Controller'
             }) || 'latest';
 
-            YamlCommands.createController(context, controllerName, controllerDescription, controllerEngine, controllerSrc.label, controllerImg);
+            await YamlCommands.createController(context, controllerName, controllerDescription, controllerEngine, controllerSrc.label, controllerImg);
             vscode.window.showInformationMessage(`Controller ${controllerName} added`);
             ControllerProvider.instance.refresh();
         }));
