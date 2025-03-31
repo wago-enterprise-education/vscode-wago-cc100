@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import fs from 'fs';
+import * as fs from 'fs';
 import { YamlCommands } from './yaml';
 import { ConnectionManager } from './connectionManager';
 import crypto from 'crypto';
@@ -10,7 +10,7 @@ import { versionNr } from './helper'
 //+1. Get Path to the file structure to be uploaded -> Throw Error if not available
 //+2. Create Command to send to the Connection Manager
 //+3. Integrate Hash-Comparison of files
-//4. Integrate File Upload in Case of older Version
+//+4. Integrate File Upload in Case of older Version
 //5. Integrate Containerversion Check and update
 
 const uploadPath = "/home/user/python_bootapplication";
@@ -28,7 +28,7 @@ export class Upload {
     public async uploadFile(id: number) {
         
         let controllers = YamlCommands.getWagoYaml();
-        let src = controllers.nodes.$(id).src;
+        let src = controllers.nodes[id].src;
         let path = `${vscode.workspace.workspaceFolders![0].uri.fsPath}/${src}`;
         
         if (!fs.existsSync(`${path}/main.py`)) { 
@@ -38,14 +38,14 @@ export class Upload {
 
         if (versionNr == 0.2) {
             if(await this.compareFolders(id, path)) {
-                vscode.window.showInformationMessage(`The files on ${controllers.nodes.$(id).displayname} are already up to date.`);
+                vscode.window.showInformationMessage(`The files on ${controllers.nodes[id].displayname} are already up to date.`);
                 return;
             }
 
             await connectionManager.executeCommand(id, `cp ${path} ${uploadPath}`);
         } else if (versionNr == 0.1) {
             if(await this.compareFolders(id, path)) {
-                vscode.window.showInformationMessage(`The files on ${controllers.nodes.$(id).displayname} are already up to date.`);
+                vscode.window.showInformationMessage(`The files on ${controllers.nodes[id].displayname} are already up to date.`);
                 return;
             }
 
@@ -109,7 +109,6 @@ export class Upload {
             console.error('Error comparing folders:', error);
             return Promise.reject(error);
         }
-        
     }
 
     /**
@@ -181,9 +180,7 @@ export class Upload {
             return Promise.reject(error);
         }
     }
-
 }
-
 
 /**
      * This Method is used to update the docker-container on the WAGO Controller
