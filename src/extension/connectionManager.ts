@@ -70,10 +70,11 @@ export class ConnectionManager {
      */
     public async updateController(controllerId: number, urn: string, username: string) {
         let controllerConnections = this.getControllerConnections(controllerId);
-        if(!controllerConnections) throw new Error('Controller does not exist');
-        if(controllerConnections[0].urn === urn && controllerConnections[0].username === username) return;
+        if(controllerConnections) {
+            if(controllerConnections[0].urn === urn && controllerConnections[0].username === username) return;
 
-        this.removeConnection(controllerId)
+            this.removeConnection(controllerId)
+        }
         await this.addController(controllerId, urn, username);
     }
 
