@@ -155,7 +155,7 @@ export class webviewIoCheck {
                         
                         if (this.ioCheckPanel) {
                             try {
-                                this.updateIoCheck(Number.parseInt(element.id));
+                                this.updateIoCheck(element.controllerId);
                             }
                             catch (error: any) {
                                 this.ioCheckPanel.dispose();

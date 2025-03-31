@@ -3,12 +3,20 @@ import YAML from 'yaml'
 import * as vscode from 'vscode'
 
 type Controller = {
-    id: string,
+    id: number,
     displayname: string,
     description: string,
     engine: string,
     src: string,
     imageVersion: string
+}
+
+type ControllerSettings = {
+    connection: string,
+    ip: string,
+    port: number,
+    user: string,
+    autoupdate: string
 }
 
 export class YamlCommands {
@@ -18,7 +26,7 @@ export class YamlCommands {
      * 
      * @returns The content of the wago.yaml file as a JS object
      */
-    public static getWagoYaml() {
+    private static getWagoYaml() {
         return YAML.parse(fs.readFileSync(`${vscode.workspace.workspaceFolders![0].uri.fsPath}/wago.yaml`, 'utf8'));
     }
 
@@ -27,20 +35,35 @@ export class YamlCommands {
      * 
      * @returns The content of the wago.yaml file as a JS object
      */
-    public static getControllerYaml(id: number) {
+    private static getControllerYaml(id: number) {
         return YAML.parse(fs.readFileSync(`${vscode.workspace.workspaceFolders![0].uri.fsPath}/controller/controller${id}.yaml`, 'utf8'));
     }
 
     public static getControllers(): Array<Controller> {
-        const nodes = YamlCommands.getWagoYaml()["nodes"];
+        const nodes = this.getWagoYaml().nodes;
         return Object.keys(nodes).map((key: string) => ({
-            id: key,	
+            id: Number.parseInt(key),	
             displayname: nodes[key].displayname,
             description: nodes[key].description,
             engine: nodes[key].engine,
             src: nodes[key].src,
             imageVersion: nodes[key].imageVersion
         }))
+    }
+
+    public static getController(id: number): Controller | undefined {
+        return this.getControllers().find(controller => controller.id === id);
+    }
+
+    public static getControllerSettings(id: number): ControllerSettings {
+        const settings = this.getControllerYaml(id);
+        return {
+            connection: settings.connection,
+            ip: settings.ip,
+            port: settings.port,
+            user: settings.user,
+            autoupdate: settings.autoupdate
+        }
     }
 
     /**

@@ -18,10 +18,10 @@ export async function activate(context: vscode.ExtensionContext) {
 	Command.createCommands(context);
 
 	if(await verifyProject()) {
-		const controller = YamlCommands.getWagoYaml();
-		Object.keys(controller.nodes).forEach(async (key) => {
-			const settings = YamlCommands.getControllerYaml(Number.parseInt(key));
-			await ConnectionManager.instance.addController(Number.parseInt(key), `${settings.ip}:${settings.port}`, settings.user)
+		const controllers = YamlCommands.getControllers();
+		controllers.forEach(async controller => {
+			const settings = YamlCommands.getControllerSettings(controller.id);
+			await ConnectionManager.instance.addController(controller.id, `${settings.ip}:${settings.port}`, settings.user)
 		})
 	}
 

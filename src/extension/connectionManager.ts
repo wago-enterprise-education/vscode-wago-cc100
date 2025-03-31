@@ -371,12 +371,12 @@ class Connection {
 
     private async requestPassword(): Promise<string> {
         const selection = await vscode.window.showErrorMessage(
-            `Authentication failed for ${YamlCommands.getControllers().find((controller) => Number.parseInt(controller.id) === this.controllerId)?.displayname}. Want to reenter the password?`,
+            `Authentication failed for ${YamlCommands.getController(this.controllerId)?.displayname}. Want to reenter the password?`,
             'Yes', 'Don\'t ask again'
         )
         if(selection === 'Yes') {
             return await vscode.window.showInputBox({
-                prompt: `Enter the password for ${YamlCommands.getControllers().find((controller) => Number.parseInt(controller.id) === this.controllerId)?.displayname}`,
+                prompt: `Enter the password for ${YamlCommands.getController(this.controllerId)?.displayname}`,
                 ignoreFocusOut: true,
                 password: true
             }) || '';

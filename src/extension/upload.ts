@@ -27,8 +27,8 @@ export class Upload {
 
     public async uploadFile(id: number) {
         
-        let controllers = YamlCommands.getWagoYaml();
-        let src = controllers.nodes[id].src;
+        let controller = YamlCommands.getController(id);
+        let src = controller?.src;
         let path = `${vscode.workspace.workspaceFolders![0].uri.fsPath}/${src}`;
         
         if (!fs.existsSync(`${path}/main.py`)) { 
@@ -38,14 +38,14 @@ export class Upload {
 
         if (versionNr == 0.2) {
             if(await this.compareFolders(id, path)) {
-                vscode.window.showInformationMessage(`The files on ${controllers.nodes[id].displayname} are already up to date.`);
+                vscode.window.showInformationMessage(`The files on ${controller?.displayname} are already up to date.`);
                 return;
             }
 
             await connectionManager.executeCommand(id, `cp ${path} ${uploadPath}`);
         } else if (versionNr == 0.1) {
             if(await this.compareFolders(id, path)) {
-                vscode.window.showInformationMessage(`The files on ${controllers.nodes[id].displayname} are already up to date.`);
+                vscode.window.showInformationMessage(`The files on ${controller?.displayname} are already up to date.`);
                 return;
             }
 

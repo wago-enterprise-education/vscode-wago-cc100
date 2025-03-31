@@ -72,9 +72,6 @@ export class Command {
                     if(!RegExp(FOLDER_REGEX).test(value)) {
                         return 'Invalid controller name';
                     }
-                    if(YamlCommands.getWagoYaml()?.nodes[value]) {
-                        return 'Controller already exists';
-                    }
                     return null;
                 }
             }) || '';
@@ -128,12 +125,11 @@ export class Command {
             }
             let controllerId = null;
             if(!controller) {
-                const nodes = YamlCommands.getWagoYaml()["nodes"];
                 controller = await vscode.window.showQuickPick(
-                    Object.keys(nodes).map((key: any) => ({
-                        id: key,	
-                        label: nodes[key].displayname,
-                        description: nodes[key].description
+                    YamlCommands.getControllers().map((controller) => ({
+                        id: controller.id,	
+                        label: controller.displayname,
+                        description: controller.description
                     })),
                     {
                         title: 'Reset Controller',
@@ -190,13 +186,12 @@ export class Command {
                 return;
             }
             
-            const nodes = YamlCommands.getWagoYaml()["nodes"];
             if (controller === undefined) {
                 let con = await vscode.window.showQuickPick(
-                    Object.keys(nodes).map((key: any) => ({
-                        id: key,	
-                        label: nodes[key].displayname,
-                        description: nodes[key].description,
+                    YamlCommands.getControllers().map((controller) => ({
+                        controllerId: controller.id,	
+                        label: controller.displayname,
+                        description: controller.description,
                         online: false
                     })),
                     {
@@ -208,7 +203,7 @@ export class Command {
                 controller = con;
             }
             
-            await new Upload().uploadFile(Number.parseInt(controller.id));
+            await new Upload().uploadFile(controller.controllerId);
             return;
         }));
         commands.push(vscode.commands.registerCommand('vscode-wago-cc100.upload-all', async () => {
@@ -225,13 +220,11 @@ export class Command {
             let settingToEdit: string;
 
             if(controller === undefined) {
-                const nodes = YamlCommands.getWagoYaml()["nodes"];
-
                 let con = await vscode.window.showQuickPick(
-                    Object.keys(nodes).map((key: any) => ({
-                        id: key,	
-                        label: nodes[key].displayname,
-                        description: nodes[key].description,
+                    YamlCommands.getControllers().map((controller) => ({
+                        id: controller.id,	
+                        label: controller.displayname,
+                        description: controller.description,
                         online: false
                     })),
                     {
@@ -253,7 +246,7 @@ export class Command {
 
                 await EditSettings.editSetting(id, settingAdapter[settingToEdit as keyof typeof settingAdapter]);
             } else {
-                await EditSettings.editSetting(controller.getId(), settingAdapter[controller.setting as keyof typeof settingAdapter]);
+                await EditSettings.editSetting(controller.controllerId, settingAdapter[controller.setting as keyof typeof settingAdapter]);
             }
 
             ControllerProvider.instance.refresh();
@@ -272,7 +265,7 @@ export class Command {
                         return {
                             label: controller.displayname,
                             description: controller.description,
-                            id: controller.id,
+                            controllerId: controller.id,
                         };
                     }), {
                         title: 'Rename Controller',
@@ -281,7 +274,7 @@ export class Command {
                 } else {
                     newController = {
                         label: controllers[0].displayname,
-                        id: controllers[0].id,
+                        controllerId: controllers[0].id,
                     }
                 }
             }
@@ -294,7 +287,7 @@ export class Command {
             }) || '';
             if(!controllerName) return;
 
-            YamlCommands.writeWagoYaml(Number.parseInt(newController.id), wagoSettings.displayname, controllerName);
+            YamlCommands.writeWagoYaml(newController.controllerId, wagoSettings.displayname, controllerName);
         }));
 
         commands.push(vscode.commands.registerCommand('vscode-wago-cc100.remove-controller', async (controller: Controller | undefined, showConfirmation = true) => {
@@ -304,7 +297,7 @@ export class Command {
             } else {
                 selcetedController = await vscode.window.showQuickPick(
                     YamlCommands.getControllers().map((controller) => ({
-                        id: controller.id,	
+                        controllerId: controller.id,	
                         label: controller.displayname,
                         description: controller.description
                     })),
@@ -319,14 +312,14 @@ export class Command {
             let controllerId
             if(showConfirmation){
                 await vscode.window.showWarningMessage(`Remove ${selcetedController.label}`, 'Yes', 'No').then((value) => {
-                    if(value === 'Yes') controllerId = selcetedController.id;
+                    if(value === 'Yes') controllerId = selcetedController.controllerId;
                 });
                 if(!controllerId) return;
             } else {
-                controllerId = selcetedController.id;
+                controllerId = selcetedController.controllerId;
             }
             
-            YamlCommands.removeController(Number.parseInt(controllerId));
+            YamlCommands.removeController(controllerId);
             vscode.window.showInformationMessage(`Controller ${selcetedController.label} removed`);
 
             ControllerProvider.instance.refresh();

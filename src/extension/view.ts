@@ -46,9 +46,9 @@ export class ControllerProvider implements vscode.TreeDataProvider<Controller | 
                 controllers.map(async (controller) => {
                     let online = false;
                     try {
-                        let settings = YamlCommands.getControllerYaml(Number.parseInt(controller.id));
-                        await ConnectionManager.instance.updateController(Number.parseInt(controller.id), `${settings.ip}:${settings.port}`, settings.user);
-                        await ConnectionManager.instance.ping(Number.parseInt(controller.id));
+                        let settings = YamlCommands.getControllerSettings(controller.id);
+                        await ConnectionManager.instance.updateController(controller.id, `${settings.ip}:${settings.port}`, settings.user);
+                        await ConnectionManager.instance.ping(controller.id);
                         online = true;
                     } catch (error) {
                         console.debug(`Controller ${controller.id} is offline. Reason: ${error}`);
@@ -58,26 +58,26 @@ export class ControllerProvider implements vscode.TreeDataProvider<Controller | 
             );
         } else {
             if(element instanceof Controller) {
-                const settings = YamlCommands.getControllerYaml(Number.parseInt(element.id));
+                const settings = YamlCommands.getControllerSettings(element.controllerId);
                 if (!settings) return Promise.resolve([]);
                 
-                const nodes = YamlCommands.getWagoYaml()["nodes"];
+                const controller = YamlCommands.getController(element.controllerId);
 
                 const settingArray = []
 
-                settingArray.push(new ControllerItem(element.id, setting.connection, settings.connection));
+                settingArray.push(new ControllerItem(element.controllerId, setting.connection, settings.connection));
                 if(settings.connection === 'ethernet') {
-                    settingArray.push(new ControllerItem(element.id, setting.ip, settings.ip));
+                    settingArray.push(new ControllerItem(element.controllerId, setting.ip, settings.ip));
                 }
-                settingArray.push(new ControllerItem(element.id, setting.port, settings.port));
-                settingArray.push(new ControllerItem(element.id, setting.user, settings.user));
-                settingArray.push(new ControllerItem(element.id, setting.autoupdate, settings.autoupdate));
+                settingArray.push(new ControllerItem(element.controllerId, setting.port, settings.port));
+                settingArray.push(new ControllerItem(element.controllerId, setting.user, settings.user));
+                settingArray.push(new ControllerItem(element.controllerId, setting.autoupdate, settings.autoupdate));
 
                 return Promise.resolve([
-                    new ControllerItem(element.id, setting.description, nodes[element.id].description),
-                    new ControllerItem(element.id, setting.engine, nodes[element.id].engine),
-                    new ControllerItem(element.id, setting.imageVersion, nodes[element.id].imageVersion),
-                    new ControllerItem(element.id, setting.src, nodes[element.id].src),
+                    new ControllerItem(element.controllerId, setting.description, controller?.description),
+                    new ControllerItem(element.controllerId, setting.engine, controller?.engine),
+                    new ControllerItem(element.controllerId, setting.imageVersion, controller?.imageVersion),
+                    new ControllerItem(element.controllerId, setting.src, controller?.src),
 
                 ].concat(settingArray));
             }
@@ -98,13 +98,13 @@ export class Controller extends vscode.TreeItem {
      * @param label - The label to display for the controller.
      */
     constructor(
-        public readonly id: string,
+        public readonly controllerId: number,
         public readonly label: string,
         public readonly online: boolean
     ) {
         super(label, vscode.TreeItemCollapsibleState.Collapsed);
         this.contextValue = 'controller';
-        this.tooltip = `ID: ${id} \nOnline: ${online}`;
+        this.tooltip = `ID: ${controllerId} \nOnline: ${online}`;
         this.iconPath = new vscode.ThemeIcon('circle-filled', new vscode.ThemeColor(online ? 'wagocc100.green' : 'wagocc100.red'));
     }
 }
@@ -115,15 +115,11 @@ export class Controller extends vscode.TreeItem {
  */
 export class ControllerItem extends vscode.TreeItem {
     constructor(
-        public readonly controllerId: string,
+        public readonly controllerId: number,
         public readonly setting: setting,
         public readonly content: any,
     ) {
         super(`${setting}: ${content}`, vscode.TreeItemCollapsibleState.None);
         this.contextValue = 'controllerItem';
-    }
-
-    public getId(): number {
-        return Number.parseInt(this.controllerId)
     }
 }
