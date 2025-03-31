@@ -1,5 +1,6 @@
 import { ControllerItem, ControllerProvider } from "../../extension/view";
 import { controllerSettings, wagoSettings, YamlCommands } from "../../extension/yaml";
+import * as vscode from 'vscode';
 import * as Interface from "./interface";
 import * as fs from 'fs';
 
