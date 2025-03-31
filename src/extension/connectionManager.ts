@@ -4,6 +4,7 @@ import * as vscode from 'vscode';
 import * as Path  from 'path';
 import * as fs from 'fs';
 import { ControllerProvider } from './view';
+import { YamlCommands } from './yaml';
 
 const publicKeyPath = Path.join(homedir(), '.ssh', 'id_rsa_wago.pub');
 const privateKeyPath = Path.join(homedir(), '.ssh', 'id_rsa_wago');
@@ -278,6 +279,7 @@ class Connection {
     public busy: boolean = false;
     public connected: boolean = false;
     public client: Client;
+    private askForPassword: boolean = true;
 
     /**
      * Creates a new `Connection` instance.
@@ -286,10 +288,11 @@ class Connection {
      * @param urn - The URN of the controller, including host and port.
      * @param username - The username used for authentication.
      */
-    constructor(controllerId: number, urn: string, username: string) {
+    constructor(controllerId: number, urn: string, username: string, askPassword = false) {
         this.controllerId = controllerId;
         this.urn = urn;
         this.username = username;
+        this.askForPassword = askPassword;
 
         this.client = new Client()
     }
@@ -332,9 +335,18 @@ class Connection {
                     ControllerProvider.instance.refresh()
                     resolve()
                 })
-                .on('error', (error) => {
+                .on('error', async (error) => {
                     this.connected = false;
                     console.error(`Error connecting to ${this.urn}: ${error.message}`)
+                    if(error.level === 'client-authentication') {
+                        if(!this.askForPassword) {
+                            password = await this.requestPassword();
+                            if(password) {
+                                setTimeout(attemptConnection, 0);
+                                return reject(error);
+                            }
+                        }
+                    }
                     setTimeout(attemptConnection, reconnectionTimeout);
                     ControllerProvider.instance.refresh()
                     reject(error)
@@ -344,13 +356,30 @@ class Connection {
         })
     }
 
+    private async requestPassword(): Promise<string> {
+        const selection = await vscode.window.showErrorMessage(
+            `Authentication failed for ${YamlCommands.getControllers().find((controller) => Number.parseInt(controller.id) === this.controllerId)?.displayname}. Want to reenter the password?`,
+            'Yes', 'Don\'t ask again'
+        )
+        if(selection === 'Yes') {
+            return await vscode.window.showInputBox({
+                prompt: `Enter the password for ${YamlCommands.getControllers().find((controller) => Number.parseInt(controller.id) === this.controllerId)?.displayname}`,
+                ignoreFocusOut: true,
+                password: true
+            }) || '';
+        } else {
+            this.askForPassword = false;
+            return '';
+        }
+    }
+
     /**
      * Creates a duplicate of the current connection instance.
      * 
      * @returns A new `Connection` instance with the same properties as the current one.
      */
     public async duplicate(): Promise<Connection> {
-        const connection = new Connection(this.controllerId, this.urn, this.username);
+        const connection = new Connection(this.controllerId, this.urn, this.username, this.askForPassword);
         return new Promise<Connection>((resolve, reject) => {
             connection.init()
                 .then(() => {
@@ -389,7 +418,7 @@ class Connection {
     private async sendSSHKey() {
         this.generateSSHKey();
         const publicKey = fs.readFileSync(publicKeyPath).toString();
-        this.client.exec(`echo "${publicKey}" >> ~/.ssh/authorized_keys`, (err) => {
+        this.client.exec(`mkdir -p ~/.ssh && echo "${publicKey}" >> ~/.ssh/authorized_keys`, (err) => {
             if(err) throw err
         })
     }
