@@ -23,11 +23,46 @@ export class Command {
         commands.push(vscode.commands.registerCommand('vscode-wago-cc100.add-controller', async () => {
             Manager.getInstance().addController(context);
         }));
-        
+
+        commands.push(vscode.commands.registerCommand('vscode-wago-cc100.reset-controller', async (controller) => {
+            Manager.getInstance().resetController(controller, );
+        }));
+
+        //Debugger Command
         commands.push(vscode.commands.registerCommand('vscode-wago-cc100.refresh-view', async () => {
             ControllerProvider.instance.refresh();
         }));
         
+        commands.push(vscode.commands.registerCommand('vscode-wago-cc100.debug', async function () {
+                vscode.window.showInformationMessage('Python Debugging wird gestartet...');
+        
+                // Die Debug-Konfiguration
+                const config = {
+                    name: "Python: attach to cc100",
+                    type: "python", //Python debug type
+                    request: "attach", //Attach Mode
+                    connect: {
+                        host: "192.168.42.42", //remote host (local for the ssh tunnel)
+                        port: 8765 //Port for the connection
+                    },
+                    pathMappings: [
+                        {
+                            localRoot: "${workspaceFolder}",
+                            remoteRoot: "/home/user/python_bootaplication"
+                        }
+                    ]
+                };
+        
+                //Staring debugger
+                const success = await vscode.debug.startDebugging(undefined, config);
+                
+                if (success) {
+                    vscode.window.showInformationMessage('Debugging session started sucsessfully');
+                } else {
+                    vscode.window.showErrorMessage('ERROR: Could start a debugging session');
+                }
+            }));
+
         commands.push(vscode.commands.registerCommand('vscode-wago-cc100.upload', async (controller: Controller | undefined) => {
             Manager.getInstance().upload(controller);
         }));
