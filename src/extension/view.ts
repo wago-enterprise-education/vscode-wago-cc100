@@ -68,8 +68,8 @@ export class ControllerProvider implements vscode.TreeDataProvider<Controller | 
                 settingArray.push(new ControllerItem(element.id, setting.connection, settings.connection));
                 if(settings.connection === 'ethernet') {
                     settingArray.push(new ControllerItem(element.id, setting.ip, settings.ip));
-                    settingArray.push(new ControllerItem(element.id, setting.port, settings.port));
                 }
+                settingArray.push(new ControllerItem(element.id, setting.port, settings.port));
                 settingArray.push(new ControllerItem(element.id, setting.user, settings.user));
                 settingArray.push(new ControllerItem(element.id, setting.autoupdate, settings.autoupdate));
 
