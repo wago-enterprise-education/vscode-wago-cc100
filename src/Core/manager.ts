@@ -15,17 +15,8 @@ export class Manager {
         }
         return Manager.instance;
     }
-    
-    private getProjectVersion(){
 
-    }
-
-    public refresh(id: number){
-        this.getProjectVersion();
-        Factory.getInstance().createRefreshCommand(versionNr).refresh();
-    }
     public upload(id: number){
-        this.getProjectVersion();
-        Factory.getInstance().createUploadCommand(versionNr).upload();
+        Factory.getInstance().createUploadCommand(versionNr).upload(id);
     }
 }

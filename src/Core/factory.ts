@@ -1,7 +1,6 @@
-import { RefreshInterface, UploadInterface } from "./interface/interface";
+import * as Interface from "./interface/interface";
 import * as V1 from "./interface/V0_1_0";
 import * as V2 from "./interface/V0_2_0";
-import { versionNr } from '../extension/helper';
 
 export class Factory {
     private static instance: Factory | null = null;
@@ -16,23 +15,69 @@ export class Factory {
         return Factory.instance!;
     }
 
-    public createRefreshCommand(versionNr: number): RefreshInterface {
-        if (versionNr = 0.1) {
-            return new V1.Refresh();
-        } else if (versionNr = 0.2) {
-            return new V2.Refresh();
-        } else {
-            throw new Error("Invalid version number");
+    public createUploadCommand(versionNr: number): Interface.UploadInterface {
+        switch (versionNr) {
+            case 0.1:
+                return new V1.Upload();
+            case 0.2:
+                return new V2.Upload();
+            default:
+                throw new Error("Invalid version number");
         }
     }
 
-    public createUploadCommand(versionNr: number): UploadInterface {
-        if (versionNr = 0.1) {
-            return new V1.Upload();
-        } else if (versionNr = 0.2) {
-            return new V2.Upload();
-        } else {0
-            throw new Error("Invalid version number");
+    public createResetCommand(versionNr: number): Interface.ResetControllerInterface {
+        switch (versionNr) {
+            case 0.1:
+                return new V1.ResetController();
+            case 0.2:
+                return new V2.ResetController();
+            default:
+                throw new Error("Invalid version number");
+        }
+    }
+
+    public createAddCommand(versionNr: number): Interface.AddControllerInterface {
+        switch (versionNr) {
+            case 0.1:
+                return new V1.AddController();
+            case 0.2:
+                return new V2.AddController();
+            default:
+                throw new Error("Invalid version number");
+        }
+    }
+
+    public createConfigureCommand(versionNr: number): Interface.ConfigureControllerInterface {
+        switch (versionNr) {
+            case 0.1:
+                return new V1.ConfigureController();
+            case 0.2:
+                return new V2.ConfigureController();
+            default:
+                throw new Error("Invalid version number");
+        }
+    }
+
+    public createEditSettingsCommand(versionNr: number): Interface.EditSettingsInterface {
+        switch (versionNr) {
+            case 0.1:
+                return new V1.EditSettings();
+            case 0.2:
+                return new V2.EditSettings();
+            default:
+                throw new Error("Invalid version number");
+        }
+    }
+
+    public createViewChildrenCommand(versionNr: number): Interface.ViewChildrenInterface {
+        switch (versionNr) {
+            case 0.1:
+                return new V1.ViewChildren();
+            case 0.2:
+                return new V2.ViewChildren();
+            default:
+                throw new Error("Invalid version number");
         }
     }
 }
