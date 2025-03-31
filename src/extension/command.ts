@@ -251,10 +251,12 @@ export class Command {
                 ) || '';
                 if (!settingToEdit) return;
 
-                EditSettings.editSetting(id, settingAdapter[settingToEdit as keyof typeof settingAdapter]);
+                await EditSettings.editSetting(id, settingAdapter[settingToEdit as keyof typeof settingAdapter]);
             } else {
-                EditSettings.editSetting(controller.getId(), settingAdapter[controller.setting as keyof typeof settingAdapter]);
+                await EditSettings.editSetting(controller.getId(), settingAdapter[controller.setting as keyof typeof settingAdapter]);
             }
+
+            ControllerProvider.instance.refresh();
         }));
 
 
