@@ -6,7 +6,7 @@ export interface UploadInterface{
 }
 
 export interface ResetControllerInterface{
-    reset: (id: number) => void;
+    reset: (controller: any) => void;
 }
 
 

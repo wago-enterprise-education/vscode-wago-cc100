@@ -1,6 +1,6 @@
 import { Factory } from "./factory";
 import { versionNr } from '../extension/helper';
-import { ControllerItem } from "../extension/view";
+import { Controller, ControllerItem } from "../extension/view";
 
 export class Manager {
     private static instance: Manager;
@@ -22,5 +22,8 @@ export class Manager {
     }
     public editSettings(controller: ControllerItem | undefined){
         Factory.getInstance().createEditSettingsCommand(versionNr).editSettings(controller);
+    }
+    public resetController(controller: Controller | undefined){
+        Factory.getInstance().createResetCommand(versionNr).reset(controller);
     }
 }

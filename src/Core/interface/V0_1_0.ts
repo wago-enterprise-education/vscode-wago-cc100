@@ -1,4 +1,8 @@
+import { ConnectionManager } from "../../extension/connectionManager";
+import { ControllerProvider } from "../../extension/view";
+import { YamlCommands } from "../../extension/yaml";
 import * as Interface from "./interface";
+import * as vscode from 'vscode';
 
 export class Upload implements Interface.UploadInterface{
     upload() {
@@ -6,8 +10,52 @@ export class Upload implements Interface.UploadInterface{
     }
 }
 export class ResetController implements Interface.ResetControllerInterface{
-    reset() {
-        console.log("Reset command executed");
+    async reset(controller: any) {
+        if(!vscode.workspace.workspaceFolders) {
+            vscode.window.showErrorMessage('No workspace is open');
+            return;
+        }
+        let controllerId = null;
+        if(!controller) {
+            controller = await vscode.window.showQuickPick(
+                YamlCommands.getControllers().map((controller) => ({
+                    id: controller.id,	
+                    label: controller.displayname,
+                    description: controller.description
+                })),
+                {
+                    title: 'Reset Controller',
+                    canPickMany: false
+                }
+            );
+            if (!controller) return;
+        } 
+        await vscode.window.showWarningMessage(`Reset ${controller.label}`, 'Yes', 'No').then((value) => {
+            if(value === 'Yes') controllerId = controller.controllerId;
+        });
+        if(!controllerId) return;
+
+        try {
+            await ConnectionManager.instance.executeCommand(controllerId, 'killall python3');
+            await ConnectionManager.instance.executeCommand(controllerId, 'rm -rf /home/user/python_bootapplication/*');
+            await ConnectionManager.instance.executeCommand(controllerId, 'rm -rf /etc/init.d/S99_python_runtime');
+            await ConnectionManager.instance.executeCommand(controllerId, 'rm -rf /etc/rc.d/S99_python_runtime');
+            await ConnectionManager.instance.executeCommand(controllerId, 'killall tail');
+
+            await ConnectionManager.instance.executeCommand(controllerId, 'echo 0 >> /sys/kernel/dout_drv/DOUT_DATA');
+            await ConnectionManager.instance.executeCommand(controllerId, 'echo 0 >> /sys/bus/iio/devices/iio:device0/out_voltage1_powerdown');
+            await ConnectionManager.instance.executeCommand(controllerId, 'echo 0 >> /sys/bus/iio/devices/iio:device0/out_voltage1_raw');
+            await ConnectionManager.instance.executeCommand(controllerId, 'echo 0 >> /sys/bus/iio/devices/iio:device0/out_voltage2_powerdown');
+            await ConnectionManager.instance.executeCommand(controllerId, 'echo 0 >> /sys/bus/iio/devices/iio:device0/out_voltage2_raw');
+            await ConnectionManager.instance.executeCommand(controllerId, 'echo 0 >> /dev/leds/run-green/brightness');
+            await ConnectionManager.instance.executeCommand(controllerId, 'echo 0 >> /dev/leds/run-red/brightness');
+            await ConnectionManager.instance.executeCommand(controllerId, 'codesys3 &');
+            
+            vscode.window.showInformationMessage(`Controller ${controller.label} reset`);
+            ControllerProvider.instance.refresh();
+        } catch (error: any) {
+            vscode.window.showErrorMessage('Error reseting controller');
+        }
     }
 }
 export class AddController implements Interface.AddControllerInterface{

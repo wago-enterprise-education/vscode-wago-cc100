@@ -119,61 +119,63 @@ export class Command {
         }));
 
         commands.push(vscode.commands.registerCommand('vscode-wago-cc100.reset-controller', async (controller) => {
-            if(!vscode.workspace.workspaceFolders) {
-                vscode.window.showErrorMessage('No workspace is open');
-                return;
-            }
-            let controllerId = null;
-            if(!controller) {
-                controller = await vscode.window.showQuickPick(
-                    YamlCommands.getControllers().map((controller) => ({
-                        id: controller.id,	
-                        label: controller.displayname,
-                        description: controller.description
-                    })),
-                    {
-                        title: 'Reset Controller',
-                        canPickMany: false
-                    }
-                );
-                if (!controller) return;
-            } 
-            await vscode.window.showWarningMessage(`Reset ${controller.label}`, 'Yes', 'No').then((value) => {
-                if(value === 'Yes') controllerId = controller.id;
-            });
-            if(!controllerId) return;
+            Manager.getInstance().resetController(controller);
 
-            try {
-                if (versionNr == 1.0){
-                    await ConnectionManager.instance.executeCommand(controllerId, 'killall python3');
-                    await ConnectionManager.instance.executeCommand(controllerId, 'rm -rf /home/user/python_bootapplication/*');
-                    await ConnectionManager.instance.executeCommand(controllerId, 'rm -rf /etc/init.d/S99_python_runtime');
-                    await ConnectionManager.instance.executeCommand(controllerId, 'rm -rf /etc/rc.d/S99_python_runtime');
-                    await ConnectionManager.instance.executeCommand(controllerId, 'killall tail');
-                }
+            // if(!vscode.workspace.workspaceFolders) {
+            //     vscode.window.showErrorMessage('No workspace is open');
+            //     return;
+            // }
+            // let controllerId = null;
+            // if(!controller) {
+            //     controller = await vscode.window.showQuickPick(
+            //         YamlCommands.getControllers().map((controller) => ({
+            //             id: controller.id,	
+            //             label: controller.displayname,
+            //             description: controller.description
+            //         })),
+            //         {
+            //             title: 'Reset Controller',
+            //             canPickMany: false
+            //         }
+            //     );
+            //     if (!controller) return;
+            // } 
+            // await vscode.window.showWarningMessage(`Reset ${controller.label}`, 'Yes', 'No').then((value) => {
+            //     if(value === 'Yes') controllerId = controller.id;
+            // });
+            // if(!controllerId) return;
 
-                else if (versionNr == 2.0){
-                    await ConnectionManager.instance.executeCommand(controllerId, 'docker container stop #Container name');
-                    await ConnectionManager.instance.executeCommand(controllerId, 'docker rm #Container name');
-                    await ConnectionManager.instance.executeCommand(controllerId, 'docker irm #Image name');
-                    await ConnectionManager.instance.executeCommand(controllerId, 'rm -rf /home/user/python_bootapplication/*');
-                }
+            // try {
+            //     if (versionNr == 1.0){
+            //         await ConnectionManager.instance.executeCommand(controllerId, 'killall python3');
+            //         await ConnectionManager.instance.executeCommand(controllerId, 'rm -rf /home/user/python_bootapplication/*');
+            //         await ConnectionManager.instance.executeCommand(controllerId, 'rm -rf /etc/init.d/S99_python_runtime');
+            //         await ConnectionManager.instance.executeCommand(controllerId, 'rm -rf /etc/rc.d/S99_python_runtime');
+            //         await ConnectionManager.instance.executeCommand(controllerId, 'killall tail');
+            //     }
 
-                // await ConnectionManager.instance.executeCommand(controllerId,);
+            //     else if (versionNr == 2.0){
+            //         await ConnectionManager.instance.executeCommand(controllerId, 'docker container stop #Container name');
+            //         await ConnectionManager.instance.executeCommand(controllerId, 'docker rm #Container name');
+            //         await ConnectionManager.instance.executeCommand(controllerId, 'docker irm #Image name');
+            //         await ConnectionManager.instance.executeCommand(controllerId, 'rm -rf /home/user/python_bootapplication/*');
+            //     }
 
-                // await ssh.digitalWrite(0);
-                // await ssh.analogWrite(1, 0);
-                // await ssh.analogWrite(2, 0);
-                // await ssh.turnOffRunLed();
-                // await ssh.startCodesysRuntime();
-                // await ssh.deleteFiles('#Path zur Datei');
+            //     // await ConnectionManager.instance.executeCommand(controllerId,);
+
+            //     // await ssh.digitalWrite(0);
+            //     // await ssh.analogWrite(1, 0);
+            //     // await ssh.analogWrite(2, 0);
+            //     // await ssh.turnOffRunLed();
+            //     // await ssh.startCodesysRuntime();
+            //     // await ssh.deleteFiles('#Path zur Datei');
                 
-                vscode.window.showInformationMessage(`Controller ${controller.label} reset`);
+            //     vscode.window.showInformationMessage(`Controller ${controller.label} reset`);
 
-                ControllerProvider.instance.refresh();
-            } catch (error: any) {
-                vscode.window.showErrorMessage('Error reseting controller');
-            }
+            //     ControllerProvider.instance.refresh();
+            // } catch (error: any) {
+            //     vscode.window.showErrorMessage('Error reseting controller');
+            // }
         }));
 
         commands.push(vscode.commands.registerCommand('vscode-wago-cc100.refresh-view', async () => {
