@@ -16,21 +16,6 @@
 				"${workspaceFolder}/out/**/*.js"
 			],
 			"preLaunchTask": "${defaultBuildTask}"
-		},
-        {
-            "name": "Python Debugger: Attach",
-            "type": "debugpy",
-            "request": "attach",
-            "connect": {
-              "host": "192.168.42.42",
-              "port": 8765
-            },
-            "pathMappings": [
-    {
-      "localRoot": "${workspaceFolder}/src",
-      "remoteRoot": "/app"
-    }
-    ]
-        }
-    ]
+		}
+	]
 }

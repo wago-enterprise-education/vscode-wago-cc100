@@ -60,9 +60,36 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onDebug",
+    "onCommand:extension.startPythonDebug"
+  ],
   "main": "./out/extension.js",
   "contributes": {
+
+    "debuggers": [
+      {
+        "type": "python",
+        "label": "Remote cc100 debugger"
+      }
+    ],
+  "initialConfigurations": [
+    {
+        "name": "Python: An laufenden Prozess anhängen",
+        "type": "python",
+        "request": "attach",
+        "connect": {
+            "host": "192.168.42.42",
+            "port": 8765
+        },
+          "pathMappings": [
+              {
+                  "localRoot": "${workspaceFolder}",
+                  "remoteRoot": "/home/user/python_bootaplication"
+              }
+          ]
+      }
+  ],
     "colors": [
       {
         "id": "wagocc100.green",
