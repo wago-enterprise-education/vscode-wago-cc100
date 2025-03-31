@@ -22,10 +22,10 @@ export class Manager {
 
     public refresh(id: number){
         this.getProjectVersion();
-        Factory.getInstance().createRefreshCommand().refresh();
+        Factory.getInstance().createRefreshCommand(versionNr).refresh();
     }
     public upload(id: number){
         this.getProjectVersion();
-        Factory.getInstance().createUploadCommand().upload();
+        Factory.getInstance().createUploadCommand(versionNr).upload();
     }
 }
