@@ -19,7 +19,7 @@ export interface ConfigureControllerInterface{
 }
 
 export interface EditSettingsInterface{
-    editSettings: (element: ControllerItem) => void;
+    editSettings: (controller: ControllerItem | undefined) => void;
 }
 
 export interface ViewChildrenInterface{

@@ -5,7 +5,7 @@ import { wagoSettings, YamlCommands } from './yaml';
 import { versionNr } from './helper'
 import { ConnectionManager } from './connectionManager';
 import { Upload } from './upload';
-import { EditSettings, setting, settingAdapter } from './editSettings';
+import { Manager } from '../Core/manager';
 
 const FOLDER_REGEX = '^(?!(?:CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\.[^.]*)?$)[^<>:"/\\|?*\x00-\x1F]*[^<>:"/\\|?*\x00-\x1F\ .]$';
 
@@ -212,44 +212,48 @@ export class Command {
             });
         }));
         commands.push(vscode.commands.registerCommand('vscode-wago-cc100.edit-setting', async (controller: ControllerItem | undefined) => {
-            if(!vscode.workspace.workspaceFolders) {
-                vscode.window.showErrorMessage('No workspace is open');
-                return;
-            }
-        
-            let settingToEdit: string;
-
-            if(controller === undefined) {
-                let con = await vscode.window.showQuickPick(
-                    YamlCommands.getControllers().map((controller) => ({
-                        id: controller.id,	
-                        label: controller.displayname,
-                        description: controller.description,
-                        online: false
-                    })),
-                    {
-                        title: 'Pick Controller',
-                        canPickMany: false
-                    }
-                );    
-                if (con === undefined) return;
-                let id = con.id;
+            Manager.getInstance().editSettings(controller);
             
-                settingToEdit = await vscode.window.showQuickPick(
-                    Object.values(setting),
-                    {
-                        title: 'Choose Setting',
-                        canPickMany: false
-                    }
-                ) || '';
-                if (!settingToEdit) return;
+            // if(!vscode.workspace.workspaceFolders) {
+            //     vscode.window.showErrorMessage('No workspace is open');
+            //     return;
+            // }
+        
+            // let settingToEdit: string;
 
-                await EditSettings.editSetting(id, settingAdapter[settingToEdit as keyof typeof settingAdapter]);
-            } else {
-                await EditSettings.editSetting(controller.controllerId, settingAdapter[controller.setting as keyof typeof settingAdapter]);
-            }
+            // if(controller === undefined) {
+            //     const nodes = YamlCommands.getWagoYaml()["nodes"];
 
-            ControllerProvider.instance.refresh();
+            //     let con = await vscode.window.showQuickPick(
+            //         Object.keys(nodes).map((key: any) => ({
+            //             id: key,	
+            //             label: nodes[key].displayname,
+            //             description: nodes[key].description,
+            //             online: false
+            //         })),
+            //         {
+            //             title: 'Pick Controller',
+            //             canPickMany: false
+            //         }
+            //     );    
+            //     if (con === undefined) return;
+            //     let id = con.id;
+            
+            //     settingToEdit = await vscode.window.showQuickPick(
+            //         Object.values(setting),
+            //         {
+            //             title: 'Choose Setting',
+            //             canPickMany: false
+            //         }
+            //     ) || '';
+            //     if (!settingToEdit) return;
+
+            //     await EditSettings.editSetting(id, settingAdapter[settingToEdit as keyof typeof settingAdapter]);
+            // } else {
+            //     await EditSettings.editSetting(controller.getId(), settingAdapter[controller.setting as keyof typeof settingAdapter]);
+            // }
+
+            // ControllerProvider.instance.refresh();
         }));
 
 
