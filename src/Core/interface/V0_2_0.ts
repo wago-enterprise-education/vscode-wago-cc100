@@ -34,14 +34,11 @@ export class EditSettings implements Interface.EditSettingsInterface{
         let settingToEdit: string;
 
         if(controller === undefined) {
-            const nodes = YamlCommands.getWagoYaml()["nodes"];
-
             let con = await vscode.window.showQuickPick(
-                Object.keys(nodes).map((key: any) => ({
-                    id: key,	
-                    label: nodes[key].displayname,
-                    description: nodes[key].description,
-                    online: false
+                YamlCommands.getControllers().map((controller) => ({
+                    id: controller.id,	
+                    label: controller.displayname,
+                    description: controller.description
                 })),
                 {
                     title: 'Pick Controller',
@@ -62,7 +59,7 @@ export class EditSettings implements Interface.EditSettingsInterface{
 
             await EditSettingsFunctionality.editSetting(id, settingAdapter[settingToEdit as keyof typeof settingAdapter]);
         } else {
-            await EditSettingsFunctionality.editSetting(controller.getId(), settingAdapter[controller.setting as keyof typeof settingAdapter]);
+            await EditSettingsFunctionality.editSetting(controller.controllerId, settingAdapter[controller.setting as keyof typeof settingAdapter]);
         }
 
         ControllerProvider.instance.refresh();
