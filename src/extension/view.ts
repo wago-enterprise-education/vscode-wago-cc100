@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as yaml from 'yaml';
 import { YamlCommands } from './yaml';
 import { ConnectionManager } from './connectionManager';
-import { setting } from './editSettings';
+import { setting } from '../migrated/editSettings';
 
 /**
  * Tree data provider for the controller view.
