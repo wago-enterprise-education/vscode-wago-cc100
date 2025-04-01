@@ -28,3 +28,7 @@ export interface AddControllerInterface{
 export interface RemoveControllerInterface{
     removeController: (controller: Controller | undefined, showConfirmation: boolean) => void;
 }
+
+export interface RenameControllerInterface{
+    renameController: (controller: Controller | undefined) => void;
+}

@@ -221,6 +221,43 @@ export class ViewChildren implements Interface.ViewChildrenInterface{
         return [];
     }
 }
+export class RenameController implements Interface.RenameControllerInterface{
+    async renameController(controller: Controller | undefined){
+        let newController;
+        if(controller) {
+            newController = controller;
+        } else {
+            const controllers = YamlCommands.getControllers();
+            if(controllers.length > 1) {
+                newController = await vscode.window.showQuickPick(controllers.map(controller => {
+                    return {
+                        label: controller.displayname,
+                        description: controller.description,
+                        controllerId: controller.id,
+                    };
+                }), {
+                    title: 'Rename Controller',
+                    canPickMany: false
+                });
+            } else {
+                newController = {
+                    label: controllers[0].displayname,
+                    controllerId: controllers[0].id,
+                }
+            }
+        }
+        if(!newController) return;
+
+        const controllerName = await vscode.window.showInputBox({
+            prompt: 'Enter the name of the controller',
+            title: 'Rename Controller',
+            value: newController.label,
+        }) || '';
+        if(!controllerName) return;
+
+        YamlCommands.writeWagoYaml(newController.controllerId, wagoSettings.displayname, controllerName);
+    }
+}
 //===================================================================================
 // EditSettings Functionality
 //===================================================================================

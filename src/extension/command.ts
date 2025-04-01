@@ -277,39 +277,40 @@ export class Command {
 
         // Commands in Context Menu
         commands.push(vscode.commands.registerCommand('vscode-wago-cc100.rename-controller', async (controller: Controller | undefined) => {
-            let newController;
-            if(controller) {
-                newController = controller;
-            } else {
-                const controllers = YamlCommands.getControllers();
-                if(controllers.length > 1) {
-                    newController = await vscode.window.showQuickPick(controllers.map(controller => {
-                        return {
-                            label: controller.displayname,
-                            description: controller.description,
-                            controllerId: controller.id,
-                        };
-                    }), {
-                        title: 'Rename Controller',
-                        canPickMany: false
-                    });
-                } else {
-                    newController = {
-                        label: controllers[0].displayname,
-                        controllerId: controllers[0].id,
-                    }
-                }
-            }
-            if(!newController) return;
+            Manager.getInstance().renameController(controller);
+            // let newController;
+            // if(controller) {
+            //     newController = controller;
+            // } else {
+            //     const controllers = YamlCommands.getControllers();
+            //     if(controllers.length > 1) {
+            //         newController = await vscode.window.showQuickPick(controllers.map(controller => {
+            //             return {
+            //                 label: controller.displayname,
+            //                 description: controller.description,
+            //                 controllerId: controller.id,
+            //             };
+            //         }), {
+            //             title: 'Rename Controller',
+            //             canPickMany: false
+            //         });
+            //     } else {
+            //         newController = {
+            //             label: controllers[0].displayname,
+            //             controllerId: controllers[0].id,
+            //         }
+            //     }
+            // }
+            // if(!newController) return;
 
-            const controllerName = await vscode.window.showInputBox({
-                prompt: 'Enter the name of the controller',
-                title: 'Rename Controller',
-                value: newController.label,
-            }) || '';
-            if(!controllerName) return;
+            // const controllerName = await vscode.window.showInputBox({
+            //     prompt: 'Enter the name of the controller',
+            //     title: 'Rename Controller',
+            //     value: newController.label,
+            // }) || '';
+            // if(!controllerName) return;
 
-            YamlCommands.writeWagoYaml(newController.controllerId, wagoSettings.displayname, controllerName);
+            // YamlCommands.writeWagoYaml(newController.controllerId, wagoSettings.displayname, controllerName);
         }));
 
         commands.push(vscode.commands.registerCommand('vscode-wago-cc100.remove-controller', async (controller: Controller | undefined, showConfirmation = true) => {

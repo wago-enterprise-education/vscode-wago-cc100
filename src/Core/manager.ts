@@ -33,4 +33,7 @@ export class Manager {
     public removeController(controller: Controller | undefined, showConfirmation: boolean){
         Factory.getInstance().createRemoveCommand(this.versionNr).removeController(controller, showConfirmation);
     }
+    public renameController(controller: Controller | undefined){
+        Factory.getInstance().createRenameCommand(this.versionNr).renameController(controller);
+    }
 }

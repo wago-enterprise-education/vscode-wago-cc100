@@ -87,4 +87,13 @@ export class Factory {
                 throw new Error("Invalid version number");
         }
     }
+    
+    public createRenameCommand(versionNr: number): Interface.RenameControllerInterface {
+        switch (versionNr) {
+            case 0.2:
+                return new V2.RenameController();
+            default:
+                throw new Error("Invalid version number");
+        }
+    }
 }
