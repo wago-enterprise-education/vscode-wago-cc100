@@ -8,7 +8,6 @@ export let ProjectVersion = 0;
  * Check if the project is valid by checking if the wago.yaml file is present in the root folder.
  */
 export async function verifyProject(): Promise<Boolean> {
-    console.log("verifyProject");
     let wagoProject = await findWagoYaml();
     listenOnFileChangeWagoYaml();
     setControllerCountContext();
@@ -29,7 +28,6 @@ async function findWagoYaml(): Promise<Boolean> {
         }
     });
     vscode.commands.executeCommand('setContext', 'projectVersion', ProjectVersion);
-    console.log(ProjectVersion);
     ControllerProvider.instance.refresh();
     return wagoProject;
 }
@@ -41,7 +39,9 @@ function findSettingsJson() {
     vscode.workspace.findFiles('**/setting,json', '', 1).then((files) => {
         if(files.length > 0 && checkIfInRootFolder(files[0])) {
             ProjectVersion = 0.1;
+            return true;
         }
+        ProjectVersion = 0;
         return false;
     });
     
@@ -125,5 +125,5 @@ function checkIfInRootFolder(uri: vscode.Uri): Boolean {
 }
 
 function setControllerCountContext() {
-    vscode.commands.executeCommand('setContext', 'controllerCount', YamlCommands.getControllers().length);
+    vscode.commands.executeCommand('setContext', 'controllerCount', YamlCommands.getControllers()?.length);
 }

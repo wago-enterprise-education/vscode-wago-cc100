@@ -71,7 +71,7 @@ export class ConnectionManager {
     public async updateController(controllerId: number, urn: string, username: string) {
         let controllerConnections = this.getControllerConnections(controllerId);
         if(controllerConnections) {
-            if(controllerConnections[0].urn === urn && controllerConnections[0].username === username) return;
+            if(controllerConnections[0]?.urn === urn && controllerConnections[0]?.username === username) return;
 
             this.removeConnection(controllerId)
         }

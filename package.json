@@ -90,6 +90,7 @@
       {
         "command": "vscode-wago-cc100.add-controller",
         "title": "Add Controller",
+        "category": "Controller",
         "icon": "$(add)",
         "when": "projectVersion >= 0.2"
       },
@@ -141,7 +142,9 @@
       },
       {
         "command": "vscode-wago-cc100.init-project",
-        "title": "Init Project"
+        "title": "Init Project",
+        "category": "Wago",
+        "when": "workspaceFolderCount > 0 && projectVersion == 0"
       },
       {
         "command": "vscode-wago-cc100.create-project",
@@ -181,7 +184,7 @@
         {
           "name": "No Folder Opened",
           "id": "no-folder-view",
-          "when": "workspaceFolderCount == 0"
+          "when": "workspaceFolderCount == 0 && projectVersion == 0"
         },
         {
           "name": "No CC100 Project Found",
@@ -191,7 +194,7 @@
         {
           "name": "Loading...",
           "id": "loading-view",
-          "when": "!projectVersion"
+          "when": "!projectVersion && projectVersion != 0"
         }
       ]
     },

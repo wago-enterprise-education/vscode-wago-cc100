@@ -46,17 +46,9 @@ export class Command {
         }));
 
         commands.push(vscode.commands.registerCommand('vscode-wago-cc100.init-project', async () => {
-            try {
-                if (vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0) {
-                    const destinationPath = `${vscode.workspace.workspaceFolders[0].uri.fsPath}/wago.yaml`;
-                    fs.cpSync(`${context.extensionPath}/res/template/wago.yaml`, destinationPath);
-                } else {
-                    vscode.window.showErrorMessage('No workspace is open');
-                }
-                // fs.writeFileSync(`${vscode.workspace.workspaceFolders![0].uri.fsPath}/wago.yaml`, yaml.stringify({ version: 1.0 }));
-            } catch(error: any) {
-                vscode.window.showErrorMessage("Error initializing project");
-            }
+            fs.cpSync(`${context.extensionPath}/res/template/controller`, `${vscode.workspace.workspaceFolders![0].uri.fsPath}/controller`, { recursive: true });
+            fs.cpSync(`${context.extensionPath}/res/template/wago.yaml`, `${vscode.workspace.workspaceFolders![0].uri.fsPath}/wago.yaml`);
+            vscode.window.showInformationMessage('Project initialized');
         }));
 
         commands.push(vscode.commands.registerCommand('vscode-wago-cc100.add-controller', async () => {

@@ -50,7 +50,7 @@ export class ControllerProvider implements vscode.TreeDataProvider<Controller | 
                         await ConnectionManager.instance.ping(controller.id);
                         online = true;
                     } catch (error) {
-                        console.debug(`Controller ${controller.id} is offline. Reason: ${error}`);
+                        console.debug(`Controller ${controller.id} is offline. ${error}`);
                     }
                     return new Controller(controller.id, controller.displayname, online);
                 })
