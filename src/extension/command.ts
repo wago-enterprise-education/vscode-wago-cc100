@@ -61,75 +61,75 @@ export class Command {
 
         commands.push(vscode.commands.registerCommand('vscode-wago-cc100.add-controller', async () => {
             Manager.getInstance().addController(context);
-            const controllerName = await vscode.window.showInputBox({
-                prompt: 'Enter the name of the controller',
-                title: 'Add Controller / Name',
-                ignoreFocusOut: true
-            }) || '';
+            // const controllerName = await vscode.window.showInputBox({
+            //     prompt: 'Enter the name of the controller',
+            //     title: 'Add Controller / Name',
+            //     ignoreFocusOut: true
+            // }) || '';
 
-            if(!controllerName) return;
+            // if(!controllerName) return;
 
-            const controllerDescription = await vscode.window.showInputBox({
-                prompt: 'Enter the description of the controller',
-                title: 'Add Controller / Description',
-                ignoreFocusOut: true
-            }) || '';
+            // const controllerDescription = await vscode.window.showInputBox({
+            //     prompt: 'Enter the description of the controller',
+            //     title: 'Add Controller / Description',
+            //     ignoreFocusOut: true
+            // }) || '';
 
-            const controllerEngine = await vscode.window.showQuickPick(['CC100-v0.1', 'CC100-v0.2'], {
-                title: 'Add Controller / Engine',
-                canPickMany: false,
-                ignoreFocusOut: true
-            }) || 'CC100-v0.2';
+            // const controllerEngine = await vscode.window.showQuickPick(['CC100-v0.1', 'CC100-v0.2'], {
+            //     title: 'Add Controller / Engine',
+            //     canPickMany: false,
+            //     ignoreFocusOut: true
+            // }) || 'CC100-v0.2';
 
-            const workspacePath = vscode.workspace.workspaceFolders![0].uri.fsPath;
-            const controllerSrc = await vscode.window.showQuickPick(
-                fs.readdirSync(workspacePath)
-                    .map((folder) => {
-                        if (fs.existsSync(`${workspacePath}/${folder}/main.py`)) {
-                            return {
-                                label: `${folder}`,
-                                description: `${folder}/main.py`
-                            };
-                        }
-                        return { label: "" };
-                    })
-                    .filter((path) => path.label.length > 0 ? true : false)
-                    .concat({ label: "New", description: 'Create a new folder' }),
-                {
-                    title: 'Add Controller / Source',
-                    canPickMany: false,
-                    ignoreFocusOut: true
-                }
-            ) || { label: "src" };
+            // const workspacePath = vscode.workspace.workspaceFolders![0].uri.fsPath;
+            // const controllerSrc = await vscode.window.showQuickPick(
+            //     fs.readdirSync(workspacePath)
+            //         .map((folder) => {
+            //             if (fs.existsSync(`${workspacePath}/${folder}/main.py`)) {
+            //                 return {
+            //                     label: `${folder}`,
+            //                     description: `${folder}/main.py`
+            //                 };
+            //             }
+            //             return { label: "" };
+            //         })
+            //         .filter((path) => path.label.length > 0 ? true : false)
+            //         .concat({ label: "New", description: 'Create a new folder' }),
+            //     {
+            //         title: 'Add Controller / Source',
+            //         canPickMany: false,
+            //         ignoreFocusOut: true
+            //     }
+            // ) || { label: "src" };
 
-            if(controllerSrc.label === 'New') {
-                const newFolder = await vscode.window.showInputBox({
-                    prompt: 'Enter the name of the folder',
-                    title: 'Add Controller / Source / New Folder',
-                    ignoreFocusOut: true,
-                    validateInput: (value: string) => {
-                        if(!RegExp(FOLDER_REGEX).test(value)) {
-                            return 'Invalid folder name';
-                        }
-                        if(fs.existsSync(`${workspacePath}/${value}`)) {
-                            return 'Folder already exists';
-                        }
-                        return null;
-                    }
-                }) || '';
+            // if(controllerSrc.label === 'New') {
+            //     const newFolder = await vscode.window.showInputBox({
+            //         prompt: 'Enter the name of the folder',
+            //         title: 'Add Controller / Source / New Folder',
+            //         ignoreFocusOut: true,
+            //         validateInput: (value: string) => {
+            //             if(!RegExp(FOLDER_REGEX).test(value)) {
+            //                 return 'Invalid folder name';
+            //             }
+            //             if(fs.existsSync(`${workspacePath}/${value}`)) {
+            //                 return 'Folder already exists';
+            //             }
+            //             return null;
+            //         }
+            //     }) || '';
 
-                if(newFolder) {
-                    fs.mkdirSync(`${workspacePath}/${newFolder}`);
-                    fs.cpSync(`${context.extensionPath}/res/template/src/main.py`, `${workspacePath}/${newFolder}/main.py`)
-                    controllerSrc.label = newFolder;
-                } else {
-                    controllerSrc.label = 'src';
-                }
-            }
+            //     if(newFolder) {
+            //         fs.mkdirSync(`${workspacePath}/${newFolder}`);
+            //         fs.cpSync(`${context.extensionPath}/res/template/src/main.py`, `${workspacePath}/${newFolder}/main.py`)
+            //         controllerSrc.label = newFolder;
+            //     } else {
+            //         controllerSrc.label = 'src';
+            //     }
+            // }
 
-            await YamlCommands.createController(context, controllerName, controllerDescription, controllerEngine, controllerSrc.label, "latest");
-            vscode.window.showInformationMessage(`Controller ${controllerName} added`);
-            ControllerProvider.instance.refresh();
+            // await YamlCommands.createController(context, controllerName, controllerDescription, controllerEngine, controllerSrc.label, "latest");
+            // vscode.window.showInformationMessage(`Controller ${controllerName} added`);
+            // ControllerProvider.instance.refresh();
         }));
 
         commands.push(vscode.commands.registerCommand('vscode-wago-cc100.reset-controller', async (controller) => {
