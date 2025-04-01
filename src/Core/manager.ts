@@ -30,4 +30,7 @@ export class Manager {
     public addController(context: vscode.ExtensionContext){
         Factory.getInstance().createAddCommand(this.versionNr).addController(context);
     }
+    public removeController(controller: Controller | undefined, showConfirmation: boolean){
+        Factory.getInstance().createRemoveCommand(this.versionNr).removeController(controller, showConfirmation);
+    }
 }

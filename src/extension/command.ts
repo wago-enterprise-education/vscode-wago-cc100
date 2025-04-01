@@ -313,38 +313,39 @@ export class Command {
         }));
 
         commands.push(vscode.commands.registerCommand('vscode-wago-cc100.remove-controller', async (controller: Controller | undefined, showConfirmation = true) => {
-            let selcetedController;
-            if(controller) {
-                selcetedController = controller;
-            } else {
-                selcetedController = await vscode.window.showQuickPick(
-                    YamlCommands.getControllers().map((controller) => ({
-                        controllerId: controller.id,	
-                        label: controller.displayname,
-                        description: controller.description
-                    })),
-                    {
-                        title: 'Remove Controller',
-                        canPickMany: false
-                    }
-                );
-                if (!selcetedController) return;
-            } 
+            Manager.getInstance().removeController(controller, showConfirmation);
+            // let selectedController;
+            // if(controller) {
+            //     selectedController = controller;
+            // } else {
+            //     selectedController = await vscode.window.showQuickPick(
+            //         YamlCommands.getControllers().map((controller) => ({
+            //             controllerId: controller.id,	
+            //             label: controller.displayname,
+            //             description: controller.description
+            //         })),
+            //         {
+            //             title: 'Remove Controller',
+            //             canPickMany: false
+            //         }
+            //     );
+            //     if (!selectedController) return;
+            // } 
 
-            let controllerId
-            if(showConfirmation){
-                await vscode.window.showWarningMessage(`Remove ${selcetedController.label}`, 'Yes', 'No').then((value) => {
-                    if(value === 'Yes') controllerId = selcetedController.controllerId;
-                });
-                if(!controllerId) return;
-            } else {
-                controllerId = selcetedController.controllerId;
-            }
+            // let controllerId
+            // if(showConfirmation){
+            //     await vscode.window.showWarningMessage(`Remove ${selectedController.label}`, 'Yes', 'No').then((value) => {
+            //         if(value === 'Yes') controllerId = selectedController.controllerId;
+            //     });
+            //     if(!controllerId) return;
+            // } else {
+            //     controllerId = selectedController.controllerId;
+            // }
             
-            YamlCommands.removeController(controllerId);
-            vscode.window.showInformationMessage(`Controller ${selcetedController.label} removed`);
+            // YamlCommands.removeController(controllerId);
+            // vscode.window.showInformationMessage(`Controller ${selectedController.label} removed`);
 
-            ControllerProvider.instance.refresh();
+            // ControllerProvider.instance.refresh();
         }));
 
         context.subscriptions.concat(commands);

@@ -134,8 +134,39 @@ export class AddController implements Interface.AddControllerInterface{
     }
 }
 export class RemoveController implements Interface.RemoveControllerInterface{
-    removeController(controller: Controller | undefined, showConfirmation: boolean){
+    async removeController(controller: Controller | undefined, showConfirmation: boolean){
+        let selectedController;
+        if(controller) {
+            selectedController = controller;
+        } else {
+            selectedController = await vscode.window.showQuickPick(
+                YamlCommands.getControllers().map((controller) => ({
+                    controllerId: controller.id,	
+                    label: controller.displayname,
+                    description: controller.description
+                })),
+                {
+                    title: 'Remove Controller',
+                    canPickMany: false
+                }
+            );
+            if (!selectedController) return;
+        } 
 
+        let controllerId
+        if(showConfirmation){
+            await vscode.window.showWarningMessage(`Remove ${selectedController.label}`, 'Yes', 'No').then((value) => {
+                if(value === 'Yes') controllerId = selectedController.controllerId;
+            });
+            if(!controllerId) return;
+        } else {
+            controllerId = selectedController.controllerId;
+        }
+        
+        YamlCommands.removeController(controllerId);
+        vscode.window.showInformationMessage(`Controller ${selectedController.label} removed`);
+
+        ControllerProvider.instance.refresh();
     }
 }
 export class ConfigureController implements Interface.ConfigureControllerInterface{
