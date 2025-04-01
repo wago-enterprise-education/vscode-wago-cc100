@@ -36,7 +36,7 @@ export class Command {
         commands.push(vscode.commands.registerCommand('vscode-wago-cc100.debug', async function () {
                 vscode.window.showInformationMessage('Python Debugging wird gestartet...');
         
-                // Die Debug-Konfiguration
+                //Debugger configurations
                 const config = {
                     name: "Python: attach to cc100",
                     type: "python", //Python debug type
