@@ -5,7 +5,7 @@ import { wagoSettings, YamlCommands } from './yaml';
 import { ProjectVersion } from './helper'
 import { ConnectionManager } from './connectionManager';
 import { Upload } from './upload';
-import { Manager } from '../Core/manager';
+import { Manager } from '../core/manager';
 
 const FOLDER_REGEX = '^(?!(?:CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\.[^.]*)?$)[^<>:"/\\|?*\x00-\x1F]*[^<>:"/\\|?*\x00-\x1F\ .]$';
 
