@@ -32,3 +32,7 @@ export interface RemoveControllerInterface{
 export interface RenameControllerInterface{
     renameController: (controller: Controller | undefined) => void;
 }
+
+export interface CreateControllerInterface{
+    createController: (context: vscode.ExtensionContext) => void;
+}

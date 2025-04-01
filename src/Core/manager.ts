@@ -36,4 +36,7 @@ export class Manager {
     public renameController(controller: Controller | undefined){
         Factory.getInstance().createRenameCommand(this.versionNr).renameController(controller);
     }
+    public createController(context: vscode.ExtensionContext){
+        Factory.getInstance().createCreateControllerCommand(this.versionNr).createController(context);
+    }
 }

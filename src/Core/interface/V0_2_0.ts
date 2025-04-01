@@ -258,6 +258,39 @@ export class RenameController implements Interface.RenameControllerInterface{
         YamlCommands.writeWagoYaml(newController.controllerId, wagoSettings.displayname, controllerName);
     }
 }
+export class CreateController implements Interface.CreateControllerInterface{
+    async createController(context: vscode.ExtensionContext){
+        const projectName = await vscode.window.showInputBox({
+            prompt: 'Enter the name of the project',
+            title: 'Create Project',
+            validateInput: (value: string) => {
+                if(!RegExp(FOLDER_REGEX).test(value)) {
+                    return 'Invalid project name';
+                }
+                return null;
+            }
+        })
+
+        if(!projectName) return;
+
+        await vscode.window.showOpenDialog({
+            canSelectFiles: false,
+            canSelectFolders: true,
+            canSelectMany: false,
+            openLabel: 'Select Project Destination'
+        }).then(async (uri) => {
+            if(uri && projectName) {
+                try {
+                    fs.mkdirSync(`${uri[0].fsPath}/${projectName}`);
+                    fs.cpSync(`${context.extensionPath}/res/template`, `${uri[0].fsPath}/${projectName}`, { recursive: true });
+                    await vscode.commands.executeCommand('vscode.openFolder', vscode.Uri.file(`${uri[0].fsPath}/${projectName}`));
+                } catch (error: any) {
+                    vscode.window.showErrorMessage('Project already exists');
+                }
+            }
+        })
+    }
+}
 //===================================================================================
 // EditSettings Functionality
 //===================================================================================

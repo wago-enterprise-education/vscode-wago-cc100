@@ -96,4 +96,13 @@ export class Factory {
                 throw new Error("Invalid version number");
         }
     }
+
+    public createCreateControllerCommand(versionNr: number): Interface.CreateControllerInterface{
+        switch (versionNr) {
+            case 0.2:
+                return new V2.CreateController();
+            default:
+                throw new Error("Invalid version number");
+        }
+    }
 }
