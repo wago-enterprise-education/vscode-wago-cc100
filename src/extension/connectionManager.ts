@@ -229,6 +229,26 @@ export class ConnectionManager {
     }
 
     /**
+     * Upload a file or directory to the controller
+     * 
+     * @param controllerId Unique identifier of the controller
+     * @param localPath Path to the local file or directory
+     * @param remotePath Path to the remote file or directory
+     * @returns Promise<string> Output of the upload
+     * @throws Error if the controller does not exist
+     */
+    public upload(controllerId: number, localPath: string, remotePath: string): Promise<string> {
+        let connection: Connection;
+        try {
+            connection = this.getControllerConnections(controllerId)[0];
+        } catch (error) {
+            throw error;
+        }
+
+        return connection.upload(localPath, remotePath);
+    }
+
+    /**
      * Remove a controller from the connection pool
      * 
      * @param controllerId Unique identifier of the controller
@@ -445,8 +465,8 @@ class Connection {
     public executeCommand(cmd: string): Promise<string> {
         return new Promise<string>((resolve, reject) => {
             this.client.exec(cmd, (err, stream) => {
-                this.busy = true;
                 if (err) return reject(err);
+                this.busy = true;
 
                 let output = '';
 
@@ -461,6 +481,29 @@ class Connection {
                 });
             });
         });
+    }
+
+    /**
+     * Uploads a file or directory to the remote controller.
+     * 
+     * @param localPath Path to the local file or directory.
+     * @param remotePath Path to the remote file or directory.
+     * @returns Promise that resolves when the upload is complete.
+     */
+    public upload(localPath: string, remotePath: string): Promise<string> {
+        return new Promise<string>((resolve, reject) => {
+            this.client.sftp((err, sftp) => {
+                if(err) return reject(err);
+                this.busy = true;
+
+                sftp.fastPut(localPath, remotePath, (err) => {
+                    this.busy = false;
+                    this.lastUsed = Date.now();
+                    if(err) return reject(err);
+                    resolve('Upload successful');
+                })
+            })
+        })
     }
 
     /**
