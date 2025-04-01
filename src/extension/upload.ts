@@ -30,11 +30,6 @@ export class Upload {
         let controller = YamlCommands.getController(id);
         let src = controller?.src;
         let path = `${vscode.workspace.workspaceFolders![0].uri.fsPath}\\${src}`;
-        
-        if (controller === undefined) {
-            vscode.window.showErrorMessage("No or not existing Controller selected.");
-            return;
-        }
 
         if (!fs.existsSync(`${path}/main.py`)) { 
             vscode.window.showErrorMessage("The selected Folder does not exist or does not contain a main.py.");
@@ -48,7 +43,7 @@ export class Upload {
             }
 
             await connectionManager.upload(id, path, uploadPath);
-            vscode.window.showInformationMessage(`The files on ${controller.displayname} have been updated.`);
+            vscode.window.showInformationMessage(`The files on ${controller?.displayname} have been updated.`);
 
         } else if (ProjectVersion == 0.1) {
             if(await this.compareFolders(id, path)) {
