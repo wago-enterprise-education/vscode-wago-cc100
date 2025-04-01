@@ -369,8 +369,11 @@ class Connection {
                     resolve()
                 })
                 .on('error', async (error) => {
-                    this.connected = false;
                     console.error(`Error connecting to ${this.urn}: ${error.message}`)
+                    if(this.connected) {
+                        vscode.window.showErrorMessage(`Connection to ${YamlCommands.getController(this.controllerId)?.displayname} lost: ${error.message}`)
+                    }
+                    this.connected = false;
                     if(error.level === 'client-authentication') {
                         if(!this.askForPassword) {
                             password = await this.requestPassword();
