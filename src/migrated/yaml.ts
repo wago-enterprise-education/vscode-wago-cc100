@@ -27,8 +27,9 @@ export class YamlCommands {
      * @returns The content of the wago.yaml file as a JS object
      */
     private static getWagoYaml() {
-        if(!fs.existsSync(`${vscode.workspace.workspaceFolders![0].uri.fsPath}/wago.yaml`)) return {nodes: {}};
-        return YAML.parse(fs.readFileSync(`${vscode.workspace.workspaceFolders![0].uri.fsPath}/wago.yaml`, 'utf8'));
+        if(vscode.workspace.workspaceFolders === undefined) return {nodes: {}};
+        if(!fs.existsSync(`${vscode.workspace.workspaceFolders[0].uri.fsPath}/wago.yaml`)) return {nodes: {}};
+        return YAML.parse(fs.readFileSync(`${vscode.workspace.workspaceFolders[0].uri.fsPath}/wago.yaml`, 'utf8'));
     }
 
     /**
