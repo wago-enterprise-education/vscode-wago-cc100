@@ -2,8 +2,6 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import { ControllerProvider, Controller, ControllerItem } from './view';
 import { wagoSettings, YamlCommands } from './yaml';
-import { ProjectVersion } from './helper'
-import { ConnectionManager } from './connectionManager';
 import { Upload } from './upload';
 import { Manager } from '../core/manager';
 
@@ -63,25 +61,22 @@ export class Command {
         commands.push(vscode.commands.registerCommand('vscode-wago-cc100.add-controller', async () => {
             const controllerName = await vscode.window.showInputBox({
                 prompt: 'Enter the name of the controller',
-                title: 'Add Controller',
-                validateInput: (value: string) => {
-                    if(!RegExp(FOLDER_REGEX).test(value)) {
-                        return 'Invalid controller name';
-                    }
-                    return null;
-                }
+                title: 'Add Controller / Name',
+                ignoreFocusOut: true
             }) || '';
 
             if(!controllerName) return;
 
             const controllerDescription = await vscode.window.showInputBox({
                 prompt: 'Enter the description of the controller',
-                title: 'Add Controller'
+                title: 'Add Controller / Description',
+                ignoreFocusOut: true
             }) || '';
 
             const controllerEngine = await vscode.window.showQuickPick(['CC100-v0.1', 'CC100-v0.2'], {
-                title: 'Add Controller',
-                canPickMany: false
+                title: 'Add Controller / Engine',
+                canPickMany: false,
+                ignoreFocusOut: true
             }) || 'CC100-v0.2';
 
             const workspacePath = vscode.workspace.workspaceFolders![0].uri.fsPath;
@@ -99,17 +94,38 @@ export class Command {
                     .filter((path) => path.label.length > 0 ? true : false)
                     .concat({ label: "New", description: 'Create a new folder' }),
                 {
-                    title: 'Add Controller',
-                    canPickMany: false
+                    title: 'Add Controller / Source',
+                    canPickMany: false,
+                    ignoreFocusOut: true
                 }
             ) || { label: "src" };
-        
-            const controllerImg = await vscode.window.showInputBox({
-                prompt: 'Enter the docker image version of the controller',
-                title: 'Add Controller'
-            }) || 'latest';
 
-            await YamlCommands.createController(context, controllerName, controllerDescription, controllerEngine, controllerSrc.label, controllerImg);
+            if(controllerSrc.label === 'New') {
+                const newFolder = await vscode.window.showInputBox({
+                    prompt: 'Enter the name of the folder',
+                    title: 'Add Controller / Source / New Folder',
+                    ignoreFocusOut: true,
+                    validateInput: (value: string) => {
+                        if(!RegExp(FOLDER_REGEX).test(value)) {
+                            return 'Invalid folder name';
+                        }
+                        if(fs.existsSync(`${workspacePath}/${value}`)) {
+                            return 'Folder already exists';
+                        }
+                        return null;
+                    }
+                }) || '';
+
+                if(newFolder) {
+                    fs.mkdirSync(`${workspacePath}/${newFolder}`);
+                    fs.cpSync(`${context.extensionPath}/res/template/src/main.py`, `${workspacePath}/${newFolder}/main.py`)
+                    controllerSrc.label = newFolder;
+                } else {
+                    controllerSrc.label = 'src';
+                }
+            }
+
+            await YamlCommands.createController(context, controllerName, controllerDescription, controllerEngine, controllerSrc.label, "latest");
             vscode.window.showInformationMessage(`Controller ${controllerName} added`);
             ControllerProvider.instance.refresh();
         }));

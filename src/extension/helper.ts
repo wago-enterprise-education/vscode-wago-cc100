@@ -8,6 +8,7 @@ export let ProjectVersion = 0;
  * Check if the project is valid by checking if the wago.yaml file is present in the root folder.
  */
 export async function verifyProject(): Promise<Boolean> {
+    console.log("verifyProject");
     let wagoProject = await findWagoYaml();
     listenOnFileChangeWagoYaml();
     setControllerCountContext();
@@ -28,6 +29,7 @@ async function findWagoYaml(): Promise<Boolean> {
         }
     });
     vscode.commands.executeCommand('setContext', 'projectVersion', ProjectVersion);
+    console.log(ProjectVersion);
     ControllerProvider.instance.refresh();
     return wagoProject;
 }
