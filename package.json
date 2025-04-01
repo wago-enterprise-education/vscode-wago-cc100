@@ -90,7 +90,8 @@
       {
         "command": "vscode-wago-cc100.add-controller",
         "title": "Add Controller",
-        "icon": "$(add)"
+        "icon": "$(add)",
+        "when": "projectVersion >= 0.2"
       },
       {
         "command": "vscode-wago-cc100.upload",
@@ -175,7 +176,7 @@
         {
           "name": "Controller",
           "id": "controller-view",
-          "when": "workspaceFolderCount > 0 && wagoYamlPresent"
+          "when": "workspaceFolderCount > 0 && ProjectVersion > 0"
         },
         {
           "name": "No Folder Opened",
@@ -185,7 +186,7 @@
         {
           "name": "No CC100 Project Found",
           "id": "no-project-view",
-          "when": "workspaceFolderCount > 0 && !wagoYamlPresent"
+          "when": "workspaceFolderCount > 0 && ProjectVersion == 0"
         }
       ]
     },

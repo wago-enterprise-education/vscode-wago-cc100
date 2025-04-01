@@ -1,5 +1,5 @@
 import { Factory } from "./factory";
-import { versionNr } from '../extension/helper';
+import { ProjectVersion } from '../extension/helper';
 import { Controller, ControllerItem } from "../extension/view";
 
 export class Manager {
@@ -7,7 +7,7 @@ export class Manager {
     private versionNr: number;
 
     private constructor() {
-        this.versionNr = versionNr;
+        this.versionNr = ProjectVersion;
     }
 
     public static getInstance(): Manager {
@@ -18,12 +18,12 @@ export class Manager {
     }
 
     public upload(id: number){
-        Factory.getInstance().createUploadCommand(versionNr).upload(id);
+        Factory.getInstance().createUploadCommand(this.versionNr).upload(id);
     }
     public editSettings(controller: ControllerItem | undefined){
-        Factory.getInstance().createEditSettingsCommand(versionNr).editSettings(controller);
+        Factory.getInstance().createEditSettingsCommand(this.versionNr).editSettings(controller);
     }
     public resetController(controller: Controller | undefined){
-        Factory.getInstance().createResetCommand(versionNr).reset(controller);
+        Factory.getInstance().createResetCommand(this.versionNr).reset(controller);
     }
 }

@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import { ControllerProvider, Controller, ControllerItem } from './view';
 import { wagoSettings, YamlCommands } from './yaml';
-import { versionNr } from './helper'
+import { ProjectVersion } from './helper'
 import { ConnectionManager } from './connectionManager';
 import { Upload } from './upload';
 import { Manager } from '../Core/manager';
@@ -61,10 +61,6 @@ export class Command {
         }));
 
         commands.push(vscode.commands.registerCommand('vscode-wago-cc100.add-controller', async () => {
-            if(!vscode.workspace.workspaceFolders) {
-                vscode.window.showErrorMessage('No workspace is open');
-                return;
-            }
             const controllerName = await vscode.window.showInputBox({
                 prompt: 'Enter the name of the controller',
                 title: 'Add Controller',
@@ -146,7 +142,7 @@ export class Command {
             // if(!controllerId) return;
 
             // try {
-            //     if (versionNr == 1.0){
+            //     if (ProjectVersion == 1.0){
             //         await ConnectionManager.instance.executeCommand(controllerId, 'killall python3');
             //         await ConnectionManager.instance.executeCommand(controllerId, 'rm -rf /home/user/python_bootapplication/*');
             //         await ConnectionManager.instance.executeCommand(controllerId, 'rm -rf /etc/init.d/S99_python_runtime');
@@ -154,7 +150,7 @@ export class Command {
             //         await ConnectionManager.instance.executeCommand(controllerId, 'killall tail');
             //     }
 
-            //     else if (versionNr == 2.0){
+            //     else if (ProjectVersion == 2.0){
             //         await ConnectionManager.instance.executeCommand(controllerId, 'docker container stop #Container name');
             //         await ConnectionManager.instance.executeCommand(controllerId, 'docker rm #Container name');
             //         await ConnectionManager.instance.executeCommand(controllerId, 'docker irm #Image name');
@@ -208,11 +204,13 @@ export class Command {
             await new Upload().uploadFile(controller.controllerId);
             return;
         }));
+
         commands.push(vscode.commands.registerCommand('vscode-wago-cc100.upload-all', async () => {
             YamlCommands.getControllers().forEach(async (controller) => {
                 vscode.commands.executeCommand('vscode-wago-cc100.upload',{id: controller.id, label: controller.displayname, online: false});
             });
         }));
+
         commands.push(vscode.commands.registerCommand('vscode-wago-cc100.edit-setting', async (controller: ControllerItem | undefined) => {
             Manager.getInstance().editSettings(controller);
             

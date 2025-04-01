@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { ControllerProvider } from './view';
 import { YamlCommands } from './yaml';
 
-export let versionNr: number = 0.2;
+export let ProjectVersion = 0;
 
 /**
  * Check if the project is valid by checking if the wago.yaml file is present in the root folder.
@@ -20,14 +20,14 @@ export async function verifyProject(): Promise<Boolean> {
 async function findWagoYaml(): Promise<Boolean> {
     let wagoProject = await vscode.workspace.findFiles('**/wago.yaml', '', 1).then((files) => {
         if(files.length > 0 && checkIfInRootFolder(files[0])) {
-            versionNr = 0.2
+            ProjectVersion = 0.2
             return true;
         } else {
             findSettingsJson();
             return false;
         }
     });
-    vscode.commands.executeCommand('setContext', 'wagoYamlPresent', wagoProject);
+    vscode.commands.executeCommand('setContext', 'projectVersion', ProjectVersion);
     ControllerProvider.instance.refresh();
     return wagoProject;
 }
@@ -38,10 +38,7 @@ async function findWagoYaml(): Promise<Boolean> {
 function findSettingsJson() {
     vscode.workspace.findFiles('**/setting,json', '', 1).then((files) => {
         if(files.length > 0 && checkIfInRootFolder(files[0])) {
-            vscode.commands.executeCommand('setContext', 'settingsJsonPresent', true);
-            versionNr = 0.1;
-        } else {
-            vscode.commands.executeCommand('setContext', 'settingsJsonPresent', false);       
+            ProjectVersion = 0.1;
         }
         return false;
     });
@@ -55,20 +52,31 @@ function listenOnFileChangeWagoYaml() {
     const fileWatcher = vscode.workspace.createFileSystemWatcher('**/wago.yaml');
 
     fileWatcher.onDidChange((uri: vscode.Uri) => {
-        vscode.commands.executeCommand('setContext', 'wagoYamlPresent', checkIfInRootFolder(uri));
+        if(checkIfInRootFolder(uri)){
+            ProjectVersion = 0.2;
+            vscode.commands.executeCommand('setContext', 'projectVersion', ProjectVersion);
+        } else {
+            ProjectVersion = 0;
+        }
         setControllerCountContext();
         ControllerProvider.instance.refresh();
     });
 
     fileWatcher.onDidCreate((uri: vscode.Uri) => {
-        vscode.commands.executeCommand('setContext', 'wagoYamlPresent', checkIfInRootFolder(uri));
+        if(checkIfInRootFolder(uri)){
+            ProjectVersion = 0.2;
+            vscode.commands.executeCommand('setContext', 'projectVersion', ProjectVersion);
+        } else {
+            ProjectVersion = 0;
+        }
         setControllerCountContext();
         ControllerProvider.instance.refresh();
     });
 
     fileWatcher.onDidDelete((uri: vscode.Uri) => {
         if(!checkIfInRootFolder(uri)) return
-        vscode.commands.executeCommand('setContext', 'wagoYamlPresent', false);
+        ProjectVersion = 0;
+        vscode.commands.executeCommand('setContext', 'projectVersion', ProjectVersion);
         ControllerProvider.instance.refresh();
     });
 }

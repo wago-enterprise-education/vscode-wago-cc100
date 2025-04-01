@@ -4,7 +4,7 @@ import { YamlCommands } from './yaml';
 import { ConnectionManager } from './connectionManager';
 import crypto from 'crypto';
 import path from 'path';
-import { versionNr } from './helper'
+import { ProjectVersion } from './helper'
 
 //Roadmap for the extension
 //+1. Get Path to the file structure to be uploaded -> Throw Error if not available
@@ -36,14 +36,14 @@ export class Upload {
             return;
         }
 
-        if (versionNr == 0.2) {
+        if (ProjectVersion == 0.2) {
             if(await this.compareFolders(id, path)) {
                 vscode.window.showInformationMessage(`The files on ${controller?.displayname} are already up to date.`);
                 return;
             }
 
             await connectionManager.executeCommand(id, `cp ${path} ${uploadPath}`);
-        } else if (versionNr == 0.1) {
+        } else if (ProjectVersion == 0.1) {
             if(await this.compareFolders(id, path)) {
                 vscode.window.showInformationMessage(`The files on ${controller?.displayname} are already up to date.`);
                 return;
@@ -57,7 +57,7 @@ export class Upload {
             await connectionManager.executeCommand(id, `python3 /home/user/python_bootapplication/lib/runtimeCC.py`);
 
         } else {
-            console.error(`Unknown Project Version (${versionNr})`);
+            console.error(`Unknown Project Version (${ProjectVersion})`);
         }
     }
 
