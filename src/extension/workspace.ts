@@ -1,5 +1,5 @@
 import * as vscode from 'vscode'
-import { SSH } from '../ssh';
+import { SSH } from '../oldFiles/ssh';
 import YAML from 'yaml';
 import fs from 'fs';
 

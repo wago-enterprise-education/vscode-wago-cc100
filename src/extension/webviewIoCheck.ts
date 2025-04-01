@@ -1,12 +1,12 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
-import { SSH } from './ssh';
-import { Workspace } from './extension/workspace';
-import { Connection } from './extension/connection';
+import { SSH } from '../oldFiles/ssh';
+import { Workspace } from './workspace';
+import { Connection } from './connection';
 import sanitizeHtml from 'sanitize-html';
-import { ConnectionManager } from './extension/connectionManager';
-import { Controller } from './extension/view';
+import { ConnectionManager } from './connectionManager';
+import { Controller } from './view';
 
 let ssh = new SSH('192.168.42.42', 22, 'root', '');
 
@@ -228,10 +228,7 @@ export class webviewIoCheck {
             await ConnectionManager.instance.executeCommand(id,"cat /etc/calib").then((tmp: string) => {
                 this.convertAnalogData(tmp);
             });
-            // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            // später die Serial Kommuniaktion abändern
             await this.startEventForSerialCommunication(id);
-            // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             await this.startEventForSwitch(id);
             await ssh.setupSerialInterface();
             await ConnectionManager.instance.executeCommand(id,"stty -F /dev/ttySTM1 cstopb brkint -icrnl -ixon -opost -isig icanon -iexten -echo");
