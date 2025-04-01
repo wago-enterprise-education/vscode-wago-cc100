@@ -42,22 +42,30 @@ export class Upload {
                 return;
             }
 
-            await connectionManager.upload(id, path, uploadPath);
-            vscode.window.showInformationMessage(`The files on ${controller?.displayname} have been updated.`);
-
+            try {
+                await connectionManager.upload(id, path, uploadPath);
+                vscode.window.showInformationMessage(`The files on ${controller?.displayname} have been updated.`);
+            } catch (err) {
+                console.error(`Error uploading files: ${err}`);
+                vscode.window.showErrorMessage("An error occurred while uploading the files.");
+            }
         } else if (ProjectVersion == 0.1) {
             if(await this.compareFolders(id, path)) {
                 vscode.window.showInformationMessage(`The files on ${controller?.displayname} are already up to date.`);
                 return;
             }
-
-            //Upload Files
-            await connectionManager.executeCommand(id, `cp ${path} ${uploadPath}`);
-            //Create bootapplication
-            await connectionManager.executeCommand(id, "echo '#!/bin/sh\n\npython3 /home/user/python_bootapplication/lib/runtimeCC.py &\nstty -F /dev/ttySTM1 cstopb brkint -icrnl -ixon -opost -isig icanon -iexten -echo' > /etc/init.d/S99_python_runtime");
-            //Execute File
-            await connectionManager.executeCommand(id, `python3 /home/user/python_bootapplication/lib/runtimeCC.py`);
-
+            try {
+                //Upload Files
+                await connectionManager.executeCommand(id, `cp ${path} ${uploadPath}`);
+                //Create bootapplication
+                await connectionManager.executeCommand(id, "echo '#!/bin/sh\n\npython3 /home/user/python_bootapplication/lib/runtimeCC.py &\nstty -F /dev/ttySTM1 cstopb brkint -icrnl -ixon -opost -isig icanon -iexten -echo' > /etc/init.d/S99_python_runtime");
+                //Execute File
+                await connectionManager.executeCommand(id, `python3 /home/user/python_bootapplication/lib/runtimeCC.py`);
+            } catch (err) {
+                console.error(`Error uploading files: ${err}`);
+                vscode.window.showErrorMessage("An error occurred while uploading the files.");
+            }
+            vscode.window.showInformationMessage(`The files on ${controller?.displayname} have been updated.`);
         } else {
             console.error(`Unknown Project Version (${ProjectVersion})`);
         }
