@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { ControllerProvider } from './view';
-import { YamlCommands } from './yaml';
+import { YamlCommands } from '../migrated/yaml';
 
 export let ProjectVersion = 0;
 

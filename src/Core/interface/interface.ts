@@ -9,11 +9,6 @@ export interface ResetControllerInterface{
     reset: (controller: any) => void;
 }
 
-
-export interface AddControllerInterface{
-    add: () => void;
-}
-
 export interface ConfigureControllerInterface{
     configure: () => void;
 }
@@ -24,4 +19,12 @@ export interface EditSettingsInterface{
 
 export interface ViewChildrenInterface{
     getChildren: (element?: Controller | ControllerItem | undefined) => vscode.ProviderResult<Controller[] | ControllerItem[]>;
+}
+
+export interface AddControllerInterface{
+    addController: (context: vscode.ExtensionContext) => void;
+}
+
+export interface RemoveControllerInterface{
+    removeController: (controller: Controller | undefined, showConfirmation: boolean) => void;
 }

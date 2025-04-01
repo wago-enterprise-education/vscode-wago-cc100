@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
-import { YamlCommands } from './yaml';
+import { YamlCommands } from '../migrated/yaml';
 import { ConnectionManager } from './connectionManager';
 import crypto from 'crypto';
 import path from 'path';

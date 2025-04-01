@@ -1,6 +1,6 @@
 import { ConnectionManager } from "../../extension/connectionManager";
 import { ControllerProvider } from "../../extension/view";
-import { YamlCommands } from "../../extension/yaml";
+import { YamlCommands } from "../../migrated/yaml";
 import * as Interface from "./interface";
 import * as vscode from 'vscode';
 
@@ -56,11 +56,6 @@ export class ResetController implements Interface.ResetControllerInterface{
         } catch (error: any) {
             vscode.window.showErrorMessage('Error reseting controller');
         }
-    }
-}
-export class AddController implements Interface.AddControllerInterface{
-    add() {
-        console.log("Add command executed");
     }
 }
 export class ConfigureController implements Interface.ConfigureControllerInterface{

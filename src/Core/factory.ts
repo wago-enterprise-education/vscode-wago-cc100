@@ -39,10 +39,17 @@ export class Factory {
 
     public createAddCommand(versionNr: number): Interface.AddControllerInterface {
         switch (versionNr) {
-            case 0.1:
-                return new V1.AddController();
             case 0.2:
                 return new V2.AddController();
+            default:
+                throw new Error("Invalid version number");
+        }
+    }
+
+    public createRemoveCommand(versionNr: number): Interface.RemoveControllerInterface {
+        switch (versionNr) {
+            case 0.2:
+                return new V2.RemoveController();
             default:
                 throw new Error("Invalid version number");
         }

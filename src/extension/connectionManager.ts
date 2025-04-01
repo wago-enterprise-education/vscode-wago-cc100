@@ -4,7 +4,7 @@ import * as vscode from 'vscode';
 import * as Path  from 'path';
 import * as fs from 'fs';
 import { ControllerProvider } from './view';
-import { YamlCommands } from './yaml';
+import { YamlCommands } from '../migrated/yaml';
 
 const publicKeyPath = Path.join(homedir(), '.ssh', 'id_rsa_wago.pub');
 const privateKeyPath = Path.join(homedir(), '.ssh', 'id_rsa_wago');

@@ -1,9 +1,10 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import { ControllerProvider, Controller, ControllerItem } from './view';
-import { wagoSettings, YamlCommands } from './yaml';
+import { wagoSettings, YamlCommands } from '../migrated/yaml';
 import { Upload } from './upload';
 import { Manager } from '../core/manager';
+import { AddController } from '../core/interface/V0_2_0';
 
 const FOLDER_REGEX = '^(?!(?:CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\.[^.]*)?$)[^<>:"/\\|?*\x00-\x1F]*[^<>:"/\\|?*\x00-\x1F\ .]$';
 
@@ -59,6 +60,7 @@ export class Command {
         }));
 
         commands.push(vscode.commands.registerCommand('vscode-wago-cc100.add-controller', async () => {
+            Manager.getInstance().addController(context);
             const controllerName = await vscode.window.showInputBox({
                 prompt: 'Enter the name of the controller',
                 title: 'Add Controller / Name',

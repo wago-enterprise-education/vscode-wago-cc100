@@ -2,7 +2,7 @@ import fs from 'fs'
 import YAML from 'yaml'
 import * as vscode from 'vscode'
 
-type Controller = {
+type ControllerType = {
     id: number,
     displayname: string,
     description: string,
@@ -11,7 +11,7 @@ type Controller = {
     imageVersion: string
 }
 
-type ControllerSettings = {
+type ControllerSettingsType = {
     connection: string,
     ip: string,
     port: number,
@@ -39,7 +39,7 @@ export class YamlCommands {
         return YAML.parse(fs.readFileSync(`${vscode.workspace.workspaceFolders![0].uri.fsPath}/controller/controller${id}.yaml`, 'utf8'));
     }
 
-    public static getControllers(): Array<Controller> {
+    public static getControllers(): Array<ControllerType> {
         const nodes = this.getWagoYaml().nodes;
         return Object.keys(nodes).map((key: string) => ({
             id: Number.parseInt(key),	
@@ -51,11 +51,11 @@ export class YamlCommands {
         }))
     }
 
-    public static getController(id: number): Controller | undefined {
+    public static getController(id: number): ControllerType | undefined {
         return this.getControllers().find(controller => controller.id === id);
     }
 
-    public static getControllerSettings(id: number): ControllerSettings {
+    public static getControllerSettings(id: number): ControllerSettingsType {
         const settings = this.getControllerYaml(id);
         return {
             connection: settings.connection,

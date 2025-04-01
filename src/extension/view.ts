@@ -1,6 +1,5 @@
 import * as vscode from 'vscode';
-import * as yaml from 'yaml';
-import { YamlCommands } from './yaml';
+import { YamlCommands } from '../migrated/yaml';
 import { ConnectionManager } from './connectionManager';
 import { setting } from '../migrated/editSettings';
 

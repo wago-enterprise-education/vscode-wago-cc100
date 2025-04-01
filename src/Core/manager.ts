@@ -1,6 +1,7 @@
 import { Factory } from "./factory";
 import { ProjectVersion } from '../extension/helper';
 import { Controller, ControllerItem } from "../extension/view";
+import * as vscode from 'vscode';
 
 export class Manager {
     private static instance: Manager;
@@ -25,5 +26,8 @@ export class Manager {
     }
     public resetController(controller: Controller | undefined){
         Factory.getInstance().createResetCommand(this.versionNr).reset(controller);
+    }
+    public addController(context: vscode.ExtensionContext){
+        Factory.getInstance().createAddCommand(this.versionNr).addController(context);
     }
 }

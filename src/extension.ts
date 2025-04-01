@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { webviewIoCheck } from './extension/webviewIoCheck';
-import { YamlCommands } from './extension/yaml';
+import { YamlCommands } from './migrated/yaml';
 import { ControllerProvider } from './extension/view';
 import { Command } from './extension/command';
 import { verifyProject } from './extension/helper';
