@@ -29,10 +29,10 @@ export class Upload {
         
         let controller = YamlCommands.getController(id);
         let src = controller?.src;
-        let path = `${vscode.workspace.workspaceFolders![0].uri.fsPath}/${src}`;
+        let path = `${vscode.workspace.workspaceFolders![0].uri.fsPath}\\${src}`;
         
         if (!fs.existsSync(`${path}/main.py`)) { 
-            vscode.window.showErrorMessage("The files to be uploaded do not exist.");
+            vscode.window.showErrorMessage("The selected Folder does not exist or does not contain a main.py.");
             return;
         }
 
@@ -75,13 +75,16 @@ export class Upload {
             // Get Array of remote Hashes
             let remoteHashes = await connectionManager.executeCommand(id, `find ${uploadPath} -type f -exec md5sum {} +`);
             remoteHashes = remoteHashes
-                .replaceAll('\n', ' ')
-                .split(' ')
+                .replaceAll('\n', '  ')
+                .split('  ')
                 .filter((value, index) => {
-                    return index % 2 !== 0;
+                    console.log(`${value}`);
+                    return index % 2 === 0;
                 })
                 .sort((a, b) => a.localeCompare(b))
-                .toString();
+                .toString()
+                .replaceAll(',','');
+
             let remoteHash = crypto
                 .createHash('md5')
                 .update(remoteHashes)
@@ -90,21 +93,27 @@ export class Upload {
             //Get Array of local Hashes
             let localHashes = await this.getLocalHashes(localPath);
             localHashes = localHashes
-                .replaceAll('\n', ' ')
-                .split(' ')
+                .replaceAll('\n', '  ')
+                .split('  ')
                 .filter((value, index) => {
-                    return index % 2 !== 0;
+                    console.log(`${value}`);
+                    return index % 2 === 0;
                 })
                 .sort((a, b) => a.localeCompare(b))
-                .toString();
+                .toString()
+                .replaceAll(',','');
 
             let localHash = crypto
                 .createHash('md5')
-                .update(remoteHashes)
+                .update(localHashes)
                 .digest('hex');
 
+            //TEST
+            console.log(`Remote: ${remoteHash} \n`);
+            console.log(`Local: ${localHash} \n`);
+            //ENDTEST
             return Promise.resolve(localHash === remoteHash);
-            
+
         } catch (error) {
             console.error('Error comparing folders:', error);
             return Promise.reject(error);
@@ -122,16 +131,20 @@ export class Upload {
 
     private async getLocalHashes(path: string): Promise<string> {
         try {
-            const localFiles = await this.getFilesInDirectory(path);
-            const localHashes = "";
+            let localFiles = await this.getFilesInDirectory(path);
+            let localHashes = "";
 
             //For Each File from Path in localFiles Array create Hash and add to localHashes
-            for (const file of localFiles) {
-                let fileContent = fs.readFileSync(file);
+            for (let file of localFiles) {
+                let fileContent = fs.readFileSync(file, 'utf8');
                 let hash = crypto.createHash('md5')
                     .update(fileContent)
                     .digest('hex');
-                localHashes.concat(`${hash} ${file} \n`);
+                if (localHashes.length == 0) {
+                    localHashes = (`${localHashes}${hash}  ${file}`);
+                } else {
+                    localHashes = (`${localHashes}\n${hash}  ${file}`);
+                }
             }
 
             return Promise.resolve(localHashes);
@@ -152,23 +165,17 @@ export class Upload {
     private async getFilesInDirectory(dirPath: string): Promise<string[]> {
         
         try {
-            const files: string[] = [];
-            fs.readdir(dirPath, (err, files) => {
-                files = files;
-            });
+            let files: string[] = [];
+            let read = fs.readdirSync(dirPath, { recursive:true });
+            let dirFiles = read.map(String);
             
-            for (const file of files) {
+            for (const file of dirFiles) {
                 const fullPath = path.join(dirPath, file);
                 let stat = fs.statSync(fullPath);
                 fs.stat(fullPath, (err, stats) => {
                     stat = stats;
                 });
-            
-                if (stat.isDirectory()) {
-                    const subDirFiles = await this.getFilesInDirectory(fullPath);
-                    files.push(...subDirFiles);
-                } else if (stat.isFile()) {
-                    // If it's a file, add it to the list
+                if (stat.isFile()) {
                     files.push(fullPath);
                 }
             }
