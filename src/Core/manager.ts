@@ -39,4 +39,13 @@ export class Manager {
     public createController(context: vscode.ExtensionContext){
         Factory.getInstance().createCreateControllerCommand(this.versionNr).createController(context);
     }
+    public async removeReset(context: vscode.ExtensionContext, controller: Controller | undefined){
+        await Factory.getInstance().createResetCommand(this.versionNr).reset(controller).then (() => {
+            Factory.getInstance().createRemoveCommand(this.versionNr).removeController(controller, false);
+        })
+        .catch((error:any) => { 
+            console.error(error); 
+            vscode.window.showErrorMessage(`Error: Resetting Controller`);
+        });
+    }
 }

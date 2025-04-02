@@ -1,5 +1,5 @@
 import { ConnectionManager } from "../../extension/connectionManager";
-import { ControllerProvider } from "../../extension/view";
+import { Controller, ControllerProvider } from "../../extension/view";
 import { YamlCommands } from "../../migrated/yaml";
 import * as Interface from "./interface";
 import * as vscode from 'vscode';
@@ -10,30 +10,36 @@ export class Upload implements Interface.UploadInterface{
     }
 }
 export class ResetController implements Interface.ResetControllerInterface{
-    async reset(controller: any) {
+    async reset(controller: Controller | undefined, showConfirmation: boolean): Promise<boolean> {
         if(!vscode.workspace.workspaceFolders) {
             vscode.window.showErrorMessage('No workspace is open');
-            return;
+            return Promise.resolve(false);
         }
-        let controllerId = null;
         if(!controller) {
             controller = await vscode.window.showQuickPick(
                 YamlCommands.getControllers().map((controller) => ({
-                    id: controller.id,	
+                    controllerId: controller.id,	
                     label: controller.displayname,
-                    description: controller.description
+                    description: controller.description,
+                    online: true
                 })),
                 {
                     title: 'Reset Controller',
                     canPickMany: false
                 }
             );
-            if (!controller) return;
+            if (!controller) return Promise.resolve(false);
         } 
-        await vscode.window.showWarningMessage(`Reset ${controller.label}`, 'Yes', 'No').then((value) => {
-            if(value === 'Yes') controllerId = controller.controllerId;
-        });
-        if(!controllerId) return;
+        let controllerId;
+        if(showConfirmation){
+            await vscode.window.showWarningMessage(`Remove ${controller.label}`, 'Yes', 'No').then((value) => {
+                if(value === 'Yes') controllerId = controller.controllerId;
+            });
+            if(!controllerId) return Promise.resolve(false);
+        } else {
+            controllerId = controller.controllerId;
+        }
+        if(!controllerId) return Promise.resolve(false);
 
         try {
             await ConnectionManager.instance.executeCommand(controllerId, 'killall python3');
@@ -41,7 +47,7 @@ export class ResetController implements Interface.ResetControllerInterface{
             await ConnectionManager.instance.executeCommand(controllerId, 'rm -rf /etc/init.d/S99_python_runtime');
             await ConnectionManager.instance.executeCommand(controllerId, 'rm -rf /etc/rc.d/S99_python_runtime');
             await ConnectionManager.instance.executeCommand(controllerId, 'killall tail');
-
+            
             await ConnectionManager.instance.executeCommand(controllerId, 'echo 0 >> /sys/kernel/dout_drv/DOUT_DATA');
             await ConnectionManager.instance.executeCommand(controllerId, 'echo 0 >> /sys/bus/iio/devices/iio:device0/out_voltage1_powerdown');
             await ConnectionManager.instance.executeCommand(controllerId, 'echo 0 >> /sys/bus/iio/devices/iio:device0/out_voltage1_raw');
@@ -50,11 +56,13 @@ export class ResetController implements Interface.ResetControllerInterface{
             await ConnectionManager.instance.executeCommand(controllerId, 'echo 0 >> /dev/leds/run-green/brightness');
             await ConnectionManager.instance.executeCommand(controllerId, 'echo 0 >> /dev/leds/run-red/brightness');
             await ConnectionManager.instance.executeCommand(controllerId, 'codesys3 &');
-            
+
             vscode.window.showInformationMessage(`Controller ${controller.label} reset`);
             ControllerProvider.instance.refresh();
+            return Promise.resolve(true);
         } catch (error: any) {
             vscode.window.showErrorMessage('Error reseting controller');
+            return Promise.reject(error);
         }
     }
 }

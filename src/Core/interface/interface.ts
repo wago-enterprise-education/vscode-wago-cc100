@@ -6,7 +6,7 @@ export interface UploadInterface{
 }
 
 export interface ResetControllerInterface{
-    reset: (controller: any) => void;
+    reset: (controller: Controller | undefined, showConfirmation: boolean) => Promise<boolean>;
 }
 
 export interface ConfigureControllerInterface{

@@ -13,30 +13,36 @@ export class Upload implements Interface.UploadInterface{
     }
 }
 export class ResetController implements Interface.ResetControllerInterface{
-    async reset(controller: any) {
+    async reset(controller: Controller | undefined, showConfirmation: boolean): Promise<boolean> {
         if(!vscode.workspace.workspaceFolders) {
             vscode.window.showErrorMessage('No workspace is open');
-            return;
+            return Promise.resolve(false);
         }
-        let controllerId = null;
         if(!controller) {
             controller = await vscode.window.showQuickPick(
                 YamlCommands.getControllers().map((controller) => ({
-                    id: controller.id,	
+                    controllerId: controller.id,	
                     label: controller.displayname,
-                    description: controller.description
+                    description: controller.description,
+                    online: true
                 })),
                 {
                     title: 'Reset Controller',
                     canPickMany: false
                 }
             );
-            if (!controller) return;
+            if (!controller) return Promise.resolve(false);
         } 
-        await vscode.window.showWarningMessage(`Reset ${controller.label}`, 'Yes', 'No').then((value) => {
-            if(value === 'Yes') controllerId = controller.controllerId;
-        });
-        if(!controllerId) return;
+        let controllerId;
+        if(showConfirmation){
+            await vscode.window.showWarningMessage(`Remove ${controller.label}`, 'Yes', 'No').then((value) => {
+                if(value === 'Yes') controllerId = controller.controllerId;
+            });
+            if(!controllerId) return Promise.resolve(false);
+        } else {
+            controllerId = controller.controllerId;
+        }
+        if(!controllerId) return Promise.resolve(false);
 
         try {
             await ConnectionManager.instance.executeCommand(controllerId, 'docker container stop #Container name');
@@ -55,8 +61,10 @@ export class ResetController implements Interface.ResetControllerInterface{
 
             vscode.window.showInformationMessage(`Controller ${controller.label} reset`);
             ControllerProvider.instance.refresh();
+            return Promise.resolve(true);
         } catch (error: any) {
             vscode.window.showErrorMessage('Error reseting controller');
+            return Promise.reject(error);
         }
     }
 }
@@ -153,7 +161,7 @@ export class RemoveController implements Interface.RemoveControllerInterface{
             if (!selectedController) return;
         } 
 
-        let controllerId
+        let controllerId;
         if(showConfirmation){
             await vscode.window.showWarningMessage(`Remove ${selectedController.label}`, 'Yes', 'No').then((value) => {
                 if(value === 'Yes') controllerId = selectedController.controllerId;
