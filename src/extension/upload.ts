@@ -94,7 +94,6 @@ export class Upload {
                 .replaceAll('\n', '  ')
                 .split('  ')
                 .filter((value, index) => {
-                    console.log(`${value}`);
                     return index % 2 === 0;
                 })
                 .sort((a, b) => a.localeCompare(b))
@@ -112,7 +111,6 @@ export class Upload {
                 .replaceAll('\n', '  ')
                 .split('  ')
                 .filter((value, index) => {
-                    console.log(`${value}`);
                     return index % 2 === 0;
                 })
                 .sort((a, b) => a.localeCompare(b))
@@ -124,10 +122,6 @@ export class Upload {
                 .update(localHashes)
                 .digest('hex');
 
-            //TEST
-            console.log(`Remote: ${remoteHash} \n`);
-            console.log(`Local: ${localHash} \n`);
-            //ENDTEST
             return Promise.resolve(localHash === remoteHash);
 
         } catch (error) {
@@ -205,7 +199,7 @@ export class Upload {
     }
 
     private async deactivateCodeSys3(id: number) {
-        await connectionManager.executeCommand(id, "source /etc/config-tools/config_codesys3 && stop_cds3")
+        await connectionManager.executeCommand(id, ". /etc/config-tools/config_codesys3 && stop_cds3")
             .then(() => {
                 console.log("CodeSys3 deactivated.");
             })
