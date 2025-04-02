@@ -1,3 +1,4 @@
+import * as vscode from 'vscode';
 import { ConnectionManager } from '../../extension/connectionManager';
 import { ControllerProvider } from '../../extension/view';
 import * as Interface from './controllerInterface';
@@ -18,7 +19,7 @@ export class ResetController implements Interface.ResetControllerInterface {
             vscode.window.showInformationMessage(`Controller ${controller.label} reset`);
             ControllerProvider.instance.refresh();
         } catch (error: any) {
-            vscode.window.showErrorMessage('Error reseting controller');
+            vscode.window.showErrorMessage(`Error reseting controller: ${error}`);
         }
     }
 }
