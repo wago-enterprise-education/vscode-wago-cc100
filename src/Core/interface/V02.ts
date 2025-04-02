@@ -38,7 +38,7 @@ export class ResetController implements Interface.ResetControllerInterface{
         let controllerId;
         
         if(showConfirmation){
-            await vscode.window.showWarningMessage(`Remove ${controller.label}`, 'Yes', 'No').then((value) => {
+            await vscode.window.showWarningMessage(`Reset ${controller.label}`, 'Yes', 'No').then((value) => {
                 if(value === 'Yes') controllerId = controller.controllerId;
             });
             if(!controllerId) return "";
