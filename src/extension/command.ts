@@ -25,15 +25,11 @@ export class Command {
         commands.push(vscode.commands.registerCommand('vscode-wago-cc100.add-controller', async () => {
             Manager.getInstance().addController(context);
         }));
-
-        commands.push(vscode.commands.registerCommand('vscode-wago-cc100.reset-controller', async (controller) => {
-            Manager.getInstance().resetController(controller, );
-        }));
-
+        
         commands.push(vscode.commands.registerCommand('vscode-wago-cc100.refresh-view', async () => {
             ControllerProvider.instance.refresh();
         }));
-
+        
         commands.push(vscode.commands.registerCommand('vscode-wago-cc100.upload', async (controller: Controller | undefined) => {
             if(!vscode.workspace.workspaceFolders) {
                 vscode.window.showErrorMessage('No workspace is open');
@@ -60,27 +56,31 @@ export class Command {
             await new Upload().uploadFile(controller.controllerId);
             return;
         }));
-
+        
         commands.push(vscode.commands.registerCommand('vscode-wago-cc100.upload-all', async () => {
             YamlCommands.getControllers().forEach(async (controller) => {
                 vscode.commands.executeCommand('vscode-wago-cc100.upload',{id: controller.id, label: controller.displayname, online: false});
             });
         }));
-
+        
         commands.push(vscode.commands.registerCommand('vscode-wago-cc100.edit-setting', async (controller: ControllerItem | undefined) => {
             Manager.getInstance().editSettings(controller);
         }));
-
-
+        
+        
         // Commands in Context Menu
         commands.push(vscode.commands.registerCommand('vscode-wago-cc100.rename-controller', async (controller: Controller | undefined) => {
             Manager.getInstance().renameController(controller);
         }));
-
+        
         commands.push(vscode.commands.registerCommand('vscode-wago-cc100.remove-controller', async (controller: Controller | undefined, showConfirmation = true) => {
             Manager.getInstance().removeController(controller, showConfirmation);
         }));
-
+        
+        commands.push(vscode.commands.registerCommand('vscode-wago-cc100.reset-controller', async (controller) => {
+            Manager.getInstance().resetController(controller, );
+        }));
+        
         commands.push(vscode.commands.registerCommand('vscode-wago-cc100.remove-reset-controller', async (controller: Controller | undefined) => {
             Manager.getInstance().removeReset(controller);
         }));
