@@ -219,6 +219,18 @@
         {
           "command": "vscode-wago-cc100.debug",
           "when": "controllerCount > 0 && projectVersion >= 0.2"
+        },
+        {
+          "command": "vscode-wago-cc100.rename-controller",
+          "when": "controllerCount > 0 && projectVersion >= 0.2"
+        },
+        {
+          "command": "vscode-wago-cc100.remove-controller",
+          "when": "controllerCount > 0 && projectVersion >= 0.2"
+        },
+        {
+          "command": "vscode-wago-cc100.remove-reset-controller",
+          "when": "controllerCount > 0 && projectVersion >= 0.2"
         }
       ],
       "view/title": [
@@ -256,7 +268,7 @@
         },
         {
           "command": "vscode-wago-cc100.rename-controller",
-          "when": "view == controller-view && viewItem == controller",
+          "when": "view == controller-view && viewItem == controller && projectVersion >= 0.2",
           "group": "@1"
         },
         {
@@ -266,12 +278,12 @@
         },
         {
           "command": "vscode-wago-cc100.remove-controller",
-          "when": "view == controller-view && viewItem == controller",
+          "when": "view == controller-view && viewItem == controller && projectVersion >= 0.2",
           "group": "remove@2"
         },
         {
           "command": "vscode-wago-cc100.remove-reset-controller",
-          "when": "view == controller-view && viewItem == controller",
+          "when": "view == controller-view && viewItem == controller && projectVersion >= 0.2",
           "group": "remove@3"
         },
         {

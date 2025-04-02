@@ -126,5 +126,11 @@ function checkIfInRootFolder(uri: vscode.Uri): Boolean {
 }
 
 function setControllerCountContext() {
-    vscode.commands.executeCommand('setContext', 'controllerCount', YamlCommands.getControllers()?.length);
+    if(ProjectVersion >= 0.2) {
+        vscode.commands.executeCommand('setContext', 'controllerCount', YamlCommands.getControllers()?.length);
+    } else if(ProjectVersion >= 0.1) {
+        vscode.commands.executeCommand('setContext', 'controllerCount', 1);
+    } else {
+        vscode.commands.executeCommand('setContext', 'controllerCount', 0);
+    }
 }
