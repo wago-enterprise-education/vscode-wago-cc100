@@ -59,7 +59,7 @@ export class Command {
                 if (success) {
                     vscode.window.showInformationMessage('Debugging session started sucsessfully');
                 } else {
-                    vscode.window.showErrorMessage('ERROR: Could start a debugging session');
+                    vscode.window.showErrorMessage('ERROR: Could not start a debugging session');
                 }
             }));
 
