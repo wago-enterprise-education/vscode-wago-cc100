@@ -2,6 +2,7 @@ import { Factory } from "./factory";
 import { ProjectVersion } from '../extension/helper';
 import { Controller, ControllerItem } from "../extension/view";
 import * as vscode from 'vscode';
+import { YamlCommands } from "../migrated/yaml";
 
 export class Manager {
     private static instance: Manager;
@@ -25,7 +26,7 @@ export class Manager {
         Factory.getInstance().createEditSettingsCommand(this.versionNr).editSettings(controller);
     }
     public resetController(controller: Controller | undefined){
-        Factory.getInstance().createResetCommand(this.versionNr).reset(controller);
+        Factory.getInstance().createResetCommand(this.versionNr).reset(controller, true);
     }
     public addController(context: vscode.ExtensionContext){
         Factory.getInstance().createAddCommand(this.versionNr).addController(context);
@@ -39,8 +40,24 @@ export class Manager {
     public createController(context: vscode.ExtensionContext){
         Factory.getInstance().createCreateControllerCommand(this.versionNr).createController(context);
     }
-    public async removeReset(context: vscode.ExtensionContext, controller: Controller | undefined){
-        await Factory.getInstance().createResetCommand(this.versionNr).reset(controller).then (() => {
+    public async removeReset(controller: Controller | undefined){
+        if(!controller) {
+            controller = await vscode.window.showQuickPick(
+                YamlCommands.getControllers().map((controller) => ({
+                    controllerId: controller.id,	
+                    label: controller.displayname,
+                    description: controller.description,
+                    online: true
+                })),
+                {
+                    title: 'Reset Controller',
+                    canPickMany: false
+                }
+            );
+            if (!controller) return;
+        } 
+        
+        await Factory.getInstance().createResetCommand(this.versionNr).reset(controller, false).then (() => {
             Factory.getInstance().createRemoveCommand(this.versionNr).removeController(controller, false);
         })
         .catch((error:any) => { 

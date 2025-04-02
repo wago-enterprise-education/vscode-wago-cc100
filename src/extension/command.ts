@@ -342,7 +342,7 @@ export class Command {
         }));
 
         commands.push(vscode.commands.registerCommand('vscode-wago-cc100.remove-reset-controller', async (controller: Controller | undefined) => {
-            Manager.getInstance().removeReset(context, controller);
+            Manager.getInstance().removeReset(controller);
         }));
 
         context.subscriptions.concat(commands);
