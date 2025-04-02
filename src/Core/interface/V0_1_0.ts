@@ -121,6 +121,7 @@ export class ViewChildren implements Interface.ViewChildrenInterface{
         return Promise.resolve([]);
     }
 }
+<<<<<<< HEAD
 export class JsonCommands {
 
     /**
@@ -162,3 +163,5 @@ export enum setting {
     user = 'User',
     autoupdate = 'Autoupdate'
 }
+=======
+>>>>>>> 21bbbd1 (Refactor WAGO controller engine version and update imports for controller handling)

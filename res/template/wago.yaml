@@ -3,6 +3,6 @@ nodes:
   "1": 
     displayname: Controller1
     description: WAGO 0751-9301 Compact Controller 100
-    engine: CC100-v0.1
+    engine: CC100
     src: src
     imageVersion: latest

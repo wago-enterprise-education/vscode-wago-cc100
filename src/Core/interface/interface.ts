@@ -6,7 +6,11 @@ export interface UploadInterface{
 }
 
 export interface ResetControllerInterface{
+<<<<<<< HEAD
     reset: (controller: Controller | undefined, showConfirmation: boolean) => Promise<boolean>;
+=======
+    reset: (controller: Controller | undefined) => void;
+>>>>>>> 3668887 (Refactor WAGO controller engine version and update imports for controller handling)
 }
 
 export interface ConfigureControllerInterface{
