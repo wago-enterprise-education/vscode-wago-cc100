@@ -522,6 +522,18 @@ class Connection {
         });
     }
 
+    public streamCommand(cmd: string, onData: (data: Buffer) => void, onError: (err: Error) => void) {
+        this.client.exec(cmd, (err, stream) => {
+            if (err) onError(err);
+
+            stream.on('data', onData);
+            stream.on('error', onError);
+            stream.on('close', () => {
+                stream.close();
+            });
+        });
+    }
+
     /**
      * Uploads a file or directory to the remote controller.
      * 

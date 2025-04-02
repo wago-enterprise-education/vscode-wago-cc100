@@ -19,7 +19,7 @@ export interface EditSettingsInterface{
 }
 
 export interface ViewChildrenInterface{
-    getChildren: (element?: Controller | ControllerItem | undefined) => vscode.ProviderResult<Controller[] | ControllerItem[]>;
+    getChildren: (element?: Controller | ControllerItem | undefined) => Promise<vscode.ProviderResult<Controller[] | ControllerItem[]>>;
 }
 
 export interface AddControllerInterface{
@@ -40,4 +40,8 @@ export interface CreateProjectInterface{
 
 export interface RemoveResetControllerInterface{
     removeResetController:(controller: Controller | undefined) => Promise<Controller | undefined>; 
+}
+
+export interface EstablishConnectionsInterface{
+    establishConnections: () => void;
 }

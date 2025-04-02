@@ -5,6 +5,7 @@ import { ControllerProvider } from './extension/view';
 import { Command } from './extension/command';
 import { verifyProject } from './extension/helper';
 import { ConnectionManager } from './extension/connectionManager';
+import { Manager } from './core/manager';
 
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -17,13 +18,10 @@ export async function activate(context: vscode.ExtensionContext) {
 	//Create Commands
 	Command.createCommands(context);
 
-	if(await verifyProject()) {
-		const controllers = YamlCommands.getControllers();
-		controllers.forEach(async controller => {
-			const settings = YamlCommands.getControllerSettings(controller.id);
-			await ConnectionManager.instance.addController(controller.id, `${settings.ip}:${settings.port}`, settings.user)
-		})
-	}
+	await verifyProject();
+
+	//Connect to Controllers
+	Manager.getInstance().establishConnections();
 
 	//show menu
 	// const webviewProviderMenu = new customWebviewProviderMenu(context.extensionUri, webviewIo);

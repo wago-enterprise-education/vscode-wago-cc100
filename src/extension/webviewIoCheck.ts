@@ -7,6 +7,8 @@ import { Connection } from './connection';
 import sanitizeHtml from 'sanitize-html';
 import { ConnectionManager } from './connectionManager';
 import { Controller } from './view';
+import { ProjectVersion } from './helper';
+import { YamlCommands } from '../migrated/yaml';
 
 let ssh = new SSH('192.168.42.42', 22, 'root', '');
 
@@ -97,20 +99,6 @@ export class webviewIoCheck {
 
 
             vscode.commands.registerCommand('vscode-wago-cc100.iocheck', async (element: Controller) => {
-
-                    // The code you place here will be executed every time your command is executed
-                    this.wsPath = await this.Workspace.getProjectPath();
-                    //Check if a CC100 project is opened in the explorer
-                    if (this.wsPath !== "Error: Could not find a project") {
-    
-                        	this.wsPath = this.wsPath
-
-                    }
-                    else {
-                        vscode.window.showErrorMessage(this.wsPath);
-                        return;
-                    }
-    
                     // Check if an activeTextEditor is there, either it exists or it is undefined
                     const columnToShowIn = vscode.window.activeTextEditor
                         ? vscode.window.activeTextEditor.viewColumn
@@ -155,7 +143,26 @@ export class webviewIoCheck {
                         
                         if (this.ioCheckPanel) {
                             try {
-                                this.updateIoCheck(element.controllerId);
+                                if(element) {
+                                    this.updateIoCheck(element.controllerId);
+                                } else if(ProjectVersion >= 0.2) {
+                                    let controller = await vscode.window.showQuickPick(
+                                        YamlCommands.getControllers().map((controller) => {
+                                            return {
+                                                label: controller.displayname,
+                                                controllerId: controller.id,
+                                                online: false
+                                            };
+                                        }), {
+                                            placeHolder: "Select a controller"
+                                        }
+                                    );
+                                    if(controller) {
+                                        this.updateIoCheck(controller.controllerId);
+                                    }
+                                } else {
+                                    this.updateIoCheck(0);
+                                }
                             }
                             catch (error: any) {
                                 this.ioCheckPanel.dispose();
@@ -528,7 +535,7 @@ export class webviewIoCheck {
 
     private async startEventForSerialCommunication(id: number) {
         let data;
-        this.serialConnection = ConnectionManager.instance.getConnection(id); 
+        this.serialConnection = await ConnectionManager.instance.getConnection(id); 
         await this.serialRead((rxData: Buffer) => {
             data = this.removeAdditionalData(rxData.toString())
             this.ioCheckPanel?.webview.postMessage({
@@ -540,22 +547,12 @@ export class webviewIoCheck {
     }
 
     private async serialRead(callback: (dataBuffer: Buffer) => void) {
-        this.serialConnection.client.on("ready", () => {
-            this.serialConnection.client.shell((err: any, stream: any) => {
-              if (err) throw err;
-      
-              stream
-                .on("close", () => {
-                    this.serialConnection.client.end();
-                })
-                .on("data", (data: Buffer) => {
-                  callback(data);
-                });
-      
-              // Hier kannst du Befehle senden, wenn der Stream bereit ist
-              stream.write("cat /dev/ttySTM1\n");
-            });
-        }); 
+        this.serialConnection.streamCommand("cat /dev/ttySTM1\n", (data: Buffer) => {
+                callback(data);
+            }, (error: any) => {
+                console.error(error);
+            }
+        );
     }
 
     private async startEventForSwitch(id: number) {

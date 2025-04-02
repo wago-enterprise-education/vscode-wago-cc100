@@ -113,4 +113,14 @@ export class ProjectFactory {
                 throw new Error("Invalid version number");
         }
     }
+    public createEstablishConnections(versionNr: number): Interface.EstablishConnectionsInterface{
+        switch (versionNr) {
+            case 0.2:
+                return new V2.EstablishConnections();
+            case 0.1:
+                return new V1.EstablishConnections();
+            default:
+                throw new Error("Invalid version number");
+        }
+    }
 }

@@ -214,7 +214,7 @@ export class EditSettings implements Interface.EditSettingsInterface{
     }
 }
 export class ViewChildren implements Interface.ViewChildrenInterface{
-    getChildren(element?: Controller | ControllerItem | undefined): vscode.ProviderResult<Controller[] | ControllerItem[]> {
+    getChildren(element?: Controller | ControllerItem | undefined): Promise<vscode.ProviderResult<Controller[] | ControllerItem[]>> {
         if(!element) {
             let controllers = YamlCommands.getControllers();
             if (!controllers) return Promise.resolve([]);
@@ -350,6 +350,15 @@ export class RemoveResetController implements Interface.RemoveResetControllerInt
         } 
         return controller;
     };
+}
+export class EstablishConnections implements Interface.EstablishConnectionsInterface{
+    establishConnections() {
+        const controllers = YamlCommands.getControllers();
+		controllers.forEach(async controller => {
+			const settings = YamlCommands.getControllerSettings(controller.id);
+			await ConnectionManager.instance.addController(controller.id, `${settings.ip}:${settings.port}`, settings.user)
+		});
+    }
 }
 //===================================================================================
 // EditSettings Functionality

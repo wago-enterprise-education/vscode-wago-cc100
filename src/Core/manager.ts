@@ -52,7 +52,10 @@ export class Manager {
             vscode.window.showErrorMessage(`Error: Resetting Controller`);
         });
     }
-    public viewChildren(element?: Controller | ControllerItem | undefined): vscode.ProviderResult<Controller[] | ControllerItem[]> {
+    public viewChildren(element?: Controller | ControllerItem | undefined): any {
         return ProjectFactory.getInstance().createViewChildrenCommand(this.versionNr).getChildren(element);
+    }
+    public establishConnections(){
+        ProjectFactory.getInstance().createEstablishConnections(this.versionNr).establishConnections();
     }
 }

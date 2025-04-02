@@ -51,26 +51,30 @@ export class EditSettings implements Interface.EditSettingsInterface{
         console.log("Edit settings command executed", element);
     }
 }
+export class EstablishConnections implements Interface.EstablishConnectionsInterface{
+    async establishConnections() {
+        const controller = JsonCommands.getController();
+        await ConnectionManager.instance.addController(0, `${controller.ip}:${controller.port}`, controller.user)
+    }
+}
 export class ViewChildren implements Interface.ViewChildrenInterface{
-    getChildren(element?: Controller | ControllerItem | undefined): vscode.ProviderResult<Controller[] | ControllerItem[]> {
+    async getChildren(element?: Controller | ControllerItem | undefined): Promise<vscode.ProviderResult<Controller[] | ControllerItem[]>> {
         let controller = JsonCommands.getController();
         if (!controller) return Promise.resolve([]);
 
         if(!element) {
             let online = false
 
-            async () => {
-                try {
-                    await ConnectionManager.instance.updateController(0, `${controller.ip}:${controller.port}`, controller.user);
-                    await ConnectionManager.instance.ping(0);
-                    online = true;
-                } catch (error) {
-                    console.debug(`Controller is offline. ${error}`);
-                }
+            try {
+                await ConnectionManager.instance.updateController(0, `${controller.ip}:${controller.port}`, controller.user);
+                await ConnectionManager.instance.ping(0);
+                online = true;
+            } catch (error) {
+                console.debug(`Controller is offline. ${error}`);
             }
 
             return Promise.all([
-                new Controller(0, 'Controller', true)
+                new Controller(0, 'Controller', online)
             ]);
         } else {
             if(element instanceof Controller) {
@@ -117,7 +121,7 @@ export class JsonCommands {
             connection: connectionType,
             simulation_frontend: settings.simulation_frontend,
             simulation_backend: settings.simulation_backend,
-            ip: settings.ip,
+            ip: settings.ip_adress,
             port: settings.port,
             user: settings.user,
             autoupdate: settings.autoupdate
