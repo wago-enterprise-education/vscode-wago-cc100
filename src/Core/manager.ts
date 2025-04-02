@@ -53,6 +53,6 @@ export class Manager {
         });
     }
     public viewChildren(element?: Controller | ControllerItem | undefined): vscode.ProviderResult<Controller[] | ControllerItem[]> {
-        return Factory.getInstance().createViewChildrenCommand(this.versionNr).getChildren(element);
+        return ProjectFactory.getInstance().createViewChildrenCommand(this.versionNr).getChildren(element);
     }
 }

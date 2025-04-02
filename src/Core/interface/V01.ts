@@ -1,14 +1,5 @@
 import { ConnectionManager } from "../../extension/connectionManager";
-<<<<<<< HEAD
-<<<<<<< HEAD
 import { Controller, ControllerItem, ControllerProvider } from "../../extension/view";
-=======
-import { ControllerProvider } from "../../extension/view";
->>>>>>> 0a6a056 (added factory for controller and split resetCommand between Project- and ControllerFactory)
-=======
-import { Controller, ControllerProvider } from "../../extension/view";
->>>>>>> 322e59c (Add RemoveResetControllerCommand and update ResetControllerInterface)
-import { YamlCommands } from "../../migrated/yaml";
 import * as Interface from "./projectInterface";
 import * as vscode from 'vscode';
 import * as fs from 'fs';
@@ -25,18 +16,7 @@ export class ResetController implements Interface.ResetControllerInterface{
             return "";
         }
         if(!controller) {
-            controller = await vscode.window.showQuickPick(
-                YamlCommands.getControllers().map((controller) => ({
-                    controllerId: controller.id,	
-                    label: controller.displayname,
-                    description: controller.description,
-                    online: true
-                })),
-                {
-                    title: 'Reset Controller',
-                    canPickMany: false
-                }
-            );
+            controller ={controllerId: 0, label: "Controller", online: false} 
         } 
         if(!controller) return "";
         let controllerId;
@@ -120,7 +100,6 @@ export class ViewChildren implements Interface.ViewChildrenInterface{
         return Promise.resolve([]);
     }
 }
-<<<<<<< HEAD
 export class JsonCommands {
 
     /**
@@ -162,5 +141,3 @@ export enum setting {
     user = 'User',
     autoupdate = 'Autoupdate'
 }
-=======
->>>>>>> 21bbbd1 (Refactor WAGO controller engine version and update imports for controller handling)
