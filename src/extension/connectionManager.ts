@@ -237,7 +237,7 @@ export class ConnectionManager {
      * @returns Promise<string> Output of the upload
      * @throws Error if the controller does not exist
      */
-    public upload(controllerId: number, localPath: string, remotePath: string): Promise<string> {
+    public async upload(controllerId: number, localPath: string, remotePath: string): Promise<string> {
         let connection: Connection;
         try {
             connection = this.getControllerConnections(controllerId)[0];
@@ -245,7 +245,43 @@ export class ConnectionManager {
             throw error;
         }
 
-        return connection.upload(localPath, remotePath);
+        return new Promise(async (resolve, reject) => {
+            await connection.executeCommand(`rm -rf ${remotePath}`).catch((err) => {reject(err)});
+            for await(const directory of this.getAllRemoteDirectories(remotePath)) {
+                await connection.executeCommand(`mkdir -p ${directory}`).catch((err) => {reject(err)});
+            }
+            for await(const directory of this.getAllLocalDirectories(localPath)) {
+                await connection.executeCommand(`mkdir -p ${remotePath.concat(directory.replace(localPath + '\\', '').replaceAll('\\', '/'))}`).catch((err) => {reject(err)});
+            }
+            await connection.upload(localPath, remotePath).then(() => {
+                resolve('Upload successful');
+            }).catch((err) => {
+                reject(err);
+            })
+        })
+        
+    }
+
+    private getAllRemoteDirectories(path: string): string[] {
+        let directories: string[] = [];
+        let currentPath = '';
+        for (let directory of path.split('/')) {
+            if(directory === '') continue;
+            currentPath += '/' + directory;
+            directories.push(currentPath + '/');
+        }
+        return directories;
+    }
+
+    private *getAllLocalDirectories(path: string): Generator<string> {
+        const files = fs.readdirSync(path);
+    
+        for(const file of files) {
+            if(fs.lstatSync(Path.join(path, file)).isDirectory()) {
+                yield Path.join(path, file);
+                yield* this.getAllLocalDirectories(Path.join(path, file));
+            }
+        }
     }
 
     /**
@@ -495,18 +531,44 @@ class Connection {
      */
     public upload(localPath: string, remotePath: string): Promise<string> {
         return new Promise<string>((resolve, reject) => {
-            this.client.sftp((err, sftp) => {
-                if(err) return reject(err);
+            this.client.sftp(async (err, sftp) => {
+                if (err) {
+                    console.error('SFTP connection error:', err);
+                    return reject(err);
+                }
                 this.busy = true;
-
-                sftp.fastPut(localPath, remotePath, (err) => {
-                    this.busy = false;
-                    this.lastUsed = Date.now();
-                    if(err) return reject(err);
-                    resolve('Upload successful');
-                })
+    
+                let requested = 0;
+                let answered = 0;
+                for await(const file of this.getAllLocalFiles(localPath)) {
+                    requested++;
+                    sftp.fastPut(file, remotePath.concat(file.replace(localPath + '\\', '').replaceAll('\\', '/')), (err) => {
+                        answered++;
+                        if (err) {
+                            console.error('Upload error:', err);
+                            return reject(err);
+                        }
+                        if(requested === answered) {
+                            sftp.end();
+                            this.busy = false;
+                            resolve('Upload successful');
+                        }
+                    })
+                }
             })
         })
+    }
+
+    private *getAllLocalFiles(path: string): Generator<string> {
+        const files = fs.readdirSync(path);
+        
+        for(const file of files) {
+            if(fs.lstatSync(Path.join(path, file)).isDirectory()) {
+                yield* this.getAllLocalFiles(Path.join(path, file));
+            } else {
+                yield Path.join(path, file);
+            }
+        }
     }
 
     /**
