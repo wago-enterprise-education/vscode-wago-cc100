@@ -38,7 +38,7 @@ export class ResetController implements Interface.ResetControllerInterface{
         let controllerId;
         
         if(showConfirmation){
-            await vscode.window.showWarningMessage(`Reset ${controller.label}`, 'Yes', 'No').then((value) => {
+            await vscode.window.showWarningMessage(`Reset ${controller.label}?`, 'Yes', 'No').then((value) => {
                 if(value === 'Yes') controllerId = controller.controllerId;
             });
             if(!controllerId) return "";
@@ -46,18 +46,6 @@ export class ResetController implements Interface.ResetControllerInterface{
             controllerId = controller.controllerId;
         }
 
-        if(!controllerId) return "";
-            if (!controller) return "";
-        
-
-        await vscode.window.showWarningMessage(`Reset ${controller.label}`, 'Yes', 'No').then((value) => {
-            if(value === 'Yes') controllerId = controller.controllerId;
-        });
-
-        if(!controllerId) {
-            vscode.window.showErrorMessage("No Controller ID");
-            return ""
-        };
         try {
             await ConnectionManager.instance.executeCommand(controllerId, 'docker container stop #Container name');
             await ConnectionManager.instance.executeCommand(controllerId, 'docker rm #Container name');
@@ -165,7 +153,7 @@ export class RemoveController implements Interface.RemoveControllerInterface{
 
         let controllerId;
         if(showConfirmation){
-            await vscode.window.showWarningMessage(`Remove ${selectedController.label}`, 'Yes', 'No').then((value) => {
+            await vscode.window.showWarningMessage(`Remove ${selectedController.label}?`, 'Yes', 'No').then((value) => {
                 if(value === 'Yes') controllerId = selectedController.controllerId;
             });
             if(!controllerId) return;

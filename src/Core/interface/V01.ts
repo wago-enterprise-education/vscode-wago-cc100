@@ -17,20 +17,15 @@ export class ResetController implements Interface.ResetControllerInterface{
         }
         if(!controller) {
             controller ={controllerId: 0, label: "Controller", online: false} 
-        } 
-        if(!controller) return "";
+        }
         let controllerId;
         if(showConfirmation){
-            await vscode.window.showWarningMessage(`Remove ${controller.label}`, 'Yes', 'No').then((value) => {
+            await vscode.window.showWarningMessage(`Reset ${controller.label}?`, 'Yes', 'No').then((value) => {
                 if(value === 'Yes') controllerId = controller.controllerId;
             });
-            if(!controllerId) return ""
         } else {
             controllerId = controller.controllerId;
         }
-        await vscode.window.showWarningMessage(`Reset ${controller.label}`, 'Yes', 'No').then((value) => {
-            if(value === 'Yes') controllerId = controller.controllerId;
-        });
         if(!controllerId) return "";
         try {
             await ConnectionManager.instance.executeCommand(controllerId, 'killall python3');
@@ -40,7 +35,7 @@ export class ResetController implements Interface.ResetControllerInterface{
             await ConnectionManager.instance.executeCommand(controllerId, 'killall tail');
             
         } catch (error: any) {
-            vscode.window.showErrorMessage('Error resetting controller');
+            vscode.window.showErrorMessage(`Error resetting controller: ${error}`);
 
         }
         return "CC100";
