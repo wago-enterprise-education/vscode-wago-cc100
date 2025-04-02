@@ -9,7 +9,27 @@ export class Upload implements Interface.UploadInterface{
         console.log("Upload command executed");
     }
 }
-export class ResetController implements Interface.ResetControllerInterface{
+/**
+ * The `ResetController` class implements the `ResetControllerInterface` and provides
+ * functionality to reset a controller by executing a series of commands on the target device.
+ */
+export class ResetController implements Interface.ResetControllerInterface {
+    /**
+     * Resets the specified controller by executing a series of commands to clean up
+     * the environment on the target device. Optionally, a confirmation dialog can be shown
+     * before proceeding with the reset.
+     *
+     * @param controller - The controller object to reset. If undefined, a default controller
+     *                     object will be used.
+     * @param showConfirmation - A boolean indicating whether to show a confirmation dialog
+     *                           before resetting the controller.
+     * @returns A promise that resolves to a string indicating the result of the reset operation.
+     *          Returns "CC100" if the reset is successful, or an empty string if the reset
+     *          is aborted or fails.
+     *
+     * @throws Will show an error message if no workspace is open or if an error occurs during
+     *         the execution of reset commands.
+     */
     async reset(controller: Controller | undefined, showConfirmation: boolean) {
         if(!vscode.workspace.workspaceFolders) {
             vscode.window.showErrorMessage('No workspace is open');
@@ -46,7 +66,23 @@ export class ConfigureController implements Interface.ConfigureControllerInterfa
         console.log("Configure command executed");
     }
 }
-export class EditSettings implements Interface.EditSettingsInterface{
+/**
+ * Represents the EditSettings class that implements the EditSettingsInterface.
+ * This class provides functionality to edit settings in a VS Code workspace.
+ */
+export class EditSettings implements Interface.EditSettingsInterface {
+    /**
+     * Edits the settings for a given controller or prompts the user to select a setting to edit.
+     * 
+     * @param controller - The controller item whose settings need to be edited. If undefined, the user will be prompted to select a setting.
+     * @returns A promise that resolves when the settings editing process is complete.
+     * 
+     * @remarks
+     * - If no workspace is open, an error message is displayed to the user.
+     * - If the controller is undefined, the user is prompted to select a setting from a list.
+     * - The selected or provided setting is then passed to the `EditSettingsFunctionality.editSetting` method for editing.
+     * - After editing, the `ControllerProvider` instance is refreshed.
+     */
     async editSettings(controller: ControllerItem | undefined) {
         if(!vscode.workspace.workspaceFolders) {
             vscode.window.showErrorMessage('No workspace is open');
@@ -71,13 +107,46 @@ export class EditSettings implements Interface.EditSettingsInterface{
         ControllerProvider.instance.refresh();
     }
 }
-export class EstablishConnections implements Interface.EstablishConnectionsInterface{
+/**
+ * Represents a class responsible for establishing connections.
+ * Implements the `EstablishConnectionsInterface` from the `Interface` namespace.
+ */
+export class EstablishConnections implements Interface.EstablishConnectionsInterface {
+    /**
+     * Establishes connections by retrieving the controller information
+     * from `JsonCommands` and adding it to the `ConnectionManager`.
+     * 
+     * @returns A promise that resolves when the connection is successfully established.
+     */
     async establishConnections() {
         const controller = JsonCommands.getController();
         await ConnectionManager.instance.addController(0, `${controller.ip}:${controller.port}`, controller.user)
     }
 }
-export class ViewChildren implements Interface.ViewChildrenInterface{
+/**
+ * Represents a class that provides methods to retrieve child elements
+ * for a given controller or controller item.
+ */
+export class ViewChildren implements Interface.ViewChildrenInterface {
+    /**
+     * Retrieves the child elements of a given controller or controller item.
+     *
+     * @param element - The parent element for which to retrieve children. 
+     *                  It can be a `Controller`, `ControllerItem`, or `undefined`.
+     * @returns A promise that resolves to a `vscode.ProviderResult` containing
+     *          an array of `Controller` or `ControllerItem` objects, or an empty array
+     *          if no children are found.
+     *
+     * The method performs the following:
+     * - If no `element` is provided, it checks the online status of the controller
+     *   and returns a new `Controller` instance.
+     * - If the `element` is a `Controller`, it retrieves and returns an array of
+     *   `ControllerItem` objects representing the controller's settings.
+     * - If the `element` is neither provided nor a `Controller`, it resolves to an empty array.
+     *
+     * The method also handles connection updates and pings to determine the online
+     * status of the controller.
+     */
     async getChildren(element?: Controller | ControllerItem | undefined): Promise<vscode.ProviderResult<Controller[] | ControllerItem[]>> {
         let controller = JsonCommands.getController();
         if (!controller) return Promise.resolve([]);
@@ -119,21 +188,34 @@ export class ViewChildren implements Interface.ViewChildrenInterface{
 export class JsonCommands {
 
     /**
-     * Function to read the content of the wago.yaml file.
+     * Reads the content of the `settings.json` file located in the workspace folder.
      * 
-     * @returns The content of the wago.yaml file as a JS object
+     * @private
+     * @returns {object} The content of the `settings.json` file parsed as a JavaScript object.
+     * @throws {Error} If the file cannot be read or parsed.
      */
     private static getSettingsJson() {
         return JSON.parse(fs.readFileSync(`${vscode.workspace.workspaceFolders![0].uri.fsPath}/settings.json`, 'utf8'));
     }
-
-    public static writeJson(id: number, attribute: settingsJson, value: string) {
+    /**
+     * Updates a specific attribute in the `settings.json` file with the provided value.
+     * 
+     * @param {settingsJson} attribute - The key in the `settings.json` file to update.
+     * @param {string} value - The new value to assign to the specified attribute.
+     * @throws {Error} If the file cannot be written.
+     */
+    public static writeJson(attribute: settingsJson, value: string) {
         let json = this.getSettingsJson();
         json[attribute] = value;
         console.log(JSON.stringify(json));
         fs.writeFileSync(`${vscode.workspace.workspaceFolders![0].uri.fsPath}/settings.json`, JSON.stringify(json, null, "\t"));
     }
-
+    /**
+     * Retrieves the controller configuration from the `settings.json` file.
+     * 
+     * @returns {object} An object containing the controller's connection type, IP address, port, user, and autoupdate settings.
+     * @throws {Error} If the `settings.json` file cannot be read or parsed.
+     */
     public static getController() {
         const settings = this.getSettingsJson();
         let connectionType = '';
@@ -188,6 +270,25 @@ export enum settingsJson {
 
 export class EditSettingsFunctionality {
     
+    /**
+     * Edits a specific setting in the application's configuration.
+     * 
+     * @param id - The identifier for the setting to be edited (currently unused in the function).
+     * @param settingToEdit - The name of the setting to edit. Supported values are:
+     *   - `"connection"`: Allows the user to select a connection type (`usb-c` or `ethernet`).
+     *   - `"ip"`: Prompts the user to input an IP address.
+     *   - `"port"`: Prompts the user to input a port value.
+     *   - `"user"`: Prompts the user to input a username.
+     *   - `"autoupdate"`: Allows the user to toggle the autoupdate setting (`on` or `off`).
+     * 
+     * The function interacts with the user through VS Code's UI components (e.g., `showQuickPick` and `showInputBox`)
+     * to gather input for the specified setting. It then updates the corresponding JSON configuration using
+     * `JsonCommands.writeJson`.
+     * 
+     * If the workspace is not open, an error message is displayed, and the function exits early.
+     * 
+     * @returns A `Promise<void>` that resolves when the operation is complete.
+     */
     public static async editSetting(id: number, settingToEdit: string) {
         if(!vscode.workspace.workspaceFolders) {
             vscode.window.showErrorMessage('No workspace is open');
@@ -195,47 +296,6 @@ export class EditSettingsFunctionality {
         }
         let content
         switch (settingToEdit) {
-            // wago.yaml Setting
-            case "description":
-                content = await this.getInput();
-                if (!content) return;
-                // YamlCommands.writeWagoYaml(id, wagoSettings[settingToEdit], content);
-                break;
-
-            // wago.yaml QuickPick
-            case "engine":
-                //TODO - No Enums of available engines yet----------------------------------------------
-                break;
-
-            case "src":
-                const workspacePath = vscode.workspace.workspaceFolders![0].uri.fsPath;
-                const controllerSrc = await vscode.window.showQuickPick(
-                    fs.readdirSync(workspacePath)
-                        .map((folder) => {
-                            if (fs.existsSync(`${workspacePath}/${folder}/main.py`)) {
-                                return {
-                                    label: `${folder}`,
-                                    description: `${folder}/main.py`
-                                };
-                            }
-                            return { label: "" };
-                        })
-                        .filter((path) => path.label.length > 0 ? true : false)
-                        .concat({ label: "New", description: 'Create a new folder' }),
-                    {
-                        title: 'Add Controller',
-                        canPickMany: false
-                    }
-                ) || { label: "" };
-                //if (!controllerSrc) return;
-                
-                //TODO - Actually Create New Folder-----------------------------
-
-                // YamlCommands.writeWagoYaml(id, wagoSettings[settingToEdit], controllerSrc.label);
-                break;
-            case "imageVersion": 
-                //TODO - Not yet determined how they will be managed-------------------------------------------
-                break;
             case "connection":
                 let conType = await vscode.window.showQuickPick(['usb-c', 'ethernet'], {
                     title: 'Connection Type',
@@ -244,15 +304,15 @@ export class EditSettingsFunctionality {
                 if (!conType) return;
                 switch (conType) {
                     case 'usb-c':
-                        JsonCommands.writeJson(0, settingsJson.usb_c, 'true');
-                        JsonCommands.writeJson(0, settingsJson.simulator, 'false');
-                        JsonCommands.writeJson(0, settingsJson.ethernet, 'false');
-                        JsonCommands.writeJson(0, settingsJson.ip_adress, '192.168.42.42');
+                        JsonCommands.writeJson(settingsJson.usb_c, 'true');
+                        JsonCommands.writeJson(settingsJson.simulator, 'false');
+                        JsonCommands.writeJson(settingsJson.ethernet, 'false');
+                        JsonCommands.writeJson(settingsJson.ip_adress, '192.168.42.42');
                         break;
                     case 'ethernet':
-                        JsonCommands.writeJson(0, settingsJson.usb_c, 'false');
-                        JsonCommands.writeJson(0, settingsJson.simulator, 'false');
-                        JsonCommands.writeJson(0, settingsJson.ethernet, 'true');
+                        JsonCommands.writeJson(settingsJson.usb_c, 'false');
+                        JsonCommands.writeJson(settingsJson.simulator, 'false');
+                        JsonCommands.writeJson(settingsJson.ethernet, 'true');
                         break
                     default:
                         break;
@@ -262,16 +322,14 @@ export class EditSettingsFunctionality {
             case "ip": 
                 content = await this.getInput();
                 if (!content) return;
-                JsonCommands.writeJson(0, settingsJson.ip_adress, content);
+                JsonCommands.writeJson(settingsJson.ip_adress, content);
                 break;
             case "port":
             case "user":
                 content = await this.getInput();
                 if (!content) return;
-                JsonCommands.writeJson(0, settingsJson[settingToEdit], content);
+                JsonCommands.writeJson(settingsJson[settingToEdit], content);
                 break;
-
-            // controller.yaml QuickPick
             case "autoupdate": 
                 let status = await vscode.window.showQuickPick(['on', 'off'], {
                     title: 'Autoupdate',
@@ -279,7 +337,7 @@ export class EditSettingsFunctionality {
                 }) || '';
                 if (!status) return;
 
-                JsonCommands.writeJson(0, settingsJson[settingToEdit], status);
+                JsonCommands.writeJson(settingsJson[settingToEdit], status);
                 break;
             default :
                 vscode.window.showErrorMessage("Invalid Attribute Type");
@@ -287,6 +345,12 @@ export class EditSettingsFunctionality {
         }
     }
 
+    /**
+     * Prompts the user with an input box to enter a value for a setting.
+     *
+     * @returns A promise that resolves to the string entered by the user.
+     *          If the user cancels the input box, an empty string is returned.
+     */
     private static async getInput(): Promise<string> {
         let input = await vscode.window.showInputBox({
             prompt: 'Enter the value the Setting should be set to',
