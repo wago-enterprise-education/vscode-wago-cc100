@@ -40,8 +40,8 @@ export class Manager {
     public renameController(controller: Controller | undefined){
         ProjectFactory.getInstance().createRenameCommand(this.versionNr).renameController(controller);
     }
-    public createController(context: vscode.ExtensionContext){
-        ProjectFactory.getInstance().createCreateControllerCommand(this.versionNr).createController(context);
+    public createProject(context: vscode.ExtensionContext){
+        ProjectFactory.getInstance().createCreateProjectCommand(this.versionNr).createController(context);
     }
     public async removeReset(controller: Controller | undefined){
         await ProjectFactory.getInstance().createResetCommand(this.versionNr).reset(controller, false).then (() => {

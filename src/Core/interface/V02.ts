@@ -181,7 +181,7 @@ export class RemoveController implements Interface.RemoveControllerInterface{
 }
 export class ConfigureController implements Interface.ConfigureControllerInterface{
     configure() {
-        console.log("Configure command executed");
+        
     }
 }
 export class EditSettings implements Interface.EditSettingsInterface{
@@ -311,7 +311,7 @@ export class RenameController implements Interface.RenameControllerInterface{
         YamlCommands.writeWagoYaml(newController.controllerId, wagoSettings.displayname, controllerName);
     }
 }
-export class CreateController implements Interface.CreateControllerInterface{
+export class CreateProject implements Interface.CreateProjectInterface{
     async createController(context: vscode.ExtensionContext){
         const projectName = await vscode.window.showInputBox({
             prompt: 'Enter the name of the project',

@@ -1,5 +1,6 @@
 import { Controller, ControllerItem } from '../../extension/view';
 import * as vscode from 'vscode';
+import { ConfigureController } from './V01';
 
 export interface UploadInterface{
     upload: (id: number) => void;
@@ -33,7 +34,7 @@ export interface RenameControllerInterface{
     renameController: (controller: Controller | undefined) => void;
 }
 
-export interface CreateControllerInterface{
+export interface CreateProjectInterface{
     createController: (context: vscode.ExtensionContext) => void;
 }
 
