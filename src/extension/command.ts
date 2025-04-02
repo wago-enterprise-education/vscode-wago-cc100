@@ -125,7 +125,7 @@ export class Command {
         }));
 
         commands.push(vscode.commands.registerCommand('vscode-wago-cc100.reset-controller', async (controller) => {
-            Manager.getInstance().resetController(controller);
+            Manager.getInstance().resetController(controller, );
 
             // if(!vscode.workspace.workspaceFolders) {
             //     vscode.window.showErrorMessage('No workspace is open');

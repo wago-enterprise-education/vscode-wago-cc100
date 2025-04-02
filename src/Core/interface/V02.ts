@@ -1,6 +1,6 @@
 import { Controller, ControllerItem, ControllerProvider } from "../../extension/view";
 import * as vscode from 'vscode';
-import * as Interface from "./interface";
+import * as Interface from "./projectInterface";
 import * as fs from 'fs';
 import { ConnectionManager } from "../../extension/connectionManager";
 import YAML from 'yaml';
@@ -16,7 +16,11 @@ export class ResetController implements Interface.ResetControllerInterface{
     async reset(controller: Controller | undefined, showConfirmation: boolean): Promise<boolean> {
         if(!vscode.workspace.workspaceFolders) {
             vscode.window.showErrorMessage('No workspace is open');
+<<<<<<< HEAD
             return Promise.resolve(false);
+=======
+            return "";
+>>>>>>> 02ff7d8 (added factory for controller and split resetCommand between Project- and ControllerFactory)
         }
         if(!controller) {
             controller = await vscode.window.showQuickPick(
@@ -31,6 +35,7 @@ export class ResetController implements Interface.ResetControllerInterface{
                     canPickMany: false
                 }
             );
+<<<<<<< HEAD
             if (!controller) return Promise.resolve(false);
         } 
         let controllerId;
@@ -43,29 +48,35 @@ export class ResetController implements Interface.ResetControllerInterface{
             controllerId = controller.controllerId;
         }
         if(!controllerId) return Promise.resolve(false);
+=======
+            if (!controller) return "";
+        } 
+        await vscode.window.showWarningMessage(`Reset ${controller.label}`, 'Yes', 'No').then((value) => {
+            if(value === 'Yes') controllerId = controller.controllerId;
+        });
+        if(!controllerId) {
+            vscode.window.showErrorMessage("No Controller ID");
+            return ""
+        };
+>>>>>>> 02ff7d8 (added factory for controller and split resetCommand between Project- and ControllerFactory)
 
         try {
             await ConnectionManager.instance.executeCommand(controllerId, 'docker container stop #Container name');
             await ConnectionManager.instance.executeCommand(controllerId, 'docker rm #Container name');
             await ConnectionManager.instance.executeCommand(controllerId, 'docker irm #Image name');
             await ConnectionManager.instance.executeCommand(controllerId, 'rm -rf /home/user/python_bootapplication/*');
-            
-            await ConnectionManager.instance.executeCommand(controllerId, 'echo 0 >> /sys/kernel/dout_drv/DOUT_DATA');
-            await ConnectionManager.instance.executeCommand(controllerId, 'echo 0 >> /sys/bus/iio/devices/iio:device0/out_voltage1_powerdown');
-            await ConnectionManager.instance.executeCommand(controllerId, 'echo 0 >> /sys/bus/iio/devices/iio:device0/out_voltage1_raw');
-            await ConnectionManager.instance.executeCommand(controllerId, 'echo 0 >> /sys/bus/iio/devices/iio:device0/out_voltage2_powerdown');
-            await ConnectionManager.instance.executeCommand(controllerId, 'echo 0 >> /sys/bus/iio/devices/iio:device0/out_voltage2_raw');
-            await ConnectionManager.instance.executeCommand(controllerId, 'echo 0 >> /dev/leds/run-green/brightness');
-            await ConnectionManager.instance.executeCommand(controllerId, 'echo 0 >> /dev/leds/run-red/brightness');
-            await ConnectionManager.instance.executeCommand(controllerId, 'codesys3 &');
 
+<<<<<<< HEAD
             vscode.window.showInformationMessage(`Controller ${controller.label} reset`);
             ControllerProvider.instance.refresh();
             return Promise.resolve(true);
+=======
+>>>>>>> 02ff7d8 (added factory for controller and split resetCommand between Project- and ControllerFactory)
         } catch (error: any) {
             vscode.window.showErrorMessage('Error reseting controller');
             return Promise.reject(error);
         }
+        return YamlCommands.getController(controllerId)?.engine || "";
     }
 }
 export class AddController implements Interface.AddControllerInterface{

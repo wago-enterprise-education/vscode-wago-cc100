@@ -1,18 +1,18 @@
-import * as Interface from "./interface/interface";
+import * as Interface from "./interface/projectInterface";
 import * as V1 from "./interface/V01";
 import * as V2 from "./interface/V02";
 
-export class Factory {
-    private static instance: Factory | null = null;
+export class ProjectFactory {
+    private static instance: ProjectFactory | null = null;
     private constructor() {
         // Private constructor to prevent instantiation from outside
     }
 
-    public static getInstance(): Factory {
-        if (!Factory.instance) {
-            Factory.instance = new Factory();
+    public static getInstance(): ProjectFactory {
+        if (!ProjectFactory.instance) {
+            ProjectFactory.instance = new ProjectFactory();
         }
-        return Factory.instance!;
+        return ProjectFactory.instance!;
     }
 
     public createUploadCommand(versionNr: number): Interface.UploadInterface {

@@ -1,7 +1,11 @@
 import { ConnectionManager } from "../../extension/connectionManager";
+<<<<<<< HEAD
 import { Controller, ControllerItem, ControllerProvider } from "../../extension/view";
+=======
+import { ControllerProvider } from "../../extension/view";
+>>>>>>> 0a6a056 (added factory for controller and split resetCommand between Project- and ControllerFactory)
 import { YamlCommands } from "../../migrated/yaml";
-import * as Interface from "./interface";
+import * as Interface from "./projectInterface";
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 
@@ -14,7 +18,11 @@ export class ResetController implements Interface.ResetControllerInterface{
     async reset(controller: Controller | undefined, showConfirmation: boolean): Promise<boolean> {
         if(!vscode.workspace.workspaceFolders) {
             vscode.window.showErrorMessage('No workspace is open');
+<<<<<<< HEAD
             return Promise.resolve(false);
+=======
+            return "";
+>>>>>>> 02ff7d8 (added factory for controller and split resetCommand between Project- and ControllerFactory)
         }
         if(!controller) {
             controller = await vscode.window.showQuickPick(
@@ -29,6 +37,7 @@ export class ResetController implements Interface.ResetControllerInterface{
                     canPickMany: false
                 }
             );
+<<<<<<< HEAD
             if (!controller) return Promise.resolve(false);
         } 
         let controllerId;
@@ -41,6 +50,14 @@ export class ResetController implements Interface.ResetControllerInterface{
             controllerId = controller.controllerId;
         }
         if(!controllerId) return Promise.resolve(false);
+=======
+            if (!controller) return "";
+        } 
+        await vscode.window.showWarningMessage(`Reset ${controller.label}`, 'Yes', 'No').then((value) => {
+            if(value === 'Yes') controllerId = controller.controllerId;
+        });
+        if(!controllerId) return "";
+>>>>>>> 02ff7d8 (added factory for controller and split resetCommand between Project- and ControllerFactory)
 
         try {
             await ConnectionManager.instance.executeCommand(controllerId, 'killall python3');
@@ -49,6 +66,7 @@ export class ResetController implements Interface.ResetControllerInterface{
             await ConnectionManager.instance.executeCommand(controllerId, 'rm -rf /etc/rc.d/S99_python_runtime');
             await ConnectionManager.instance.executeCommand(controllerId, 'killall tail');
             
+<<<<<<< HEAD
             await ConnectionManager.instance.executeCommand(controllerId, 'echo 0 >> /sys/kernel/dout_drv/DOUT_DATA');
             await ConnectionManager.instance.executeCommand(controllerId, 'echo 0 >> /sys/bus/iio/devices/iio:device0/out_voltage1_powerdown');
             await ConnectionManager.instance.executeCommand(controllerId, 'echo 0 >> /sys/bus/iio/devices/iio:device0/out_voltage1_raw');
@@ -64,7 +82,12 @@ export class ResetController implements Interface.ResetControllerInterface{
         } catch (error: any) {
             vscode.window.showErrorMessage('Error reseting controller');
             return Promise.reject(error);
+=======
+        } catch (error: any) {
+            vscode.window.showErrorMessage('Error resetting controller');
+>>>>>>> 02ff7d8 (added factory for controller and split resetCommand between Project- and ControllerFactory)
         }
+        return "CC100";
     }
 }
 export class ConfigureController implements Interface.ConfigureControllerInterface{

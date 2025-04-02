@@ -1,8 +1,12 @@
-import { Factory } from "./factory";
+import { ProjectFactory } from "./factoryProject";
 import { ProjectVersion } from '../extension/helper';
 import { Controller, ControllerItem } from "../extension/view";
 import * as vscode from 'vscode';
+<<<<<<< HEAD
 import { YamlCommands } from "../migrated/yaml";
+=======
+import { ControllerFactory } from "./factoryController";
+>>>>>>> 02ff7d8 (added factory for controller and split resetCommand between Project- and ControllerFactory)
 
 export class Manager {
     private static instance: Manager;
@@ -20,25 +24,31 @@ export class Manager {
     }
 
     public upload(id: number){
-        Factory.getInstance().createUploadCommand(this.versionNr).upload(id);
+        ProjectFactory.getInstance().createUploadCommand(this.versionNr).upload(id);
     }
     public editSettings(controller: ControllerItem | undefined){
-        Factory.getInstance().createEditSettingsCommand(this.versionNr).editSettings(controller);
+        ProjectFactory.getInstance().createEditSettingsCommand(this.versionNr).editSettings(controller);
     }
+<<<<<<< HEAD
     public resetController(controller: Controller | undefined){
         Factory.getInstance().createResetCommand(this.versionNr).reset(controller, true);
+=======
+    public async resetController(controller: Controller | undefined){
+        let engine = await ProjectFactory.getInstance().createResetCommand(this.versionNr).reset(controller);
+        ControllerFactory.getInstance().createResetCommand(engine).reset(controller)
+>>>>>>> 02ff7d8 (added factory for controller and split resetCommand between Project- and ControllerFactory)
     }
     public addController(context: vscode.ExtensionContext){
-        Factory.getInstance().createAddCommand(this.versionNr).addController(context);
+        ProjectFactory.getInstance().createAddCommand(this.versionNr).addController(context);
     }
     public removeController(controller: Controller | undefined, showConfirmation: boolean){
-        Factory.getInstance().createRemoveCommand(this.versionNr).removeController(controller, showConfirmation);
+        ProjectFactory.getInstance().createRemoveCommand(this.versionNr).removeController(controller, showConfirmation);
     }
     public renameController(controller: Controller | undefined){
-        Factory.getInstance().createRenameCommand(this.versionNr).renameController(controller);
+        ProjectFactory.getInstance().createRenameCommand(this.versionNr).renameController(controller);
     }
     public createController(context: vscode.ExtensionContext){
-        Factory.getInstance().createCreateControllerCommand(this.versionNr).createController(context);
+        ProjectFactory.getInstance().createCreateControllerCommand(this.versionNr).createController(context);
     }
     public async removeReset(controller: Controller | undefined){
         if(!controller) {
