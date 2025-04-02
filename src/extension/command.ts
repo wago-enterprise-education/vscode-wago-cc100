@@ -78,7 +78,7 @@ export class Command {
         }));
         
         commands.push(vscode.commands.registerCommand('vscode-wago-cc100.reset-controller', async (controller) => {
-            Manager.getInstance().resetController(controller, );
+            Manager.getInstance().resetController(controller);
         }));
         
         commands.push(vscode.commands.registerCommand('vscode-wago-cc100.remove-reset-controller', async (controller: Controller | undefined) => {
