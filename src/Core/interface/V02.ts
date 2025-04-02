@@ -1,8 +1,8 @@
-import { Controller, ControllerItem, ControllerProvider } from "../../extension/view";
+import { Controller, ControllerItem, ControllerProvider} from "../../extension/view";
 import * as vscode from 'vscode';
 import * as Interface from "./projectInterface";
-import * as fs from 'fs';
 import { ConnectionManager } from "../../extension/connectionManager";
+import * as fs from 'fs';
 import YAML from 'yaml';
 
 const FOLDER_REGEX = '^(?!(?:CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\.[^.]*)?$)[^<>:"/\\|?*\x00-\x1F]*[^<>:"/\\|?*\x00-\x1F\ .]$';
@@ -13,14 +13,11 @@ export class Upload implements Interface.UploadInterface{
     }
 }
 export class ResetController implements Interface.ResetControllerInterface{
-    async reset(controller: Controller | undefined, showConfirmation: boolean): Promise<boolean> {
+    async reset(controller: Controller | undefined, showConfirmation: boolean) {
         if(!vscode.workspace.workspaceFolders) {
             vscode.window.showErrorMessage('No workspace is open');
-<<<<<<< HEAD
-            return Promise.resolve(false);
-=======
+
             return "";
->>>>>>> 02ff7d8 (added factory for controller and split resetCommand between Project- and ControllerFactory)
         }
         if(!controller) {
             controller = await vscode.window.showQuickPick(
@@ -35,46 +32,40 @@ export class ResetController implements Interface.ResetControllerInterface{
                     canPickMany: false
                 }
             );
-<<<<<<< HEAD
-            if (!controller) return Promise.resolve(false);
+            if (!controller) return "";
         } 
+
         let controllerId;
+        
         if(showConfirmation){
             await vscode.window.showWarningMessage(`Remove ${controller.label}`, 'Yes', 'No').then((value) => {
                 if(value === 'Yes') controllerId = controller.controllerId;
             });
-            if(!controllerId) return Promise.resolve(false);
+            if(!controllerId) return "";
         } else {
             controllerId = controller.controllerId;
         }
-        if(!controllerId) return Promise.resolve(false);
-=======
+
+        if(!controllerId) return "";
             if (!controller) return "";
-        } 
+        
+
         await vscode.window.showWarningMessage(`Reset ${controller.label}`, 'Yes', 'No').then((value) => {
             if(value === 'Yes') controllerId = controller.controllerId;
         });
+
         if(!controllerId) {
             vscode.window.showErrorMessage("No Controller ID");
             return ""
         };
->>>>>>> 02ff7d8 (added factory for controller and split resetCommand between Project- and ControllerFactory)
-
         try {
             await ConnectionManager.instance.executeCommand(controllerId, 'docker container stop #Container name');
             await ConnectionManager.instance.executeCommand(controllerId, 'docker rm #Container name');
             await ConnectionManager.instance.executeCommand(controllerId, 'docker irm #Image name');
             await ConnectionManager.instance.executeCommand(controllerId, 'rm -rf /home/user/python_bootapplication/*');
 
-<<<<<<< HEAD
-            vscode.window.showInformationMessage(`Controller ${controller.label} reset`);
-            ControllerProvider.instance.refresh();
-            return Promise.resolve(true);
-=======
->>>>>>> 02ff7d8 (added factory for controller and split resetCommand between Project- and ControllerFactory)
         } catch (error: any) {
             vscode.window.showErrorMessage('Error reseting controller');
-            return Promise.reject(error);
         }
         return YamlCommands.getController(controllerId)?.engine || "";
     }
@@ -352,6 +343,25 @@ export class CreateController implements Interface.CreateControllerInterface{
             }
         })
     }
+}
+export class RemoveResetController implements Interface.RemoveResetControllerInterface{
+    async removeResetController(controller: Controller | undefined){
+        if(!controller) {
+            controller = await vscode.window.showQuickPick(
+                YamlCommands.getControllers().map((controller) => ({
+                    controllerId: controller.id,	
+                    label: controller.displayname,
+                    description: controller.description,
+                    online: true
+                })),
+                {
+                    title: 'Reset Controller',
+                    canPickMany: false
+                }
+            );
+        } 
+        return controller;
+    };
 }
 //===================================================================================
 // EditSettings Functionality

@@ -6,15 +6,7 @@ export interface UploadInterface{
 }
 
 export interface ResetControllerInterface{
-<<<<<<< HEAD:src/Core/interface/interface.ts
-<<<<<<< HEAD
-    reset: (controller: Controller | undefined, showConfirmation: boolean) => Promise<boolean>;
-=======
-    reset: (controller: Controller | undefined) => void;
->>>>>>> 3668887 (Refactor WAGO controller engine version and update imports for controller handling)
-=======
-    reset: (controller: Controller | undefined) => Promise<string>;
->>>>>>> 02ff7d8 (added factory for controller and split resetCommand between Project- and ControllerFactory):src/Core/interface/projectInterface.ts
+    reset: (controller: Controller | undefined, showConfirmation: boolean) => Promise<string>;
 }
 
 export interface ConfigureControllerInterface{
@@ -43,4 +35,8 @@ export interface RenameControllerInterface{
 
 export interface CreateControllerInterface{
     createController: (context: vscode.ExtensionContext) => void;
+}
+
+export interface RemoveResetControllerInterface{
+    removeResetController:(controller: Controller | undefined) => Promise<Controller | undefined>; 
 }

@@ -105,4 +105,12 @@ export class ProjectFactory {
                 throw new Error("Invalid version number");
         }
     }
+    public createRemoveResetControllerCommand(versionNr: number): Interface.RemoveResetControllerInterface{
+        switch (versionNr) {
+            case 0.2:
+                return new V2.RemoveResetController();
+            default:
+                throw new Error("Invalid version number");
+        }
+    }
 }

@@ -2,11 +2,8 @@ import { ProjectFactory } from "./factoryProject";
 import { ProjectVersion } from '../extension/helper';
 import { Controller, ControllerItem } from "../extension/view";
 import * as vscode from 'vscode';
-<<<<<<< HEAD
-import { YamlCommands } from "../migrated/yaml";
-=======
+
 import { ControllerFactory } from "./factoryController";
->>>>>>> 02ff7d8 (added factory for controller and split resetCommand between Project- and ControllerFactory)
 
 export class Manager {
     private static instance: Manager;
@@ -29,14 +26,10 @@ export class Manager {
     public editSettings(controller: ControllerItem | undefined){
         ProjectFactory.getInstance().createEditSettingsCommand(this.versionNr).editSettings(controller);
     }
-<<<<<<< HEAD
-    public resetController(controller: Controller | undefined){
-        Factory.getInstance().createResetCommand(this.versionNr).reset(controller, true);
-=======
+
     public async resetController(controller: Controller | undefined){
-        let engine = await ProjectFactory.getInstance().createResetCommand(this.versionNr).reset(controller);
+        let engine = await ProjectFactory.getInstance().createResetCommand(this.versionNr).reset(controller, true);
         ControllerFactory.getInstance().createResetCommand(engine).reset(controller)
->>>>>>> 02ff7d8 (added factory for controller and split resetCommand between Project- and ControllerFactory)
     }
     public addController(context: vscode.ExtensionContext){
         ProjectFactory.getInstance().createAddCommand(this.versionNr).addController(context);
@@ -51,24 +44,8 @@ export class Manager {
         ProjectFactory.getInstance().createCreateControllerCommand(this.versionNr).createController(context);
     }
     public async removeReset(controller: Controller | undefined){
-        if(!controller) {
-            controller = await vscode.window.showQuickPick(
-                YamlCommands.getControllers().map((controller) => ({
-                    controllerId: controller.id,	
-                    label: controller.displayname,
-                    description: controller.description,
-                    online: true
-                })),
-                {
-                    title: 'Reset Controller',
-                    canPickMany: false
-                }
-            );
-            if (!controller) return;
-        } 
-        
-        await Factory.getInstance().createResetCommand(this.versionNr).reset(controller, false).then (() => {
-            Factory.getInstance().createRemoveCommand(this.versionNr).removeController(controller, false);
+        await ProjectFactory.getInstance().createResetCommand(this.versionNr).reset(controller, false).then (() => {
+            ProjectFactory.getInstance().createRemoveCommand(this.versionNr).removeController(controller, false);
         })
         .catch((error:any) => { 
             console.error(error); 
