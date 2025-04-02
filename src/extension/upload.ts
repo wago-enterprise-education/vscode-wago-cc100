@@ -26,7 +26,7 @@ export class Upload {
      */
 
     public async uploadFile(id: number) {
-        
+
         let controller = YamlCommands.getController(id);
         let src = controller?.src;
         let path = `${vscode.workspace.workspaceFolders![0].uri.fsPath}\\${src}`;
@@ -35,6 +35,8 @@ export class Upload {
             vscode.window.showErrorMessage("The selected Folder does not exist or does not contain a main.py.");
             return;
         }
+
+        await this.deactivateCodeSys3(id);
 
         switch (ProjectVersion) {
             case 0.2:
@@ -200,6 +202,16 @@ export class Upload {
             console.error('Error getting files in directory:', error);
             return Promise.reject(error);
         }
+    }
+
+    private async deactivateCodeSys3(id: number) {
+        await connectionManager.executeCommand(id, "source /etc/config-tools/config_codesys3 && stop_cds3")
+            .then(() => {
+                console.log("CodeSys3 deactivated.");
+            })
+            .catch((err) => {
+                console.error(`Error deactivating CodeSys3: ${err}`);
+            });
     }
 }
 
