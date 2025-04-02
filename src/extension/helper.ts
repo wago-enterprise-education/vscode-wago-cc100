@@ -18,12 +18,12 @@ export async function verifyProject(): Promise<Boolean> {
  * Find the wago.yaml file in the workspace.
  */
 async function findWagoYaml(): Promise<Boolean> {
-    let wagoProject = await vscode.workspace.findFiles('**/wago.yaml', '', 1).then((files) => {
+    let wagoProject = await vscode.workspace.findFiles('**/wago.yaml', '', 1).then(async (files) => {
         if(files.length > 0 && checkIfInRootFolder(files[0])) {
             ProjectVersion = 0.2
             return true;
         } else {
-            findSettingsJson();
+            await findSettingsJson();
             return false;
         }
     });
@@ -35,8 +35,8 @@ async function findWagoYaml(): Promise<Boolean> {
 /**
  * Find the settings.json file in the workspace.
  */
-function findSettingsJson() {
-    vscode.workspace.findFiles('**/setting,json', '', 1).then((files) => {
+async function findSettingsJson() {
+    await vscode.workspace.findFiles('**/settings.json', '', 1).then((files) => {
         if(files.length > 0 && checkIfInRootFolder(files[0])) {
             ProjectVersion = 0.1;
             return true;
@@ -116,7 +116,8 @@ function checkIfInRootFolder(uri: vscode.Uri): Boolean {
     const workspaceFolders = vscode.workspace.workspaceFolders;
     if(workspaceFolders) {
         for (const folder of workspaceFolders) {
-            if (uri.fsPath === `${folder.uri.fsPath}\\wago.yaml`) {
+            const folderPath = uri.fsPath.split('\\').slice(0, -1).join('\\');
+            if (folderPath === folder.uri.fsPath) {
                 return true;
             }
         }

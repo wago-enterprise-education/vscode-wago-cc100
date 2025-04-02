@@ -91,8 +91,7 @@
         "command": "vscode-wago-cc100.add-controller",
         "title": "Add Controller",
         "category": "Controller",
-        "icon": "$(add)",
-        "when": "projectVersion >= 0.2"
+        "icon": "$(add)"
       },
       {
         "command": "vscode-wago-cc100.upload",
@@ -117,8 +116,7 @@
       {
         "command": "vscode-wago-cc100.rename-controller",
         "title": "Rename",
-        "category": "Controller",
-        "when": "controllerCount > 0"
+        "category": "Controller"
       },
       {
         "command": "vscode-wago-cc100.reset-controller",
@@ -128,8 +126,7 @@
         "command": "vscode-wago-cc100.remove-controller",
         "title": "Remove",
         "category": "Controller",
-        "icon": "$(remove)",
-        "when": "controllerCount > 0"
+        "icon": "$(remove)"
       },
       {
         "command": "vscode-wago-cc100.remove-reset-controller",
@@ -143,8 +140,7 @@
       {
         "command": "vscode-wago-cc100.init-project",
         "title": "Init Project",
-        "category": "Wago",
-        "when": "workspaceFolderCount > 0 && projectVersion == 0"
+        "category": "Wago"
       },
       {
         "command": "vscode-wago-cc100.create-project",
@@ -199,15 +195,41 @@
       ]
     },
     "menus": {
+      "commandPalette": [
+        {
+          "command": "vscode-wago-cc100.add-controller",
+          "when": "projectVersion >= 0.2"
+        },
+        {
+          "command": "vscode-wago-cc100.remove-controller",
+          "when": "controllerCount > 0 && projectVersion >= 0.2"
+        },
+        {
+          "command": "vscode-wago-cc100.init-project",
+          "when": "workspaceFolderCount > 0 && projectVersion == 0"
+        },
+        {
+          "command": "vscode-wago-cc100.rename-controller",
+          "when": "controllerCount > 0"
+        },
+        {
+          "command": "vscode-wago-cc100.upload-all",
+          "when": "controllerCount > 0 && projectVersion >= 0.2"
+        },
+        {
+          "command": "vscode-wago-cc100.debug",
+          "when": "controllerCount > 0 && projectVersion >= 0.2"
+        }
+      ],
       "view/title": [
         {
           "command": "vscode-wago-cc100.add-controller",
-          "when": "view == controller-view",
+          "when": "view == controller-view && projectVersion >= 0.2",
           "group": "navigation@3"
         },
         {
           "command": "vscode-wago-cc100.upload-all",
-          "when": "view == controller-view",
+          "when": "view == controller-view && projectVersion >= 0.2",
           "group": "navigation@2"
         },
         {
@@ -219,12 +241,12 @@
       "view/item/context": [
         {
           "command": "vscode-wago-cc100.upload",
-          "when": "view == controller-view  && viewItem == controller",
+          "when": "view == controller-view && viewItem == controller",
           "group": "inline@3"
         },
         {
           "command": "vscode-wago-cc100.debug",
-          "when": "view == controller-view  && viewItem == controller",
+          "when": "view == controller-view && viewItem == controller && projectVersion >= 0.2",
           "group": "inline@2"
         },
         {

@@ -1,8 +1,9 @@
 import { ConnectionManager } from "../../extension/connectionManager";
-import { Controller, ControllerProvider } from "../../extension/view";
+import { Controller, ControllerItem, ControllerProvider } from "../../extension/view";
 import { YamlCommands } from "../../migrated/yaml";
 import * as Interface from "./interface";
 import * as vscode from 'vscode';
+import * as fs from 'fs';
 
 export class Upload implements Interface.UploadInterface{
     upload() {
@@ -77,8 +78,87 @@ export class EditSettings implements Interface.EditSettingsInterface{
     }
 }
 export class ViewChildren implements Interface.ViewChildrenInterface{
-    getChildren(element?: any): any {
-        console.log("Get children command executed", element);
-        return [];
+    getChildren(element?: Controller | ControllerItem | undefined): vscode.ProviderResult<Controller[] | ControllerItem[]> {
+        let controller = JsonCommands.getController();
+        if (!controller) return Promise.resolve([]);
+
+        if(!element) {
+            let online = false
+
+            async () => {
+                try {
+                    await ConnectionManager.instance.updateController(0, `${controller.ip}:${controller.port}`, controller.user);
+                    await ConnectionManager.instance.ping(0);
+                    online = true;
+                } catch (error) {
+                    console.debug(`Controller is offline. ${error}`);
+                }
+            }
+
+            return Promise.all([
+                new Controller(0, 'Controller', true)
+            ]);
+        } else {
+            if(element instanceof Controller) {
+
+                const settingArray = []
+
+                settingArray.push(new ControllerItem(element.controllerId, setting.connection, controller.connection));
+                if(controller.connection === 'ethernet') {
+                    settingArray.push(new ControllerItem(element.controllerId, setting.ip, controller.ip));
+                }
+                if(controller.connection === 'simulator') {
+                    settingArray.push(new ControllerItem(element.controllerId, setting.description, controller.simulation_frontend));
+                    settingArray.push(new ControllerItem(element.controllerId, setting.description, controller.simulation_backend));
+                }
+                settingArray.push(new ControllerItem(element.controllerId, setting.port, controller.port));
+                settingArray.push(new ControllerItem(element.controllerId, setting.user, controller.user));
+                settingArray.push(new ControllerItem(element.controllerId, setting.autoupdate, controller.autoupdate));
+
+                return Promise.resolve(settingArray);
+            }
+        }
+        return Promise.resolve([]);
     }
+}
+export class JsonCommands {
+
+    /**
+     * Function to read the content of the wago.yaml file.
+     * 
+     * @returns The content of the wago.yaml file as a JS object
+     */
+    private static getSettingsJson() {
+        return JSON.parse(fs.readFileSync(`${vscode.workspace.workspaceFolders![0].uri.fsPath}/settings.json`, 'utf8'));
+    }
+
+    public static getController() {
+        const settings = this.getSettingsJson();
+        let connectionType = '';
+        if(settings.usb_c) connectionType = 'usb-c';
+        if(settings.ethernet) connectionType = 'ethernet';
+        if(settings.simulator) connectionType = 'simulator';
+
+        return {
+            connection: connectionType,
+            simulation_frontend: settings.simulation_frontend,
+            simulation_backend: settings.simulation_backend,
+            ip: settings.ip,
+            port: settings.port,
+            user: settings.user,
+            autoupdate: settings.autoupdate
+        }
+    }
+}
+export enum setting {
+    displayname = 'Name',
+    description = 'Description',
+    engine = 'Engine',
+    src = 'Source',
+    imageVersion = 'Docker Image Version',
+    connection = 'Connection',
+    ip = 'IP',
+    port = 'Port',
+    user = 'User',
+    autoupdate = 'Autoupdate'
 }

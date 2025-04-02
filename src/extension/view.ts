@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { YamlCommands } from '../migrated/yaml';
 import { ConnectionManager } from './connectionManager';
 import { setting } from '../migrated/editSettings';
+import { Manager } from '../core/manager';
 
 /**
  * Tree data provider for the controller view.
@@ -37,51 +38,7 @@ export class ControllerProvider implements vscode.TreeDataProvider<Controller | 
      * @returns vscode.ProviderResult<Controller[] | ControllerItem[]>
      */
     getChildren(element?: Controller | ControllerItem | undefined): vscode.ProviderResult<Controller[] | ControllerItem[]> {
-        if(!element) {
-            let controllers = YamlCommands.getControllers();
-            if (!controllers) return Promise.resolve([]);
-
-            return Promise.all(
-                controllers.map(async (controller) => {
-                    let online = false;
-                    try {
-                        let settings = YamlCommands.getControllerSettings(controller.id);
-                        await ConnectionManager.instance.updateController(controller.id, `${settings.ip}:${settings.port}`, settings.user);
-                        await ConnectionManager.instance.ping(controller.id);
-                        online = true;
-                    } catch (error) {
-                        console.debug(`Controller ${controller.id} is offline. ${error}`);
-                    }
-                    return new Controller(controller.id, controller.displayname, online);
-                })
-            );
-        } else {
-            if(element instanceof Controller) {
-                const settings = YamlCommands.getControllerSettings(element.controllerId);
-                if (!settings) return Promise.resolve([]);
-                
-                const controller = YamlCommands.getController(element.controllerId);
-
-                const settingArray = []
-
-                settingArray.push(new ControllerItem(element.controllerId, setting.connection, settings.connection));
-                if(settings.connection === 'ethernet') {
-                    settingArray.push(new ControllerItem(element.controllerId, setting.ip, settings.ip));
-                }
-                settingArray.push(new ControllerItem(element.controllerId, setting.port, settings.port));
-                settingArray.push(new ControllerItem(element.controllerId, setting.user, settings.user));
-                settingArray.push(new ControllerItem(element.controllerId, setting.autoupdate, settings.autoupdate));
-
-                return Promise.resolve([
-                    new ControllerItem(element.controllerId, setting.description, controller?.description),
-                    new ControllerItem(element.controllerId, setting.engine, controller?.engine),
-                    new ControllerItem(element.controllerId, setting.imageVersion, controller?.imageVersion),
-                    new ControllerItem(element.controllerId, setting.src, controller?.src),
-
-                ].concat(settingArray));
-            }
-        }
-        return Promise.resolve([]);
+        return Manager.getInstance().viewChildren(element);
     }
 }
 
