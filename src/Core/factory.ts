@@ -1,6 +1,6 @@
 import * as Interface from "./interface/interface";
-import * as V1 from "./interface/V0_1_0";
-import * as V2 from "./interface/V0_2_0";
+import * as V1 from "./interface/V01";
+import * as V2 from "./interface/V02";
 
 export class Factory {
     private static instance: Factory | null = null;

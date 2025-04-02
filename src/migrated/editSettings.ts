@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import * as fs from "fs";
-import { controllerSettings, wagoSettings, YamlCommands } from '../core/interface/V0_2_0';
+import { controllerSettings, wagoSettings, YamlCommands } from '../core/interface/V02';
 
 export class EditSettings {
     
