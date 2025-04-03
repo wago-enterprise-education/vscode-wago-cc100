@@ -300,6 +300,7 @@
   ],
   "dependencies": {
     "@microsoft/vscode-file-downloader-api": "^1.0.1",
+    "node-fetch": "^2.7.0",
     "sanitize-html": "^2.14.0",
     "ssh2": "^1.16.0",
     "typescript": "^5.3.3",
@@ -315,6 +316,7 @@
   },
   "devDependencies": {
     "@types/node": "^20.14.8",
+    "@types/node-fetch": "^2.6.12",
     "@types/sanitize-html": "^2.13.0",
     "@types/ssh2": "^1.15.4",
     "@types/vscode": "^1.63.0",

@@ -1,10 +1,11 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
-import { YamlCommands } from '../migrated/yaml';
 import { ConnectionManager } from './connectionManager';
 import crypto from 'crypto';
 import path from 'path';
 import { ProjectVersion } from './versionDetection'
+import { YamlCommands } from '../core/interface/V02';
+import fetch from 'node-fetch';
 
 //Roadmap for the extension
 //+1. Get Path to the file structure to be uploaded -> Throw Error if not available
@@ -44,6 +45,9 @@ export class Upload {
                     vscode.window.showInformationMessage(`The files on ${controller?.displayname} are already up to date.`);
                     return;
                 }
+
+                this.updateContainer(id);
+
                 await connectionManager.upload(id, path, uploadPath).then(() => {
                     vscode.window.showInformationMessage(`The files on ${controller?.displayname} have been updated.`);
                 }).catch((err) => {
@@ -207,30 +211,50 @@ export class Upload {
                 console.error(`Error deactivating CodeSys3: ${err}`);
             });
     }
-}
 
-/**
+    /**
      * This Method is used to update the docker-container on the WAGO Controller
      * 
      * The development of this method is planned for a later date due to time registrations
      * 
      * @param id The id of the used controller
      */
-/*
-private async updateContainer(id: number) {
+    private async updateContainer(id: number) {
+            
+        // Cancel if Image Version is specifically chosen
+        if (YamlCommands.getController(id)?.imageVersion !== 'latest') {
+            return;
+        }
         
-    Check latest available version 
-        => Location of the Container still unknown on this date, 
-        it is planned to be outside of the extension to preserve space,
-        perhaps in the registry on the external wago education Github
+        // Check latest available version 
+        // => Get List of all available versions from the WAGO Container Registry
+        // Get the latest imagenumber
 
-    Check current version on controller
-        => Version of the Image is readable from the name of the image,
+        let img = fetch(`https://github.com/wago-enterprise-education/wago_cc100_python/raw/refs/heads/main/README.md`);
+        // Fetch returns the content of the file as a readable stream or String as a Promise<Response>
+        // => Version of the Image is readable from the name of the image?
+        let newestVersion: number = 1;
 
-    Compare Versions and update if necessary
-        => Stop the Program and the Container, 
-        remove the old Image, pull the new Image, 
-        start the Container, everything else is handled by the container itself
-    
+        // Get current version on controller
+        // => Version of the Image is readable from the name of the image?
+        let conImageVersion : number = 1;
+
+        if ( newestVersion == conImageVersion ) {
+            return;
+        }
+
+        let name = YamlCommands.getController(id)?.displayname;
+        let autoupdate = YamlCommands.getControllerSettings(id).autoupdate; 
+        if( autoupdate === 'off') {
+            await vscode.window.showInformationMessage(`Reset ${name}?`, 'Yes', 'No').then((value) => {
+                if(value === 'No') return;
+            });
+        }
+        // Show Progress Bar "Updating Container"
+
+        // Update if necessary
+        // => Stop the Program and the Container, 
+        // remove the old Image, pull the new Image, 
+        // start the Container, everything else is handled by the container itself
+    }
 }
-*/
