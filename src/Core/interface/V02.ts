@@ -4,6 +4,7 @@ import * as Interface from "./projectInterface";
 import { ConnectionManager } from "../../extension/connectionManager";
 import * as fs from 'fs';
 import YAML from 'yaml';
+import * as path from 'path';
 
 const FOLDER_REGEX = '^(?!(?:CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\.[^.]*)?$)[^<>:"/\\|?*\x00-\x1F]*[^<>:"/\\|?*\x00-\x1F\ .]$';
 
@@ -376,7 +377,7 @@ export class EditSettingsFunctionality {
                 // wago.yaml Setting
                 case "displayname": 
                 case "description":
-                    let content = await this.getInput();
+                    let content = await this.getInput(settingToEdit);
                     if (!content) return;
                     YamlCommands.writeWagoYaml(id, wagoSettings[settingToEdit], content);
                     break;
@@ -400,17 +401,24 @@ export class EditSettingsFunctionality {
                                 return { label: "" };
                             })
                             .filter((path) => path.label.length > 0 ? true : false)
-                            .concat({ label: "New", description: 'Create a new folder' }),
-                        {
-                            title: 'Add Controller',
-                            canPickMany: false
-                        }
-                    ) || { label: "" };
-                    //if (!controllerSrc) return;
-                    
-                    //TODO - Actually Create New Folder-----------------------------
-
-                    YamlCommands.writeWagoYaml(id, wagoSettings[settingToEdit], controllerSrc.label);
+                            .concat({ label: "New", description: 'Create a new folder' })
+                    );
+                    if (!controllerSrc) return;
+                    let newFolder
+                    if (controllerSrc.label === "New"){
+                        newFolder = await this.getInput(settingToEdit)
+                        fs.mkdirSync(`${path.resolve(workspacePath)}/${newFolder}`);
+                        fs.writeFile(`${path.resolve(workspacePath)}/${newFolder}/main.py`, "", (err) => {
+                            if (err) {
+                                console.error('Error writing file:', err);
+                            }
+                        });
+                    }
+                    if(!newFolder){
+                        YamlCommands.writeWagoYaml(id, wagoSettings[settingToEdit], controllerSrc.label);
+                    } else {
+                        YamlCommands.writeWagoYaml(id, wagoSettings[settingToEdit], newFolder);
+                    }
                     break;
                 case "imageVersion": 
                     //TODO - Not yet determined how they will be managed-------------------------------------------
@@ -435,7 +443,7 @@ export class EditSettingsFunctionality {
                 case "port":
                 case "user":
                     if (settingToEdit === controllerSettings.ip) YamlCommands.writeControllerYaml(id, controllerSettings.connection, 'usb-c');
-                    let content = await this.getInput();
+                    let content = await this.getInput(settingToEdit);
                     if (!content) return;
                     YamlCommands.writeControllerYaml(id, controllerSettings[settingToEdit], content);
                     break;
@@ -458,10 +466,10 @@ export class EditSettingsFunctionality {
         }       
     }
 
-    private static async getInput(): Promise<string> {
+    private static async getInput(settingToEdit: "displayname" | "src" | "description" | "ip" | "port" | "user"): Promise<string> {
         let input = await vscode.window.showInputBox({
-            prompt: 'Enter the value the Setting should be set to',
-            title: 'Set Setting Value'
+            prompt: 'Enter the value the '+ settingToEdit +' should be set to',
+            title: 'Set '+ settingToEdit +' Value'
         }) || '';
         return input;
     }
