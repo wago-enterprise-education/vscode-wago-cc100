@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { ConnectionManager } from '../../extension/connectionManager';
 import { ControllerProvider } from '../../extension/view';
-import * as Interface from './controllerInterface';
+import * as Interface from '../interfaces/controllerInterface';
 
 export class ResetController implements Interface.ResetControllerInterface {
     /**

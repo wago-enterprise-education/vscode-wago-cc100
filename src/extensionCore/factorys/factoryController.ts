@@ -1,5 +1,5 @@
 import * as Interface from "../interfaces/controllerInterface";
-import * as CC100 from "./interface/CC100";
+import * as CC100 from "../controllerVersions/CC100";
 export class ControllerFactory {
     private static instance: ControllerFactory | null = null;
     private constructor() {

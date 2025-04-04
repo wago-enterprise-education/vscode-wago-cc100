@@ -3,7 +3,7 @@ import { webviewIoCheck } from './extension/webviewIoCheck';
 import { ControllerProvider } from './extension/view';
 import { Command } from './extension/command';
 import { verifyProject } from './extension/versionDetection';
-import { Manager } from './core/manager';
+import { Manager } from './extensionCore/manager';
 
 
 export async function activate(context: vscode.ExtensionContext) {
