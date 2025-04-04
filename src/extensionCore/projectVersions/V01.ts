@@ -562,7 +562,8 @@ export class UploadFunctionality {
     }
 
     private async deactivateCodeSys3(id: number) {
-        await connectionManager.executeCommand(id, "kill $(pidof codesys3)")
+        await connectionManager.executeCommand(id, "kill $(pidof codesys3)");
+        await connectionManager.executeCommand(id, "/etc/config-tools/config_runtime runtime-version=0")
             .then(() => {
                 console.log("CodeSys3 deactivated.");
             })
