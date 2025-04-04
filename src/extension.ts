@@ -13,10 +13,10 @@ export async function activate(context: vscode.ExtensionContext) {
 	//create IO-Check
 	new webviewIoCheck(context);
 
+	await verifyProject();
+
 	//Create Commands
 	Command.createCommands(context);
-
-	await verifyProject();
 
 	//Connect to Controllers
 	Manager.getInstance().establishConnections();
