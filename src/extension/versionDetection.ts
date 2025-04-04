@@ -10,7 +10,6 @@ export let ProjectVersion = 0;
  */
 export async function verifyProject(): Promise<Boolean> {
     let wagoProject = await findWagoYaml();
-    listenOnFileChangeWagoYaml();
     setControllerCountContext();
     return wagoProject;
 }
@@ -22,6 +21,7 @@ async function findWagoYaml(): Promise<Boolean> {
     let wagoProject = await vscode.workspace.findFiles('**/wago.yaml', '', 1).then(async (files) => {
         if(files.length > 0 && checkIfInRootFolder(files[0])) {
             ProjectVersion = 0.2
+            listenOnFileChangeWagoYaml();
             return true;
         } else {
             await findSettingsJson();
@@ -40,6 +40,7 @@ async function findSettingsJson() {
     await vscode.workspace.findFiles('**/settings.json', '', 1).then((files) => {
         if(files.length > 0 && checkIfInRootFolder(files[0])) {
             ProjectVersion = 0.1;
+            listenOnFileChangeSettingsJson()
             return true;
         }
         ProjectVersion = 0;
