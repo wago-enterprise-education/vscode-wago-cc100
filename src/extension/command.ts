@@ -1,7 +1,6 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import { ControllerProvider, Controller, ControllerItem } from './view';
-import { YamlCommands } from '../migrated/yaml';
 import { Manager } from '../extensionCore/manager';
 
 const FOLDER_REGEX = '^(?!(?:CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\.[^.]*)?$)[^<>:"/\\|?*\x00-\x1F]*[^<>:"/\\|?*\x00-\x1F\ .]$';
@@ -34,9 +33,9 @@ export class Command {
         }));
         
         commands.push(vscode.commands.registerCommand('vscode-wago-cc100.upload-all', async () => {
-            YamlCommands.getControllers().forEach(async (controller) => {
-                vscode.commands.executeCommand('vscode-wago-cc100.upload',{id: controller.id, label: controller.displayname, online: false});
-            });
+            // YamlCommands.getControllers().forEach(async (controller) => {
+            //     vscode.commands.executeCommand('vscode-wago-cc100.upload',{id: controller.id, label: controller.displayname, online: false});
+            // });
         }));
         
         commands.push(vscode.commands.registerCommand('vscode-wago-cc100.edit-setting', async (controller: ControllerItem | undefined) => {

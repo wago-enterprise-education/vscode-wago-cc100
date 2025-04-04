@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
-import { setting } from '../migrated/editSettings';
 import { Manager } from '../extensionCore/manager';
+import { setting } from '../extensionCore/projectVersions/V01';
 
 /**
  * Tree data provider for the controller view.
