@@ -46,6 +46,8 @@ export class Upload {
                     return;
                 }
 
+                await connectionManager.executeCommand(id, "docker exec pythonRuntime killall -15 python3");
+
                 this.updateContainer(id);
 
                 await connectionManager.upload(id, path, uploadPath).then(() => {
@@ -54,6 +56,7 @@ export class Upload {
                     console.error(`Error uploading files: ${err}`);
                     vscode.window.showErrorMessage("An error occurred while uploading the files.");
                 });
+                await connectionManager.executeCommand(id, "docker exec -d pythonRuntime python3 /lib/runtimeCC.py");
                 break;
 
             case 0.1: 
@@ -220,7 +223,9 @@ export class Upload {
      * @param id The id of the used controller
      */
     private async updateContainer(id: number) {
-            
+          
+        let imageName = "pythonExtension";
+
         // Cancel if Image Version is specifically chosen
         if (YamlCommands.getController(id)?.imageVersion !== 'latest') {
             return;
@@ -228,15 +233,11 @@ export class Upload {
         
         // Check latest available version 
         // => Get List of all available versions from the WAGO Container Registry
-        // Get the latest imagenumber
-
-        let img = fetch(`https://github.com/wago-enterprise-education/wago_cc100_python/raw/refs/heads/main/README.md`);
-        // Fetch returns the content of the file as a readable stream or String as a Promise<Response>
-        // => Version of the Image is readable from the name of the image?
+        // => Version of the Image is readable from the Tag?
         let newestVersion: number = 1;
 
         // Get current version on controller
-        // => Version of the Image is readable from the name of the image?
+        // => Version of the Image is readable from the Tag?
         let conImageVersion : number = 1;
 
         if ( newestVersion == conImageVersion ) {
@@ -250,11 +251,22 @@ export class Upload {
                 if(value === 'No') return;
             });
         }
-        // Show Progress Bar "Updating Container"
 
-        // Update if necessary
-        // => Stop the Program and the Container, 
-        // remove the old Image, pull the new Image, 
-        // start the Container, everything else is handled by the container itself
+        // Stop current container
+        await connectionManager.executeCommand(id, "docker exec pythonRuntime killall -15 python3");
+
+        //remove all images and containers
+        await connectionManager.executeCommand(id, "docker rm pythonRuntime");
+        await connectionManager.executeCommand(id, `docker rmi -f ${imageName}`);
+
+        // Download and Upload new Image
+        // NOT WORKING: let img = await fetch(`https://github.com/wago-enterprise-education/wago_cc100_python/raw/refs/heads/main/README.md`);
+        await connectionManager.upload(id, "<downloadedimage.tar>", "/home/");
+        let archiveName = "image270325.tar";
+
+        // Load new Image
+        await connectionManager.executeCommand(id, `docker load -i /home/${archiveName}`);
+        await connectionManager.executeCommand(id, `rm /home/${archiveName}`);
+        await connectionManager.executeScript(id, `../../res/dockerCommand.sh`);
     }
 }
