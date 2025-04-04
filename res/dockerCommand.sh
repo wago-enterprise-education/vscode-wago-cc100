@@ -22,6 +22,6 @@ docker run \
 -v '/dev/ttySTM1:/dev/ttySTM1' \
 -v '/home/user/python_bootapplication:/home/user/python_bootapplication' \
 -p 5678:5678 \
-cc100_python:0.1
+cc100_python:0.1.1
 
 #Anstatt --privileged kann man nur --device=[] nehmen um Zugriff auf einzelne Geräte zu machen

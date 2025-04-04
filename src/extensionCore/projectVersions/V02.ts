@@ -6,6 +6,8 @@ import { ConnectionManager } from "../../extension/connectionManager";
 import * as fs from 'fs';
 import YAML from 'yaml';
 import * as path from 'path';
+import { Readable } from 'stream';
+import { finished } from 'stream/promises';
 
 const FOLDER_REGEX = '^(?!(?:CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\.[^.]*)?$)[^<>:"/\\|?*\x00-\x1F]*[^<>:"/\\|?*\x00-\x1F\ .]$';
 
@@ -1166,13 +1168,19 @@ export class UploadFunctionality {
         await connectionManager.executeCommand(id, `docker rmi -f ${imageName}`);
 
         // Download and Upload new Image
-        // NOT WORKING: let img = await fetch(`https://github.com/wago-enterprise-education/wago_cc100_python/raw/refs/heads/main/README.md`);
-        await connectionManager.upload(id, "<downloadedimage.tar>", "/home/");
-        let archiveName = "image270325.tar";
+        const stream = fs.createWriteStream(`${vscode.workspace.workspaceFolders![0].uri.fsPath}/image.tar`);
+        const { body } = await fetch('https://svgithub01001.wago.local/education/vscode-docker-engines/raw/refs/heads/CC100_v0.2/cc100_python.tar');
+        if (!body) {
+            vscode.window.showErrorMessage("Error downloading image.");
+            return;
+        }
+        await finished(Readable.fromWeb(body).pipe(stream));
+
+        await connectionManager.upload(id, `${vscode.workspace.workspaceFolders![0].uri.fsPath}/image.tar`, "/home/");
 
         // Load new Image
-        await connectionManager.executeCommand(id, `docker load -i /home/${archiveName}`);
-        await connectionManager.executeCommand(id, `rm /home/${archiveName}`);
-        await connectionManager.executeScript(id, `../../res/dockerCommand.sh`);
+        await connectionManager.executeCommand(id, `docker load -i /home/image.tar`);
+        await connectionManager.executeCommand(id, `rm /home/image.tar`);
+        await connectionManager.executeScript(id, `../../../res/dockerCommand.sh`);
     }
 }
