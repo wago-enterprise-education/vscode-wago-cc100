@@ -6,7 +6,6 @@ import { ConnectionManager } from "../../extension/connectionManager";
 import * as fs from 'fs';
 import YAML from 'yaml';
 import * as path from 'path';
-import { ProjectVersion } from "../../extension/versionDetection";
 
 const FOLDER_REGEX = '^(?!(?:CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\.[^.]*)?$)[^<>:"/\\|?*\x00-\x1F]*[^<>:"/\\|?*\x00-\x1F\ .]$';
 
@@ -17,8 +16,8 @@ export class UploadController implements Interface.UploadInterface{
             return;
         }
         
-        if (controller === undefined) {
-            let con = await vscode.window.showQuickPick(
+        if (!controller) {
+            controller = await vscode.window.showQuickPick(
                 YamlCommands.getControllers().map((controller) => ({
                     controllerId: controller.id,	
                     label: controller.displayname,
@@ -29,11 +28,11 @@ export class UploadController implements Interface.UploadInterface{
                     title: 'Upload to Controller',
                     canPickMany: false
                 }
-            );    
-            if (con === undefined) return;
-            controller = con;
+            );
+            if (!controller) return;
         }
         
+
         await new UploadFunctionality().uploadFile(controller.controllerId);
         return;
     }
