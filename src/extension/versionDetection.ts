@@ -3,7 +3,7 @@ import { ControllerProvider } from './view';
 import YAML from 'yaml';
 import * as fs from 'fs';
 
-export let ProjectVersion = 0;
+export let ProjectVersion: number = 0;
 
 /**
  * Check if the project is valid by checking if the wago.yaml file is present in the root folder.

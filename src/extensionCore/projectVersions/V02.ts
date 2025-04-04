@@ -12,6 +12,14 @@ import { finished } from 'stream/promises';
 const FOLDER_REGEX = '^(?!(?:CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\.[^.]*)?$)[^<>:"/\\|?*\x00-\x1F]*[^<>:"/\\|?*\x00-\x1F\ .]$';
 
 export class UploadController implements Interface.UploadInterface{
+    /**
+     * Uploads the project specified in the Controllersettings to the selected controller.
+     * If no controller is provided, prompts the user to select one from available controllers.
+     *
+     * @param controller - Optional controller to upload to. If not provided, user will be prompted to select one.
+     * @returns A Promise that resolves when the upload is complete or when the operation is cancelled.
+     * @throws Will display an error message if no workspace is open.
+     */
     async uploadController(controller: Controller | undefined) {
         if(!vscode.workspace.workspaceFolders) {
             vscode.window.showErrorMessage('No workspace is open');
@@ -34,12 +42,21 @@ export class UploadController implements Interface.UploadInterface{
             if (!controller) return;
         }
         
-
         await new UploadFunctionality().uploadFile(controller.controllerId);
         return;
     }
 }
 export class UploadAllControllers implements Interface.UploadAllInterface{
+    /**
+     * Execute Uploads for all controllers defined in the workspace wago.yaml.
+     * 
+     * This method retrieves all controllers from the current configuration using YamlCommands,
+     * then iterates through each controller and attempts to execute Upload for it.
+     * If successful, a notification will be displayed for each controller upload.
+     * 
+     * @throws {Error} Shows an error message if no workspace is open or if the upload fails
+     * for any controller.
+     */
     public uploadAllControllers(){
         if(!vscode.workspace.workspaceFolders) {
             vscode.window.showErrorMessage('No workspace is open');
