@@ -1,9 +1,10 @@
 import * as vscode from 'vscode';
-import { webviewIoCheck } from './extension/webviewIoCheck';
 import { ControllerProvider } from './extension/view';
-import { Command } from './extension/command';
+import { webviewIoCheck } from './extension/webviewIoCheck';
 import { verifyProject } from './extension/versionDetection';
+import { Command } from './extension/command';
 import { Manager } from './extensionCore/manager';
+
 
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -13,10 +14,10 @@ export async function activate(context: vscode.ExtensionContext) {
 	//create IO-Check
 	new webviewIoCheck(context);
 
-	await verifyProject();
-
 	//Create Commands
 	Command.createCommands(context);
+
+	await verifyProject();
 
 	//Connect to Controllers
 	Manager.getInstance().establishConnections();
