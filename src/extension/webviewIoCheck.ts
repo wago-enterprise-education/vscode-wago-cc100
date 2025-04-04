@@ -2,7 +2,6 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
 import { SSH } from '../oldFiles/ssh';
-import { Workspace } from './workspace';
 import { Connection } from './connection';
 import sanitizeHtml from 'sanitize-html';
 import { ConnectionManager } from './connectionManager';
@@ -15,7 +14,6 @@ let ssh = new SSH('192.168.42.42', 22, 'root', '');
 export class webviewIoCheck {
     private windowClosed: boolean = false
     private test: boolean = false;
-    private Workspace = new Workspace();
     private Connection = new Connection();
 
     public canLoadPanel: boolean = true;

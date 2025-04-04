@@ -2,7 +2,7 @@ import * as vscode from 'vscode'
 import fs from 'fs'
 import { SSH } from './ssh';
 import { Connection } from '../extension/connection';
-import { Workspace } from '../extension/workspace';
+import { Workspace } from './workspace';
 import { webviewIoCheck } from '../extension/webviewIoCheck';
 
 
