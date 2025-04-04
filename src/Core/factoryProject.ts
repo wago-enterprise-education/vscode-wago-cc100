@@ -2,17 +2,37 @@ import * as Interface from "./interface/projectInterface";
 import * as V1 from "./interface/V01";
 import * as V2 from "./interface/V02";
 
+/**
+ * A factory class for creating various project-related commands and controllers
+ * based on the specified version number. Implements the Singleton design pattern
+ * to ensure only one instance of the factory exists.
+ */
 export class ProjectFactory {
-    private static instance: ProjectFactory | null = null;
+    private static instance: ProjectFactory ;
+
     private constructor() {
         // Private constructor to prevent instantiation from outside
     }
+    /**
+     * Retrieves the singleton instance of the `ProjectFactory`.
+     * If the instance does not exist, it is created.
+     *
+     * @returns {ProjectFactory} The singleton instance of the factory.
+     */
     public static getInstance(): ProjectFactory {
         if (!ProjectFactory.instance) {
             ProjectFactory.instance = new ProjectFactory();
         }
         return ProjectFactory.instance!;
     }
+
+    /**
+     * Creates an upload command for the specified version.
+     *
+     * @param {number} versionNr - The version number of the command to create.
+     * @returns {Interface.UploadInterface} The upload command for the specified version.
+     * @throws {Error} If the version number is invalid.
+     */
     public createUploadCommand(versionNr: number): Interface.UploadInterface {
         switch (versionNr) {
             case 0.1:
@@ -23,6 +43,14 @@ export class ProjectFactory {
                 throw new Error("Invalid version number");
         }
     }
+
+    /**
+     * Creates a reset controller command for the specified version.
+     *
+     * @param {number} versionNr - The version number of the command to create.
+     * @returns {Interface.ResetControllerInterface} The reset controller command for the specified version.
+     * @throws {Error} If the version number is invalid.
+     */
     public createResetCommand(versionNr: number): Interface.ResetControllerInterface {
         switch (versionNr) {
             case 0.1:
@@ -33,6 +61,14 @@ export class ProjectFactory {
                 throw new Error("Invalid version number");
         }
     }
+
+    /**
+     * Creates an add controller command for the specified version.
+     *
+     * @param {number} versionNr - The version number of the command to create.
+     * @returns {Interface.AddControllerInterface} The add controller command for the specified version.
+     * @throws {Error} If the version number is invalid.
+     */
     public createAddCommand(versionNr: number): Interface.AddControllerInterface {
         switch (versionNr) {
             case 0.2:
@@ -41,6 +77,14 @@ export class ProjectFactory {
                 throw new Error("Invalid version number");
         }
     }
+
+    /**
+     * Creates a remove controller command for the specified version.
+     *
+     * @param {number} versionNr - The version number of the command to create.
+     * @returns {Interface.RemoveControllerInterface} The remove controller command for the specified version.
+     * @throws {Error} If the version number is invalid.
+     */
     public createRemoveCommand(versionNr: number): Interface.RemoveControllerInterface {
         switch (versionNr) {
             case 0.2:
@@ -49,6 +93,14 @@ export class ProjectFactory {
                 throw new Error("Invalid version number");
         }
     }
+
+    /**
+     * Creates a configure controller command for the specified version.
+     *
+     * @param {number} versionNr - The version number of the command to create.
+     * @returns {Interface.ConfigureControllerInterface} The configure controller command for the specified version.
+     * @throws {Error} If the version number is invalid.
+     */
     public createConfigureCommand(versionNr: number): Interface.ConfigureControllerInterface {
         switch (versionNr) {
             case 0.1:
@@ -59,6 +111,14 @@ export class ProjectFactory {
                 throw new Error("Invalid version number");
         }
     }
+
+    /**
+     * Creates an edit settings command for the specified version.
+     *
+     * @param {number} versionNr - The version number of the command to create.
+     * @returns {Interface.EditSettingsInterface} The edit settings command for the specified version.
+     * @throws {Error} If the version number is invalid.
+     */
     public createEditSettingsCommand(versionNr: number): Interface.EditSettingsInterface {
         switch (versionNr) {
             case 0.1:
@@ -69,6 +129,14 @@ export class ProjectFactory {
                 throw new Error("Invalid version number");
         }
     }
+
+    /**
+     * Creates a view children command for the specified version.
+     *
+     * @param {number} versionNr - The version number of the command to create.
+     * @returns {Interface.ViewChildrenInterface} The view children command for the specified version.
+     * @throws {Error} If the version number is invalid.
+     */
     public createViewChildrenCommand(versionNr: number): Interface.ViewChildrenInterface {
         switch (versionNr) {
             case 0.1:
@@ -79,6 +147,14 @@ export class ProjectFactory {
                 throw new Error("Invalid version number");
         }
     }
+
+    /**
+     * Creates a rename controller command for the specified version.
+     *
+     * @param {number} versionNr - The version number of the command to create.
+     * @returns {Interface.RenameControllerInterface} The rename controller command for the specified version.
+     * @throws {Error} If the version number is invalid.
+     */
     public createRenameCommand(versionNr: number): Interface.RenameControllerInterface {
         switch (versionNr) {
             case 0.2:
@@ -87,6 +163,14 @@ export class ProjectFactory {
                 throw new Error("Invalid version number");
         }
     }
+
+    /**
+     * Creates a create project command for the specified version.
+     *
+     * @param {number} versionNr - The version number of the command to create.
+     * @returns {Interface.CreateProjectInterface} The create project command for the specified version.
+     * @throws {Error} If the version number is invalid.
+     */
     public createCreateProjectCommand(versionNr: number): Interface.CreateProjectInterface{
         switch (versionNr) {
             case 0.2:
@@ -95,6 +179,14 @@ export class ProjectFactory {
                 throw new Error("Invalid version number");
         }
     }
+
+    /**
+     * Creates a remove reset controller command for the specified version.
+     *
+     * @param {number} versionNr - The version number of the command to create.
+     * @returns {Interface.RemoveResetControllerInterface} The remove reset controller command for the specified version.
+     * @throws {Error} If the version number is invalid.
+     */
     public createRemoveResetControllerCommand(versionNr: number): Interface.RemoveResetControllerInterface{
         switch (versionNr) {
             case 0.2:
@@ -103,6 +195,14 @@ export class ProjectFactory {
                 throw new Error("Invalid version number");
         }
     }
+
+    /**
+     * Creates an establish connections command for the specified version.
+     *
+     * @param {number} versionNr - The version number of the command to create.
+     * @returns {Interface.EstablishConnectionsInterface} The establish connections command for the specified version.
+     * @throws {Error} If the version number is invalid.
+     */
     public createEstablishConnections(versionNr: number): Interface.EstablishConnectionsInterface{
         switch (versionNr) {
             case 0.2:
