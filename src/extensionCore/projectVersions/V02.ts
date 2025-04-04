@@ -10,8 +10,8 @@ import { ProjectVersion } from "../../extension/versionDetection";
 
 const FOLDER_REGEX = '^(?!(?:CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\.[^.]*)?$)[^<>:"/\\|?*\x00-\x1F]*[^<>:"/\\|?*\x00-\x1F\ .]$';
 
-export class Upload implements Interface.UploadInterface{
-    async upload(controller: Controller | undefined) {
+export class UploadController implements Interface.UploadInterface{
+    async uploadController(controller: Controller | undefined) {
         if(!vscode.workspace.workspaceFolders) {
             vscode.window.showErrorMessage('No workspace is open');
             return;
@@ -36,6 +36,25 @@ export class Upload implements Interface.UploadInterface{
         
         await new UploadFunctionality().uploadFile(controller.controllerId);
         return;
+    }
+}
+export class UploadAllControllers implements Interface.UploadAllInterface{
+    public uploadAllControllers(){
+        if(!vscode.workspace.workspaceFolders) {
+            vscode.window.showErrorMessage('No workspace is open');
+            return;
+        }
+        let upload = new UploadController();
+        const controllers = YamlCommands.getControllers();
+        controllers.forEach(async (controller) => {
+            if(!controller) return;
+
+            upload.uploadController({controllerId: controller.id, label: controller.displayname, online: true}).then(() => {
+                vscode.window.showInformationMessage(`Controller ${controller.displayname} uploaded`);
+            }).catch((error) => {
+                vscode.window.showErrorMessage(`Error uploading controller ${controller.displayname}: ${error}`);
+            });
+        });
     }
 }
 export class ResetController implements Interface.ResetControllerInterface{

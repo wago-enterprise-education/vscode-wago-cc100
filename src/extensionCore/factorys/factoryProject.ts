@@ -36,14 +36,22 @@ export class ProjectFactory {
     public createUploadCommand(versionNr: number): Interface.UploadInterface {
         switch (versionNr) {
             case 0.1:
-                return new V1.Upload();
+                return new V1.UploadController();
             case 0.2:
-                return new V2.Upload();
+                return new V2.UploadController();
             default:
                 throw new Error("Invalid version number");
         }
     }
 
+    public createUploadAllCommand(versionNr: number): Interface.UploadAllInterface {
+        switch (versionNr) {
+            case 0.2:
+                return new V2.UploadAllControllers();
+            default:
+                throw new Error("Invalid version number");
+        }
+    }
     /**
      * Creates a reset controller command for the specified version.
      *

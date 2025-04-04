@@ -6,8 +6,8 @@ import * as fs from 'fs';
 import crypto from 'crypto';
 import path from "path";
 
-export class Upload implements Interface.UploadInterface{
-    async upload(controller: Controller | undefined) {
+export class UploadController implements Interface.UploadInterface{
+    async uploadController(controller: Controller | undefined) {
         if(!vscode.workspace.workspaceFolders) {
             vscode.window.showErrorMessage('No workspace is open');
             return;

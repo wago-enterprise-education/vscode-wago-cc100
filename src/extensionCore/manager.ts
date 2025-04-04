@@ -36,14 +36,16 @@ export class Manager {
         }
         return Manager.instance;
     }
-
     /**
      * Uploads the project with the specified version number to the target identified by the given ID.
      * 
      * @param id - The identifier of the upload target
      */
     public upload(controller: Controller | undefined){
-        ProjectFactory.getInstance().createUploadCommand(this.versionNr).upload(controller);
+        ProjectFactory.getInstance().createUploadCommand(this.versionNr).uploadController(controller);
+    }
+    public uploadAll(){
+        ProjectFactory.getInstance().createUploadAllCommand(this.versionNr).uploadAllControllers();
     }
     /**
      * Edits the settings of a controller by creating and executing an edit settings command.
@@ -67,11 +69,6 @@ export class Manager {
         let engine = await ProjectFactory.getInstance().createResetCommand(this.versionNr).reset(controller, true);
         ControllerFactory.getInstance().createResetCommand(engine).reset(controller)
     }
-    /**
-     * Adds a controller to the extension context.
-     * 
-     * @param context - The VS Code extension context
-     */
     /**
      * Adds a controller to the extension context using the project factory.
      * Creates and registers the controller using the current version number.
