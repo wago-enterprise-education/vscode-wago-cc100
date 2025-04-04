@@ -33,9 +33,7 @@ export class Command {
         }));
         
         commands.push(vscode.commands.registerCommand('vscode-wago-cc100.upload-all', async () => {
-            // YamlCommands.getControllers().forEach(async (controller) => {
-            //     vscode.commands.executeCommand('vscode-wago-cc100.upload',{id: controller.id, label: controller.displayname, online: false});
-            // });
+            Manager.getInstance().uploadAll();
         }));
         
         commands.push(vscode.commands.registerCommand('vscode-wago-cc100.edit-setting', async (controller: ControllerItem | undefined) => {
