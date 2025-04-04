@@ -1005,37 +1005,11 @@ export class UploadFunctionality {
         try {
             // Get Array of remote Hashes
             let remoteHashes = await connectionManager.executeCommand(id, `find ${uploadPath} -type f -exec md5sum {} +`);
-            remoteHashes = remoteHashes
-                .replaceAll('\n', '  ')
-                .split('  ')
-                .filter((value, index) => {
-                    return index % 2 === 0;
-                })
-                .sort((a, b) => a.localeCompare(b))
-                .toString()
-                .replaceAll(',','');
-
-            let remoteHash = crypto
-                .createHash('md5')
-                .update(remoteHashes)
-                .digest('hex');
+            let remoteHash = this.createFolderHash(remoteHashes);
             
             //Get Array of local Hashes
             let localHashes = await this.getLocalHashes(localPath);
-            localHashes = localHashes
-                .replaceAll('\n', '  ')
-                .split('  ')
-                .filter((value, index) => {
-                    return index % 2 === 0;
-                })
-                .sort((a, b) => a.localeCompare(b))
-                .toString()
-                .replaceAll(',','');
-
-            let localHash = crypto
-                .createHash('md5')
-                .update(localHashes)
-                .digest('hex');
+            let localHash = this.createFolderHash(localHashes);
 
             return Promise.resolve(localHash === remoteHash);
 
@@ -1111,6 +1085,25 @@ export class UploadFunctionality {
             console.error('Error getting files in directory:', error);
             return Promise.reject(error);
         }
+    }
+
+    private createFolderHash(hashes: string): string {
+            hashes = hashes
+                .replaceAll('\n', '  ')
+                .split('  ')
+                .filter((val, index) => {
+                    return index % 2 === 0;
+                })
+                .sort((a, b) => a.localeCompare(b))
+                .toString()
+                .replaceAll(',','');
+
+            let hash = crypto
+                .createHash('md5')
+                .update(hashes)
+                .digest('hex');
+            
+            return hash;
     }
 
     private async deactivateCodeSys3(id: number) {
