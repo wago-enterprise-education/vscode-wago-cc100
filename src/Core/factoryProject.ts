@@ -7,14 +7,12 @@ export class ProjectFactory {
     private constructor() {
         // Private constructor to prevent instantiation from outside
     }
-
     public static getInstance(): ProjectFactory {
         if (!ProjectFactory.instance) {
             ProjectFactory.instance = new ProjectFactory();
         }
         return ProjectFactory.instance!;
     }
-
     public createUploadCommand(versionNr: number): Interface.UploadInterface {
         switch (versionNr) {
             case 0.1:
@@ -25,7 +23,6 @@ export class ProjectFactory {
                 throw new Error("Invalid version number");
         }
     }
-
     public createResetCommand(versionNr: number): Interface.ResetControllerInterface {
         switch (versionNr) {
             case 0.1:
@@ -36,7 +33,6 @@ export class ProjectFactory {
                 throw new Error("Invalid version number");
         }
     }
-
     public createAddCommand(versionNr: number): Interface.AddControllerInterface {
         switch (versionNr) {
             case 0.2:
@@ -45,7 +41,6 @@ export class ProjectFactory {
                 throw new Error("Invalid version number");
         }
     }
-
     public createRemoveCommand(versionNr: number): Interface.RemoveControllerInterface {
         switch (versionNr) {
             case 0.2:
@@ -54,7 +49,6 @@ export class ProjectFactory {
                 throw new Error("Invalid version number");
         }
     }
-
     public createConfigureCommand(versionNr: number): Interface.ConfigureControllerInterface {
         switch (versionNr) {
             case 0.1:
@@ -65,7 +59,6 @@ export class ProjectFactory {
                 throw new Error("Invalid version number");
         }
     }
-
     public createEditSettingsCommand(versionNr: number): Interface.EditSettingsInterface {
         switch (versionNr) {
             case 0.1:
@@ -76,7 +69,6 @@ export class ProjectFactory {
                 throw new Error("Invalid version number");
         }
     }
-
     public createViewChildrenCommand(versionNr: number): Interface.ViewChildrenInterface {
         switch (versionNr) {
             case 0.1:
@@ -87,7 +79,6 @@ export class ProjectFactory {
                 throw new Error("Invalid version number");
         }
     }
-    
     public createRenameCommand(versionNr: number): Interface.RenameControllerInterface {
         switch (versionNr) {
             case 0.2:
@@ -96,7 +87,6 @@ export class ProjectFactory {
                 throw new Error("Invalid version number");
         }
     }
-
     public createCreateProjectCommand(versionNr: number): Interface.CreateProjectInterface{
         switch (versionNr) {
             case 0.2:
