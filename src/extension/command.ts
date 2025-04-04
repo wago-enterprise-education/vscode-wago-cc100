@@ -31,30 +31,7 @@ export class Command {
         }));
         
         commands.push(vscode.commands.registerCommand('vscode-wago-cc100.upload', async (controller: Controller | undefined) => {
-            if(!vscode.workspace.workspaceFolders) {
-                vscode.window.showErrorMessage('No workspace is open');
-                return;
-            }
-            
-            if (controller === undefined) {
-                let con = await vscode.window.showQuickPick(
-                    YamlCommands.getControllers().map((controller) => ({
-                        controllerId: controller.id,	
-                        label: controller.displayname,
-                        description: controller.description,
-                        online: false
-                    })),
-                    {
-                        title: 'Upload to Controller',
-                        canPickMany: false
-                    }
-                );    
-                if (con === undefined) return;
-                controller = con;
-            }
-            
-            await new Upload().uploadFile(controller.controllerId);
-            return;
+            Manager.getInstance().upload(controller);
         }));
         
         commands.push(vscode.commands.registerCommand('vscode-wago-cc100.upload-all', async () => {

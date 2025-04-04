@@ -5,7 +5,6 @@ import crypto from 'crypto';
 import path from 'path';
 import { ProjectVersion } from './versionDetection'
 import { YamlCommands } from '../core/interface/V02';
-import fetch from 'node-fetch';
 
 //Roadmap for the extension
 //+1. Get Path to the file structure to be uploaded -> Throw Error if not available

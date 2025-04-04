@@ -42,8 +42,8 @@ export class Manager {
      * 
      * @param id - The identifier of the upload target
      */
-    public upload(id: number){
-        ProjectFactory.getInstance().createUploadCommand(this.versionNr).upload(id);
+    public upload(controller: Controller | undefined){
+        ProjectFactory.getInstance().createUploadCommand(this.versionNr).upload(controller);
     }
     /**
      * Edits the settings of a controller by creating and executing an edit settings command.

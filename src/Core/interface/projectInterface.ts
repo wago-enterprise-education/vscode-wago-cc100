@@ -21,7 +21,7 @@ import { Controller, ControllerItem } from '../../extension/view';
 import * as vscode from 'vscode';
 
 export interface UploadInterface{
-    upload: (id: number) => void;
+    upload: (controller: Controller | undefined) => void;
 }
 
 export interface ResetControllerInterface{

@@ -1,6 +1,5 @@
-import * as Interface from "./interface/controllerInterface"
-import * as CC100 from "./interface/CC100"
-
+import * as Interface from "./interface/controllerInterface";
+import * as CC100 from "./interface/CC100";
 export class ControllerFactory {
     private static instance: ControllerFactory | null = null;
     private constructor() {
