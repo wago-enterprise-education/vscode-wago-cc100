@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { webviewIoCheck } from './extension/webviewIoCheck';
 import { ControllerProvider } from './extension/view';
 import { Command } from './extension/command';
-import { verifyProject } from './extension/helper';
+import { verifyProject } from './extension/versionDetection';
 import { Manager } from './core/manager';
 
 

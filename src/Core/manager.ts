@@ -1,5 +1,5 @@
 import { ProjectFactory } from "./factoryProject";
-import { ProjectVersion } from '../extension/helper';
+import { ProjectVersion } from '../extension/versionDetection';
 import { Controller, ControllerItem } from "../extension/view";
 import * as vscode from 'vscode';
 

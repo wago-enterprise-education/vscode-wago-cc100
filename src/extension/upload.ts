@@ -4,7 +4,7 @@ import { YamlCommands } from '../migrated/yaml';
 import { ConnectionManager } from './connectionManager';
 import crypto from 'crypto';
 import path from 'path';
-import { ProjectVersion } from './helper'
+import { ProjectVersion } from './versionDetection'
 
 //Roadmap for the extension
 //+1. Get Path to the file structure to be uploaded -> Throw Error if not available

@@ -7,7 +7,7 @@ import { Connection } from './connection';
 import sanitizeHtml from 'sanitize-html';
 import { ConnectionManager } from './connectionManager';
 import { Controller } from './view';
-import { ProjectVersion } from './helper';
+import { ProjectVersion } from './versionDetection';
 import { YamlCommands } from '../migrated/yaml';
 
 let ssh = new SSH('192.168.42.42', 22, 'root', '');
