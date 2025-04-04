@@ -14,6 +14,16 @@ export class Upload implements Interface.UploadInterface{
     }
 }
 export class ResetController implements Interface.ResetControllerInterface{
+    /**
+     * Resets a controller by stopping and removing its associated Docker containers and images,
+     * and clearing its application directory. Optionally prompts the user for confirmation.
+     *
+     * @param controller - The controller to reset. If undefined, a quick pick dialog will prompt the user to select one.
+     * @param showConfirmation - Whether to show a confirmation dialog before resetting the controller.
+     * @returns A promise that resolves to the engine of the reset controller, or an empty string if the operation is canceled or fails.
+     *
+     * @throws Will show an error message if no workspace is open or if an error occurs during the reset process.
+     */
     async reset(controller: Controller | undefined, showConfirmation: boolean) {
         if(!vscode.workspace.workspaceFolders) {
             vscode.window.showErrorMessage('No workspace is open');
@@ -60,6 +70,23 @@ export class ResetController implements Interface.ResetControllerInterface{
     }
 }
 export class AddController implements Interface.AddControllerInterface{
+    /**
+     * Adds a new controller to the project by prompting the user for necessary details such as
+     * the controller's name, description, engine version, and source folder. If the user opts
+     * to create a new folder, it will be created and initialized with a template file.
+     *
+     * @param context - The extension context provided by VS Code, used to access resources and workspace information.
+     *
+     * @remarks
+     * - Prompts the user for the controller name, description, engine version, and source folder.
+     * - Validates folder names against a predefined regex and checks for folder existence.
+     * - Creates a new folder and initializes it with a template file if the user selects "New".
+     * - Calls `YamlCommands.createController` to create the controller configuration.
+     * - Refreshes the `ControllerProvider` instance to reflect the changes.
+     * - Displays a success message upon completion.
+     *
+     * @throws Will throw an error if the workspace folder is not defined or if file system operations fail.
+     */
     async addController(context: vscode.ExtensionContext) {
         const controllerName = await vscode.window.showInputBox({
             prompt: 'Enter the name of the controller',
@@ -133,6 +160,16 @@ export class AddController implements Interface.AddControllerInterface{
     }
 }
 export class RemoveController implements Interface.RemoveControllerInterface{
+    /**
+     * Removes a controller from the system. If a controller is not provided, 
+     * the user will be prompted to select one from a list of available controllers.
+     * Optionally, a confirmation dialog can be shown before removal.
+     *
+     * @param controller - The controller to be removed. If undefined, the user will be prompted to select one.
+     * @param showConfirmation - A boolean indicating whether to show a confirmation dialog before removal.
+     * 
+     * @returns A promise that resolves when the controller is removed or the operation is canceled.
+     */
     async removeController(controller: Controller | undefined, showConfirmation: boolean){
         let selectedController;
         if(controller) {
@@ -169,11 +206,38 @@ export class RemoveController implements Interface.RemoveControllerInterface{
     }
 }
 export class ConfigureController implements Interface.ConfigureControllerInterface{
+    /**
+     * Configures the necessary settings or parameters for the implementation.
+     * This method is intended to be implemented with specific logic.
+     */
     configure() {
         
     }
 }
 export class EditSettings implements Interface.EditSettingsInterface{
+    /**
+     * Edits the settings of a specified controller or prompts the user to select one if not provided.
+     * 
+     * This function interacts with the Visual Studio Code API to display quick pick menus for selecting
+     * a controller and its associated settings. It then applies the selected setting to the controller.
+     * 
+     * @param controller - An optional `ControllerItem` object representing the controller to edit. 
+     *                      If undefined, the user will be prompted to select a controller.
+     * 
+     * @remarks
+     * - If no workspace is open, an error message is displayed, and the function exits early.
+     * - If the user cancels any of the quick pick prompts, the function exits without making changes.
+     * 
+     * @throws This function does not throw exceptions but relies on user interaction and may exit early
+     *         if required inputs are not provided.
+     * 
+     * @example
+     * ```typescript
+     * // Example usage:
+     * const controller: ControllerItem = { controllerId: '123', setting: 'exampleSetting' };
+     * await editSettings(controller);
+     * ```
+     */
     async editSettings(controller: ControllerItem | undefined) {
         if(!vscode.workspace.workspaceFolders) {
             vscode.window.showErrorMessage('No workspace is open');
@@ -215,6 +279,14 @@ export class EditSettings implements Interface.EditSettingsInterface{
     }
 }
 export class ViewChildren implements Interface.ViewChildrenInterface{
+    /**
+     * Retrieves the children elements for a given controller or controller item.
+     * If no element is provided, it fetches the list of controllers and determines their online status.
+     * If a controller is provided, it retrieves its settings and additional details.
+     *
+     * @param element - An optional `Controller` or `ControllerItem` instance. If undefined, the method fetches all controllers.
+     * @returns A promise that resolves to a `vscode.ProviderResult` containing an array of `Controller` or `ControllerItem` objects.
+     */
     getChildren(element?: Controller | ControllerItem | undefined): Promise<vscode.ProviderResult<Controller[] | ControllerItem[]>> {
         if(!element) {
             let controllers = YamlCommands.getControllers();
@@ -264,6 +336,20 @@ export class ViewChildren implements Interface.ViewChildrenInterface{
     }
 }
 export class RenameController implements Interface.RenameControllerInterface{
+    /**
+     * Renames a controller by either selecting an existing controller or creating a new one.
+     * If a controller is provided, it will be used directly. Otherwise, the user is prompted
+     * to select a controller from a list or use the only available controller.
+     * 
+     * The user is then prompted to input a new name for the selected controller.
+     * The updated name is saved using the `YamlCommands.writeWagoYaml` method.
+     * 
+     * @param controller - The controller to rename. If undefined, the user will be prompted
+     *                      to select a controller from the available options.
+     * 
+     * @returns A promise that resolves when the renaming process is complete or exits early
+     *          if no controller or name is provided.
+     */
     async renameController(controller: Controller | undefined){
         let newController;
         if(controller) {
@@ -301,6 +387,20 @@ export class RenameController implements Interface.RenameControllerInterface{
     }
 }
 export class CreateProject implements Interface.CreateProjectInterface{
+    /**
+     * Creates a new project controller by prompting the user for a project name and destination folder.
+     * 
+     * This function performs the following steps:
+     * 1. Prompts the user to input a valid project name.
+     * 2. Opens a dialog for the user to select a destination folder for the project.
+     * 3. Creates a new folder with the specified project name at the selected destination.
+     * 4. Copies a template from the extension's resources into the newly created project folder.
+     * 5. Opens the newly created project folder in a new VS Code window.
+     * 
+     * @param context - The extension context, providing access to the extension's resources and state.
+     * 
+     * @throws Will show an error message if the project folder already exists or if any file system operation fails.
+     */
     async createController(context: vscode.ExtensionContext){
         const projectName = await vscode.window.showInputBox({
             prompt: 'Enter the name of the project',
@@ -334,6 +434,14 @@ export class CreateProject implements Interface.CreateProjectInterface{
     }
 }
 export class RemoveResetController implements Interface.RemoveResetControllerInterface{
+    /**
+     * Removes or resets a controller. If no controller is provided, prompts the user to select one
+     * from a list of available controllers using a Quick Pick dialog.
+     *
+     * @param controller - The controller to be removed or reset. If undefined, a Quick Pick dialog
+     *                      will be displayed to allow the user to select a controller.
+     * @returns A promise that resolves to the selected or provided controller.
+     */
     async removeResetController(controller: Controller | undefined){
         if(!controller) {
             controller = await vscode.window.showQuickPick(
@@ -353,6 +461,16 @@ export class RemoveResetController implements Interface.RemoveResetControllerInt
     };
 }
 export class EstablishConnections implements Interface.EstablishConnectionsInterface{
+    /**
+     * Establishes connections to all controllers defined in the YAML configuration.
+     * 
+     * This method retrieves the list of controllers using `YamlCommands.getControllers()`,
+     * then iterates through each controller to fetch its settings and establish a connection
+     * using the `ConnectionManager.instance.addController` method.
+     * 
+     * @async
+     * @throws Will propagate any errors encountered during the connection process.
+     */
     establishConnections() {
         const controllers = YamlCommands.getControllers();
 		controllers.forEach(async controller => {
@@ -366,6 +484,27 @@ export class EstablishConnections implements Interface.EstablishConnectionsInter
 //===================================================================================
 export class EditSettingsFunctionality {
     
+    /**
+     * Edits a specified setting in either the `wago.yaml` or `controller.yaml` configuration file.
+     * The method determines the type of setting to edit and provides appropriate input or selection
+     * mechanisms to update the configuration.
+     *
+     * @param id - The unique identifier for the setting to be edited.
+     * @param settingToEdit - The name of the setting to be edited. This can belong to either `wagoSettings` or `controllerSettings`.
+     *
+     * @remarks
+     * - For `wago.yaml` settings:
+     *   - `displayname` and `description` prompt the user for input.
+     *   - `engine` and `imageVersion` are placeholders for future implementation.
+     *   - `src` allows the user to select an existing folder or create a new one.
+     * - For `controller.yaml` settings:
+     *   - `connection` provides a quick pick for connection types (`usb-c` or `ethernet`).
+     *   - `ip`, `port`, and `user` prompt the user for input.
+     *   - `autoupdate` provides a quick pick for enabling or disabling the feature.
+     *
+     * @throws Will show an error message if no workspace is open or if an invalid attribute type is provided.
+     * @returns A promise that resolves when the setting is successfully edited or exits early if the user cancels the operation.
+     */
     public static async editSetting(id: number, settingToEdit: string) {
         if(!vscode.workspace.workspaceFolders) {
             vscode.window.showErrorMessage('No workspace is open');
@@ -466,6 +605,14 @@ export class EditSettingsFunctionality {
         }       
     }
 
+    /**
+     * Prompts the user to input a value for a specified setting and returns the entered value.
+     *
+     * @param settingToEdit - The name of the setting to be edited. 
+     *                        Must be one of: "displayname", "src", "description", "ip", "port", or "user".
+     * @returns A promise that resolves to the entered value as a string. 
+     *          If the input box is dismissed without entering a value, an empty string is returned.
+     */
     private static async getInput(settingToEdit: "displayname" | "src" | "description" | "ip" | "port" | "user"): Promise<string> {
         let input = await vscode.window.showInputBox({
             prompt: 'Enter the value the '+ settingToEdit +' should be set to',
@@ -501,6 +648,16 @@ export enum settingAdapter {
 //===================================================================================
 // File Functionality
 //===================================================================================
+/**
+ * Represents the structure of a controller object.
+ * 
+ * @property id - The unique identifier for the controller.
+ * @property displayname - The display name of the controller.
+ * @property description - A brief description of the controller.
+ * @property engine - The engine associated with the controller.
+ * @property src - The source or path related to the controller.
+ * @property imageVersion - The version of the controller's image.
+ */
 type ControllerType = {
     id: number,
     displayname: string,
@@ -509,6 +666,15 @@ type ControllerType = {
     src: string,
     imageVersion: string
 }
+/**
+ * Represents the settings for a controller.
+ * 
+ * @property connection - The type of connection used by the controller (e.g., "ethernet", "usb-c").
+ * @property ip - The IP address of the controller.
+ * @property port - The port number used for communication with the controller.
+ * @property user - The username for authentication with the controller.
+ * @property autoupdate - The auto-update setting for the controller (e.g., "on", "off").
+ */
 type ControllerSettingsType = {
     connection: string,
     ip: string,
@@ -536,6 +702,17 @@ export class YamlCommands {
         return YAML.parse(fs.readFileSync(`${vscode.workspace.workspaceFolders![0].uri.fsPath}/controller/controller${id}.yaml`, 'utf8'));
     }
 
+    /**
+     * Retrieves an array of controller objects from the Wago YAML configuration.
+     *
+     * @returns {Array<ControllerType>} An array of controller objects, each containing:
+     * - `id`: The numeric identifier of the controller.
+     * - `displayname`: The display name of the controller.
+     * - `description`: A brief description of the controller.
+     * - `engine`: The engine type associated with the controller.
+     * - `src`: The source path or URL of the controller.
+     * - `imageVersion`: The version of the controller's image.
+     */
     public static getControllers(): Array<ControllerType> {
         const nodes = this.getWagoYaml().nodes;
         return Object.keys(nodes).map((key: string) => ({
@@ -548,10 +725,27 @@ export class YamlCommands {
         }))
     }
 
+    /**
+     * Retrieves a controller by its unique identifier.
+     *
+     * @param id - The unique identifier of the controller to retrieve.
+     * @returns The controller matching the given ID, or `undefined` if no match is found.
+     */
     public static getController(id: number): ControllerType | undefined {
         return this.getControllers().find(controller => controller.id === id);
     }
 
+    /**
+     * Retrieves the controller settings for a given controller ID.
+     *
+     * @param id - The unique identifier of the controller.
+     * @returns An object containing the controller settings, including:
+     * - `connection`: The connection type or protocol.
+     * - `ip`: The IP address of the controller.
+     * - `port`: The port number used for communication.
+     * - `user`: The username for authentication.
+     * - `autoupdate`: A flag indicating whether auto-update is enabled.
+     */
     public static getControllerSettings(id: number): ControllerSettingsType {
         const settings = this.getControllerYaml(id);
         return {
