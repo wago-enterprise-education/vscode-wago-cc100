@@ -1,6 +1,6 @@
 import { ConnectionManager } from "../../extension/connectionManager";
 import { Controller, ControllerItem, ControllerProvider } from "../../extension/view";
-import * as Interface from "./projectInterface";
+import * as Interface from "../interfaces/projectInterface";
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import crypto from 'crypto';

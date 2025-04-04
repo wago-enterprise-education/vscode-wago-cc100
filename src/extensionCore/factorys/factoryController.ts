@@ -1,4 +1,4 @@
-import * as Interface from "./interface/controllerInterface";
+import * as Interface from "../interfaces/controllerInterface";
 import * as CC100 from "./interface/CC100";
 export class ControllerFactory {
     private static instance: ControllerFactory | null = null;

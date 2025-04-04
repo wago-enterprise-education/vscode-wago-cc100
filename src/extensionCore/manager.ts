@@ -1,9 +1,9 @@
-import { ProjectFactory } from "./factoryProject";
 import { ProjectVersion } from '../extension/versionDetection';
 import { Controller, ControllerItem } from "../extension/view";
 import * as vscode from 'vscode';
+import { ProjectFactory } from './factorys/factoryProject';
+import { ControllerFactory } from './factorys/factoryController';
 
-import { ControllerFactory } from "./factoryController";
 
 /**
  * Manager class for WAGO Controllerproject operations.
