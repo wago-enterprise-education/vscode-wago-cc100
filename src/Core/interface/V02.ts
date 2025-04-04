@@ -621,6 +621,10 @@ export class EditSettingsFunctionality {
         return input;
     }
 }
+/**
+ * Enum representing various settings used in the application.
+ * Each setting corresponds to a specific configuration property.
+ */
 export enum setting {
     displayname = 'Name',
     description = 'Description',
@@ -633,6 +637,12 @@ export enum setting {
     user = 'User',
     autoupdate = 'Autoupdate'
 }
+/**
+ * Enum representing the various settings for an adapter configuration.
+ * Each member of the enum corresponds to a specific configuration property.
+ *
+ * @enum {string}
+ */
 export enum settingAdapter {
     Name = "displayname",
     Description = "description",

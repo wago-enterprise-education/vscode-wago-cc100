@@ -231,6 +231,11 @@ export class JsonCommands {
         }
     }
 }
+
+/**
+ * Enum representing various settings used in the application.
+ * Each setting is associated with a string value that describes its purpose.
+ */
 export enum setting {
     displayname = 'Name',
     description = 'Description',
@@ -244,6 +249,12 @@ export enum setting {
     autoupdate = 'Autoupdate'
 }
 
+/**
+ * Enum representing the various settings adapters used in the application.
+ * Each adapter corresponds to a specific configuration property.
+ *
+ * @enum {string}
+ */
 export enum settingAdapter {
     Name = "displayname",
     Description = "description",
@@ -257,6 +268,10 @@ export enum settingAdapter {
     Autoupdate = "autoupdate"
 }
 
+/**
+ * Enum representing the keys used in the settings JSON configuration.
+ * Each key corresponds to a specific configuration option.
+ */
 export enum settingsJson {
     connection = 'connection',
     usb_c = 'usb_c',

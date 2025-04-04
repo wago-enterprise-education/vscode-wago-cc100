@@ -4,6 +4,15 @@ import { ControllerProvider } from '../../extension/view';
 import * as Interface from './controllerInterface';
 
 export class ResetController implements Interface.ResetControllerInterface {
+    /**
+     * Resets the specified controller by executing a series of commands to reset its hardware components
+     * and restart its runtime environment. Displays a success message upon completion or an error message
+     * if the reset process fails.
+     *
+     * @param controller - The controller object containing the `controllerId` and other relevant properties.
+     * 
+     * @throws Will display an error message if any of the commands fail during execution.
+     */
     async reset( controller: any) {
         let controllerId = controller.controllerId;
         try {

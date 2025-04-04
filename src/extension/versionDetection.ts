@@ -125,6 +125,11 @@ function checkIfInRootFolder(uri: vscode.Uri): Boolean {
     return false;
 }
 
+/**
+ * Sets the VS Code context variable `controllerCount` based on the current project version.
+ * 
+ * This function uses the `vscode.commands.executeCommand` API to set the context.
+ */
 function setControllerCountContext() {
     if(ProjectVersion >= 0.2) {
         vscode.commands.executeCommand('setContext', 'controllerCount', YamlCommands.getControllers()?.length);
