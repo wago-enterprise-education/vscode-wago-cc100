@@ -41,61 +41,6 @@ export class webviewIoCheck {
 
     private createNewWebview() {
         this.context.subscriptions.push(
-
-            // The command has been defined in the package.json file
-            // Now provide the implementation of the command with registerCommand
-            // The commandId parameter must match the command field in package.json
-
-            // vscode.commands.registerCommand('vscode-wago-cc100.iocheck', async () => {
-
-            //     this.wsPath = await this.Workspace.getProjectPath();
-
-            //     if (this.wsPath !== "Error: Could not find a project") {
-            //         // Check if an activeTextEditor is there, either it exists or it is undefined
-            //         const columnToShowIn = vscode.window.activeTextEditor
-            //         ? vscode.window.activeTextEditor.viewColumn
-            //         : undefined;
-
-            //         if (this.ioCheckPanel) {
-            //             // If we already have a panel, show it in the target column
-            //             this.ioCheckPanel.reveal(columnToShowIn);
-            //         } else {
-            //             this.canLoadPanel = false;
-            //             // create IO-Check Webview panel 
-
-            //             this.ioCheckPanel = vscode.window.createWebviewPanel("iocheck", "IO-Check", columnToShowIn || vscode.ViewColumn.One, {
-            //                 enableScripts: true,
-            //                 retainContextWhenHidden: true,
-            //                 localResourceRoots: [vscode.Uri.joinPath(this.context.extensionUri, 'src'), vscode.Uri.joinPath(this.context.extensionUri, 'out'),
-            //                 vscode.Uri.joinPath(this.context.extensionUri, 'res')]
-            //             });
-
-            //             this.ioCheckPanel.webview.html = this.getIOCheckWebviewContent();
-
-            //             // Webview Tab Icon
-            //             this.ioCheckPanel.iconPath = vscode.Uri.joinPath(this.context.extensionUri, 'res/images/WAGOW.png');
-
-            //             // Reset when the current panel is closed
-            //             this.ioCheckPanel.onDidDispose(() => {
-            //                 // this.test = false;
-            //                 this.ioCheckPanel = undefined;
-            //                 this.windowClosed = true
-
-            //             },
-            //                 null,
-            //                 this.context.subscriptions
-            //             );
-            //         }
-            //     }
-            //     else {
-            //         vscode.window.showErrorMessage(this.wsPath);
-            //         return;
-            //     }
-
-
-
-
-
             vscode.commands.registerCommand('vscode-wago-cc100.iocheck', async (element: Controller) => {
                     // Check if an activeTextEditor is there, either it exists or it is undefined
                     const columnToShowIn = vscode.window.activeTextEditor
@@ -488,48 +433,6 @@ export class webviewIoCheck {
             return data
         }
     }
-
-    /**
-     * Method for trying to built up a connection permanantly
-     * 
-     * @returns void if a connection can be established
-     */
-    // private async tryToConnect() {
-    //     this.windowClosed = false;
-    //     let connectionSuccesful: boolean = false
-    //     let resultConnection: string
-
-    //     while (!connectionSuccesful) {
-    //         resultConnection = (await ssh.sshConnectionWithoutKey()).toString()
-    //         console.log(resultConnection)
-    //         if (!resultConnection.startsWith("Error")) {
-    //             connectionSuccesful = true
-    //             this.connectionLost = false
-    //             await this.startEventForSerialCommunication();
-    //             await this.startEventForSwitch();
-    //             await ssh.setupSerialInterface();
-    //             this.ioCheckPanel?.webview.postMessage({
-    //                 command: 'start'
-    //             })
-    //             vscode.window.showInformationMessage("Connected to CC100")
-    //             return
-    //         }
-
-    //         await this.Workspace.readSettingsWriteSshProperties(this.wsPath, ssh).then(result => {
-    //             if (typeof result !== 'boolean') {
-    //                 ssh = result;
-    //             }
-    //             else {
-    //                 return result;
-    //             }
-    //         });
-
-    //         if (this.windowClosed) {
-    //             this.connectionLost = false
-    //             return
-    //         }
-    //     }
-    // }
 
     private async startEventForSerialCommunication(id: number) {
         let data;
