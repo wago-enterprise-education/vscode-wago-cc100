@@ -34,7 +34,7 @@ export class Manager {
         if (!Manager.instance) {
             Manager.instance = new Manager();
         }
-        return Manager.instance;
+        return Manager.instance!;
     }
     /**
      * Uploads the project with the specified version number to the target identified by the given ID.

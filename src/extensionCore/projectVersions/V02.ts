@@ -1165,10 +1165,10 @@ export class UploadFunctionality {
             return;
         }
 
-        let name = YamlCommands.getController(id)?.displayname;
+        let conName = YamlCommands.getController(id)?.displayname;
         let autoupdate = YamlCommands.getControllerSettings(id).autoupdate; 
         if( autoupdate === 'off') {
-            await vscode.window.showInformationMessage(`Reset ${name}?`, 'Yes', 'No').then((value) => {
+            await vscode.window.showInformationMessage(`Reset ${conName}?`, 'Yes', 'No').then((value) => {
                 if(value === 'No') return;
             });
         }
