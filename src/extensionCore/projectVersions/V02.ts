@@ -1152,12 +1152,10 @@ export class UploadFunctionality {
         }
         
         // Check latest available version 
-        // => Get List of all available versions from the WAGO Container Registry
-        // => Version of the Image is readable from the Tag?
+        // => Get Newest Tag of the image
         let newestVersion: number = 1;
 
         // Get current version on controller
-        // => Version of the Image is readable from the Tag?
         let conImageVersion : number = 1;
 
         if ( newestVersion == conImageVersion ) {
