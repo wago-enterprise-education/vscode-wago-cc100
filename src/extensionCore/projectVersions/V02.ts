@@ -122,7 +122,7 @@ export class ResetController implements Interface.ResetControllerInterface{
         try {
             await ConnectionManager.instance.executeCommand(controllerId, 'docker container stop #Container name');
             await ConnectionManager.instance.executeCommand(controllerId, 'docker rm #Container name');
-            await ConnectionManager.instance.executeCommand(controllerId, 'docker irm #Image name');
+            await ConnectionManager.instance.executeCommand(controllerId, 'docker irm cc100_python');
             await ConnectionManager.instance.executeCommand(controllerId, 'rm -rf /home/user/python_bootapplication/*');
 
         } catch (error: any) {
@@ -994,6 +994,9 @@ export class UploadFunctionality {
             vscode.window.showInformationMessage(`The files on ${controller?.displayname} are already up to date.`);
             return;
         }
+
+        //activate docker
+        await connectionManager.executeCommand(id, '/etc/config-tools/config_docker activate');
 
         await connectionManager.executeCommand(id, "docker exec pythonRuntime killall -15 python3");
 
