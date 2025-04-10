@@ -1107,6 +1107,17 @@ export class UploadFunctionality {
         }
     }
 
+    /**
+     * Generates a hash for a folder based on the provided string of hashes.
+     * 
+     * The method processes the input string by replacing newline characters with spaces,
+     * splitting it into an array, filtering out every second element, sorting the array
+     * lexicographically, and concatenating the elements back into a single string. 
+     * This processed string is then hashed using the MD5 algorithm to produce the final hash.
+     * 
+     * @param hashes - A string containing hashes, typically separated by newlines.
+     * @returns A string representing the MD5 hash of the processed input.
+     */
     private createFolderHash(hashes: string): string {
             hashes = hashes
                 .replaceAll('\n', '  ')

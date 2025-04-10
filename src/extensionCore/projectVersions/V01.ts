@@ -401,17 +401,23 @@ const uploadPath = "/home/user/python_bootapplication/";
 let connectionManager = ConnectionManager.instance;
 
 export class UploadFunctionality {
-
     /**
-     * This Method uploads the corresponding files to the WAGO Controller.
-     * The Procedure of the upload is determined by the versionNr of the Project
+     * Uploads project files to the controller with the specified ID.
      * 
-     * @param id The id of the used controller
+     * This method performs several actions:
+     * 1. Verifies that a main.py file exists in the project source directory
+     * 2. Deactivates CodeSys3 on the target controller
+     * 3. Compares local and remote folders to check if an update is needed
+     * 4. Uploads the files if changes are detected
+     * 5. Sets up the boot application and starts the Python runtime
+     * 
+     * @param id - The numeric identifier of the target controller
+     * @throws Will show an error message if the main.py file is missing
+     * @throws Will show an error message if the file upload fails
+     * @returns A Promise that resolves when the upload is complete or when an early return occurs
      */
-
     public async uploadFile(id: number) {
 
-        let controller = JsonCommands.getController;
         let path = `${vscode.workspace.workspaceFolders![0].uri.fsPath}\\src`;
 
         if (!fs.existsSync(`${path}/main.py`)) { 
@@ -425,19 +431,20 @@ export class UploadFunctionality {
             return;
         }
         try {
+            //kill all python processes
+            await connectionManager.executeCommand(id, "killall python3");
             //Upload Files
-            await connectionManager.executeCommand(id, `cp ${path} ${uploadPath}`);
+            await connectionManager.upload(id, path, uploadPath);
             //Create bootapplication
             await connectionManager.executeCommand(id, "echo '#!/bin/sh\n\npython3 /home/user/python_bootapplication/lib/runtimeCC.py &\nstty -F /dev/ttySTM1 cstopb brkint -icrnl -ixon -opost -isig icanon -iexten -echo' > /etc/init.d/S99_python_runtime");
             //Execute File
-            await connectionManager.executeCommand(id, `python3 /home/user/python_bootapplication/lib/runtimeCC.py`);
+            await connectionManager.executeCommand(id, `nohup python3 /home/user/python_bootapplication/lib/runtimeCC.py > /dev/null 2>&1 &`);
+
+            vscode.window.showInformationMessage(`The files on your Controller have been updated.`);
         } catch (err) {
             console.error(`Error uploading files: ${err}`);
             vscode.window.showErrorMessage("An error occurred while uploading the files.");
         }
-        vscode.window.showInformationMessage(`The files on your Controller have been updated.`);
-                
-            
     }
 
     /**
@@ -453,37 +460,11 @@ export class UploadFunctionality {
         try {
             // Get Array of remote Hashes
             let remoteHashes = await connectionManager.executeCommand(id, `find ${uploadPath} -type f -exec md5sum {} +`);
-            remoteHashes = remoteHashes
-                .replaceAll('\n', '  ')
-                .split('  ')
-                .filter((value, index) => {
-                    return index % 2 === 0;
-                })
-                .sort((a, b) => a.localeCompare(b))
-                .toString()
-                .replaceAll(',','');
-
-            let remoteHash = crypto
-                .createHash('md5')
-                .update(remoteHashes)
-                .digest('hex');
+            let remoteHash = this.createFolderHash(remoteHashes);
             
             //Get Array of local Hashes
             let localHashes = await this.getLocalHashes(localPath);
-            localHashes = localHashes
-                .replaceAll('\n', '  ')
-                .split('  ')
-                .filter((value, index) => {
-                    return index % 2 === 0;
-                })
-                .sort((a, b) => a.localeCompare(b))
-                .toString()
-                .replaceAll(',','');
-
-            let localHash = crypto
-                .createHash('md5')
-                .update(localHashes)
-                .digest('hex');
+            let localHash = this.createFolderHash(localHashes);
 
             return Promise.resolve(localHash === remoteHash);
 
@@ -491,6 +472,41 @@ export class UploadFunctionality {
             console.error('Error comparing folders:', error);
             return Promise.reject(error);
         }
+    }
+
+    /**
+     * Generates a hash for a given string of folder hashes.
+     * 
+     * The method processes the input string by:
+     * - Replacing all newline characters with double spaces.
+     * - Splitting the string into an array using double spaces as the delimiter.
+     * - Filtering the array to include only elements at even indices.
+     * - Sorting the resulting array in lexicographical order.
+     * - Joining the sorted array into a single string without commas.
+     * 
+     * Finally, the processed string is hashed using the MD5 algorithm, and the resulting
+     * hexadecimal hash is returned.
+     * 
+     * @param hashes - A string containing folder hashes to be processed and hashed.
+     * @returns The MD5 hash of the processed folder hashes.
+     */
+    private createFolderHash(hashes: string): string {
+        hashes = hashes
+            .replaceAll('\n', '  ')
+            .split('  ')
+            .filter((val, index) => {
+                return index % 2 === 0;
+            })
+            .sort((a, b) => a.localeCompare(b))
+            .toString()
+            .replaceAll(',','');
+
+        let hash = crypto
+            .createHash('md5')
+            .update(hashes)
+            .digest('hex');
+        
+        return hash;
     }
 
     /**
