@@ -44,8 +44,7 @@ export class ResetController implements Interface.ResetControllerInterface {
                         progress.report({ increment: 10, message: "Stopped Python Runtime" });
                         await ConnectionManager.instance.executeCommand(controllerId, 'codesys3 &');
                         progress.report({ increment: 10, message: "Started Codesys" });
-            
-                        vscode.window.showInformationMessage(`Controller ${controller.label} reset`);
+
                         ControllerProvider.instance.refresh();
                         
                         progress.report({ message: "Finished Resetting" });

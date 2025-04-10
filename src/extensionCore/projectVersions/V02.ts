@@ -131,7 +131,7 @@ export class ResetController implements Interface.ResetControllerInterface{
             controllerId = controller.controllerId;
         }
         
-        vscode.window.withProgress({
+        await vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,
 			title: "Reset Controller",
 			cancellable: false
@@ -1037,7 +1037,6 @@ export class UploadFunctionality {
 
             console.debug("Uploading Files...");
             await connectionManager.upload(id, path, uploadPath).then(() => {
-                vscode.window.showInformationMessage(`The files on ${controller?.displayname} have been updated.`);
             }).catch((err) => {
                 console.error(`Error uploading files: ${err}`);
                 vscode.window.showErrorMessage("An error occurred while uploading the files.");
@@ -1229,7 +1228,7 @@ export class UploadFunctionality {
         let conName = YamlCommands.getController(id)?.displayname;
         let autoupdate = YamlCommands.getControllerSettings(id).autoupdate; 
         if( autoupdate === 'off') {
-            await vscode.window.showInformationMessage(`Update Container on ${conName}?`, 'Yes', 'No').then((value) => {
+            await vscode.window.showWarningMessage(`Update Container on ${conName}?`, 'Yes', 'No').then((value) => {
                 if(value === 'No') return;
             });
         }
