@@ -991,7 +991,7 @@ export class UploadFunctionality {
 
         vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,
-			title: "Progress Notification",
+			title: "Upload Progress",
 			cancellable: false
         }, async (progress, token) => {
 
