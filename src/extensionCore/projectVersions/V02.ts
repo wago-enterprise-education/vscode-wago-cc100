@@ -1158,14 +1158,14 @@ export class UploadFunctionality {
      */
     private async updateContainer(id: number) {
           
-        let imageName = "pythonExtension";
+        let imageName = "cc100_python";
 
         // Cancel if Image Version is specifically chosen
         if (YamlCommands.getController(id)?.imageVersion !== 'latest') {
             return;
         }
         
-        // Check latest available version 
+        // Check if there is a new version
         // => Get Newest Tag of the image
         let newestVersion: number = 1;
 
