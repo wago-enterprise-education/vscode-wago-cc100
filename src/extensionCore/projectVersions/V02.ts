@@ -67,7 +67,7 @@ export class UploadAllControllers implements Interface.UploadAllInterface{
         
         vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,
-			title: "Progress Notification",
+			title: "Upload to All Controllers",
 			cancellable: false
         }, (progress, token) => {
             controllers.forEach(async (controller) => {
@@ -124,22 +124,31 @@ export class ResetController implements Interface.ResetControllerInterface{
         
         if(showConfirmation){
             await vscode.window.showWarningMessage(`Reset ${controller.label}?`, 'Yes', 'No').then((value) => {
-                if(value === 'Yes') controllerId = controller.controllerId;
+                if(value === 'No') return "";
             });
             if(!controllerId) return "";
-        } else {
-            controllerId = controller.controllerId;
         }
+        controllerId = controller.controllerId;
+        
+        vscode.window.withProgress({
+            location: vscode.ProgressLocation.Notification,
+			title: "Reset Controller",
+			cancellable: false
+        }, async (progress, token) => {
+            try {
+                await ConnectionManager.instance.executeCommand(controllerId, 'docker container stop #Container name');
+                progress.report({ increment: 20, message: `Stopped Container` });
+                await ConnectionManager.instance.executeCommand(controllerId, 'docker rm #Container name');
+                progress.report({ increment: 10, message: `Removed Container` });
+                await ConnectionManager.instance.executeCommand(controllerId, 'docker irm cc100_python');
+                progress.report({ increment: 10, message: `Removed Image` });
+                await ConnectionManager.instance.executeCommand(controllerId, 'rm -rf /home/user/python_bootapplication/*');
+                progress.report({ increment: 10, message: `Deleted Files` });
+            } catch (error: any) {
+                vscode.window.showErrorMessage('Error resetting controller');
+            }
+        });
 
-        try {
-            await ConnectionManager.instance.executeCommand(controllerId, 'docker container stop #Container name');
-            await ConnectionManager.instance.executeCommand(controllerId, 'docker rm #Container name');
-            await ConnectionManager.instance.executeCommand(controllerId, 'docker irm cc100_python');
-            await ConnectionManager.instance.executeCommand(controllerId, 'rm -rf /home/user/python_bootapplication/*');
-
-        } catch (error: any) {
-            vscode.window.showErrorMessage('Error reseting controller');
-        }
         return YamlCommands.getController(controllerId)?.engine || "";
     }
 }
