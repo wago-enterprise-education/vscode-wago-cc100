@@ -58,7 +58,7 @@ export class ResetController implements Interface.ResetControllerInterface {
         } else {
             controllerId = controller.controllerId;
         }
-        if(!controllerId) return "";
+        if(controllerId === undefined) return "";
         try {
             await ConnectionManager.instance.executeCommand(controllerId, 'killall python3');
             await ConnectionManager.instance.executeCommand(controllerId, 'rm -rf /home/user/python_bootapplication/*');
@@ -433,13 +433,12 @@ export class UploadFunctionality {
         try {
             //kill all python processes
             await connectionManager.executeCommand(id, "killall python3");
+            //Create bootapplication
+            connectionManager.executeCommand(id, "echo '#!/bin/sh\npython3 /home/user/python_bootapplication/lib/runtimeCC.py &\nstty -F /dev/ttySTM1 cstopb brkint -icrnl -ixon -opost -isig icanon -iexten -echo' > /etc/init.d/S99_python_runtime");
             //Upload Files
             await connectionManager.upload(id, path, uploadPath);
-            //Create bootapplication
-            await connectionManager.executeCommand(id, "echo '#!/bin/sh\n\npython3 /home/user/python_bootapplication/lib/runtimeCC.py &\nstty -F /dev/ttySTM1 cstopb brkint -icrnl -ixon -opost -isig icanon -iexten -echo' > /etc/init.d/S99_python_runtime");
             //Execute File
             await connectionManager.executeCommand(id, `nohup python3 /home/user/python_bootapplication/lib/runtimeCC.py > /dev/null 2>&1 &`);
-
             vscode.window.showInformationMessage(`The files on your Controller have been updated.`);
         } catch (err) {
             console.error(`Error uploading files: ${err}`);

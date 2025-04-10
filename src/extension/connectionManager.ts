@@ -160,7 +160,7 @@ export class ConnectionManager {
         try {
             connection = await this.getFreeConnection(controllerId);
         } catch (error) {
-            throw error;
+            throw error + cmd;
         }
 
         return connection.executeCommand(cmd);
@@ -561,7 +561,7 @@ class Connection {
                             return reject(err);
                         }
                         if(requested === answered) {
-                            sftp.end();
+                            sftp.destroy();
                             this.busy = false;
                             resolve('Upload successful');
                         }
