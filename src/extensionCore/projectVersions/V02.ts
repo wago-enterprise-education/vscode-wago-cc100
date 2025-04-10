@@ -1045,9 +1045,14 @@ export class UploadFunctionality {
 
             console.debug("Starting Python Runtime...");
             await connectionManager.executeCommand(id, "docker exec -d pythonRuntime python3 /lib/runtimeCC.py"); 
-            progress.report({ increment: 15, message: "Starting Script" });
+            progress.report({ increment: 15, message: "Started Script" });
 
-            return Promise.resolve(true);
+            progress.report({ message: "Finished Uploading" });
+            return new Promise<void>((resolve) => {
+                setTimeout(() => {
+                    resolve();
+                }, 2000);
+            });
         });
 
            

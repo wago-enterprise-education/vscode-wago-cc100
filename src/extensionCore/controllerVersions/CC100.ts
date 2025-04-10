@@ -47,8 +47,22 @@ export class ResetController implements Interface.ResetControllerInterface {
             
                         vscode.window.showInformationMessage(`Controller ${controller.label} reset`);
                         ControllerProvider.instance.refresh();
+                        
+                        progress.report({ message: "Finished Resetting" });
+                        return new Promise<void>((resolve) => {
+                            setTimeout(() => {
+                                resolve();
+                            }, 2000);
+                        });
+     
                     } catch (error: any) {
                         vscode.window.showErrorMessage(`Error reseting controller: ${error}`);
+                        progress.report({ message: "An Error occured while Resetting" });
+                        return new Promise<void>((resolve) => {
+                            setTimeout(() => {
+                                resolve();
+                            }, 2000);
+                        });
                     }
                 });
 
