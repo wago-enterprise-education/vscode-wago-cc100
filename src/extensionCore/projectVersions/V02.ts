@@ -973,7 +973,6 @@ export class UploadFunctionality {
 
     /**
      * This Method uploads the corresponding files to the WAGO Controller.
-     * The Procedure of the upload is determined by the versionNr of the Project
      * 
      * @param id The id of the used controller
      */
