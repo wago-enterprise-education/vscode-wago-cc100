@@ -989,27 +989,35 @@ export class UploadFunctionality {
             return;
         }
 
+        console.log("Deactivating CodeSys3...");
         await this.deactivateCodeSys3(id);
+
+        console.log("Comparing Folders...");
         if(await this.compareFolders(id, path)) {
             vscode.window.showInformationMessage(`The files on ${controller?.displayname} are already up to date.`);
             return;
         }
 
         //activate docker
+
+        console.log("Activating Docker...");
         await connectionManager.executeCommand(id, '/etc/config-tools/config_docker activate');
+        console.log("Docker activated.");
 
-        await connectionManager.executeCommand(id, "docker exec pythonRuntime killall -15 python3");
-
+        console.log("Updating Container...");
         this.updateContainer(id);
+        console.log("Container updated.");
 
+        console.log("Uploading Files...");
         await connectionManager.upload(id, path, uploadPath).then(() => {
             vscode.window.showInformationMessage(`The files on ${controller?.displayname} have been updated.`);
         }).catch((err) => {
             console.error(`Error uploading files: ${err}`);
             vscode.window.showErrorMessage("An error occurred while uploading the files.");
         });
-        await connectionManager.executeCommand(id, "docker exec -d pythonRuntime python3 /lib/runtimeCC.py");
-                
+
+        console.log("Starting Python Runtime...");
+        await connectionManager.executeCommand(id, "docker exec -d pythonRuntime python3 /lib/runtimeCC.py");    
     }
 
     /**
@@ -1024,10 +1032,12 @@ export class UploadFunctionality {
     private async compareFolders(id:number, localPath: string): Promise<Boolean> {
         try {
             // Get Array of remote Hashes
+            console.log("Getting remote Hashes...");
             let remoteHashes = await connectionManager.executeCommand(id, `find ${uploadPath} -type f -exec md5sum {} +`);
             let remoteHash = this.createFolderHash(remoteHashes);
             
             //Get Array of local Hashes
+            console.log("Getting local Hashes...");
             let localHashes = await this.getLocalHashes(localPath);
             let localHash = this.createFolderHash(localHashes);
 
@@ -1165,6 +1175,7 @@ export class UploadFunctionality {
             return;
         }
         
+        console.log("Comparing Versions...");
         // Check if there is a new version
         // => Get Newest Tag of the image
         let newestVersion: number = 1;
@@ -1179,19 +1190,22 @@ export class UploadFunctionality {
         let conName = YamlCommands.getController(id)?.displayname;
         let autoupdate = YamlCommands.getControllerSettings(id).autoupdate; 
         if( autoupdate === 'off') {
-            await vscode.window.showInformationMessage(`Reset ${conName}?`, 'Yes', 'No').then((value) => {
+            await vscode.window.showInformationMessage(`Update Container on ${conName}?`, 'Yes', 'No').then((value) => {
                 if(value === 'No') return;
             });
         }
 
         // Stop current container
+        console.log("Stopping Container...");
         await connectionManager.executeCommand(id, "docker exec pythonRuntime killall -15 python3");
 
         //remove all images and containers
+        console.log("Removing Images and Containers...");
         await connectionManager.executeCommand(id, "docker rm pythonRuntime");
         await connectionManager.executeCommand(id, `docker rmi -f ${imageName}`);
 
         // Download and Upload new Image
+        console.log("Downloading new Image...");
         const stream = fs.createWriteStream(`${vscode.workspace.workspaceFolders![0].uri.fsPath}/image.tar`);
         const { body } = await fetch('https://svgithub01001.wago.local/education/vscode-docker-engines/raw/refs/heads/CC100_v0.2/cc100_python.tar');
         if (!body) {
@@ -1203,6 +1217,7 @@ export class UploadFunctionality {
         await connectionManager.upload(id, `${vscode.workspace.workspaceFolders![0].uri.fsPath}/image.tar`, "/home/");
 
         // Load new Image
+        console.log("Loading new Image...");
         await connectionManager.executeCommand(id, `docker load -i /home/image.tar`);
         await connectionManager.executeCommand(id, `rm /home/image.tar`);
         await connectionManager.executeScript(id, `../../../res/dockerCommand.sh`);
