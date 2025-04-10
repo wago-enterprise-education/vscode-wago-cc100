@@ -120,15 +120,16 @@ export class ResetController implements Interface.ResetControllerInterface{
             if (!controller) return "";
         } 
 
-        let controllerId;
+        let controllerId: any;
         
         if(showConfirmation){
             await vscode.window.showWarningMessage(`Reset ${controller.label}?`, 'Yes', 'No').then((value) => {
-                if(value === 'No') return "";
+                if(value === 'Yes') controllerId = controller.controllerId;
             });
             if(!controllerId) return "";
+        } else {
+            controllerId = controller.controllerId;
         }
-        controllerId = controller.controllerId;
         
         vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,
