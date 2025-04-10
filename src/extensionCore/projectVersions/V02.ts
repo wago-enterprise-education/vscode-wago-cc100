@@ -989,35 +989,48 @@ export class UploadFunctionality {
             return;
         }
 
-        console.log("Deactivating CodeSys3...");
-        await this.deactivateCodeSys3(id);
+        vscode.window.withProgress({
+            location: vscode.ProgressLocation.Notification,
+			title: "Progress Notification",
+			cancellable: false
+        }, async (progress, token) => {
 
-        console.log("Comparing Folders...");
-        if(await this.compareFolders(id, path)) {
-            vscode.window.showInformationMessage(`The files on ${controller?.displayname} are already up to date.`);
-            return;
-        }
+            console.log("Deactivating CodeSys3...");
+            await this.deactivateCodeSys3(id);
+            progress.report({ increment: 10, message: "Deactivated Codesys" });
 
-        //activate docker
+            console.log("Comparing Folders...");
+            if(await this.compareFolders(id, path)) {
+                vscode.window.showInformationMessage(`The files on ${controller?.displayname} are already up to date.`);
+                return;
+            }
+            progress.report({ increment: 10, message: "Compared Folders" });
 
-        console.log("Activating Docker...");
-        await connectionManager.executeCommand(id, '/etc/config-tools/config_docker activate');
-        console.log("Docker activated.");
+            console.log("Activating Docker...");
+            await connectionManager.executeCommand(id, '/etc/config-tools/config_docker activate');
+            progress.report({ increment: 15, message: "Activated Docker" });
 
-        console.log("Updating Container...");
-        this.updateContainer(id);
-        console.log("Container updated.");
+            console.log("Updating Container...");
+            this.updateContainer(id);
+            progress.report({ increment: 20, message: "Updated Docker Container" });
 
-        console.log("Uploading Files...");
-        await connectionManager.upload(id, path, uploadPath).then(() => {
-            vscode.window.showInformationMessage(`The files on ${controller?.displayname} have been updated.`);
-        }).catch((err) => {
-            console.error(`Error uploading files: ${err}`);
-            vscode.window.showErrorMessage("An error occurred while uploading the files.");
+            console.log("Uploading Files...");
+            await connectionManager.upload(id, path, uploadPath).then(() => {
+                vscode.window.showInformationMessage(`The files on ${controller?.displayname} have been updated.`);
+            }).catch((err) => {
+                console.error(`Error uploading files: ${err}`);
+                vscode.window.showErrorMessage("An error occurred while uploading the files.");
+            });
+            progress.report({ increment: 30, message: "Uploaded Files" });
+
+            console.log("Starting Python Runtime...");
+            await connectionManager.executeCommand(id, "docker exec -d pythonRuntime python3 /lib/runtimeCC.py"); 
+            progress.report({ increment: 15, message: "Starting Script" });
+
+            return Promise.resolve(true);
         });
 
-        console.log("Starting Python Runtime...");
-        await connectionManager.executeCommand(id, "docker exec -d pythonRuntime python3 /lib/runtimeCC.py");    
+           
     }
 
     /**
