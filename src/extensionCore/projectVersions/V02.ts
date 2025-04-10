@@ -1006,26 +1006,26 @@ export class UploadFunctionality {
 			cancellable: false
         }, async (progress, token) => {
 
-            console.log("Deactivating CodeSys3...");
+            console.debug("Deactivating CodeSys3...");
             await this.deactivateCodeSys3(id);
             progress.report({ increment: 10, message: "Deactivated Codesys" });
 
-            console.log("Comparing Folders...");
+            console.debug("Comparing Folders...");
             if(await this.compareFolders(id, path)) {
                 vscode.window.showInformationMessage(`The files on ${controller?.displayname} are already up to date.`);
                 return;
             }
             progress.report({ increment: 10, message: "Compared Folders" });
 
-            console.log("Activating Docker...");
+            console.debug("Activating Docker...");
             await connectionManager.executeCommand(id, '/etc/config-tools/config_docker activate');
             progress.report({ increment: 15, message: "Activated Docker" });
 
-            console.log("Updating Container...");
+            console.debug("Updating Container...");
             this.updateContainer(id);
             progress.report({ increment: 20, message: "Updated Docker Container" });
 
-            console.log("Uploading Files...");
+            console.debug("Uploading Files...");
             await connectionManager.upload(id, path, uploadPath).then(() => {
                 vscode.window.showInformationMessage(`The files on ${controller?.displayname} have been updated.`);
             }).catch((err) => {
@@ -1034,7 +1034,7 @@ export class UploadFunctionality {
             });
             progress.report({ increment: 30, message: "Uploaded Files" });
 
-            console.log("Starting Python Runtime...");
+            console.debug("Starting Python Runtime...");
             await connectionManager.executeCommand(id, "docker exec -d pythonRuntime python3 /lib/runtimeCC.py"); 
             progress.report({ increment: 15, message: "Starting Script" });
 
