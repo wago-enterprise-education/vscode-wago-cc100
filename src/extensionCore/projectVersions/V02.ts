@@ -64,15 +64,27 @@ export class UploadAllControllers implements Interface.UploadAllInterface{
         }
         let upload = new UploadController();
         const controllers = YamlCommands.getControllers();
-        controllers.forEach(async (controller) => {
-            if(!controller) return;
-
-            upload.uploadController({controllerId: controller.id, label: controller.displayname, online: true}).then(() => {
-                vscode.window.showInformationMessage(`Controller ${controller.displayname} uploaded`);
-            }).catch((error) => {
-                vscode.window.showErrorMessage(`Error uploading controller ${controller.displayname}: ${error}`);
+        
+        vscode.window.withProgress({
+            location: vscode.ProgressLocation.Notification,
+			title: "Progress Notification",
+			cancellable: false
+        }, (progress, token) => {
+            controllers.forEach(async (controller) => {
+                if(!controller) return;
+    
+                upload.uploadController({controllerId: controller.id, label: controller.displayname, online: true}).then(() => {
+                    vscode.window.showInformationMessage(`Controller ${controller.displayname} uploaded`);
+                }).catch((error) => {
+                    vscode.window.showErrorMessage(`Error uploading controller ${controller.displayname}: ${error}`);
+                });
+                progress.report({increment: 100/controllers.length, message: `Uploading to ${controller.displayname}`});
             });
+            return Promise.resolve(true);
         });
+        
+
+
     }
 }
 export class ResetController implements Interface.ResetControllerInterface{
