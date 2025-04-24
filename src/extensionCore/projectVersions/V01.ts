@@ -50,26 +50,40 @@ export class ResetController implements Interface.ResetControllerInterface {
         if(!controller) {
             controller ={controllerId: 0, label: "Controller", online: false} 
         }
-        let controllerId;
+        let controllerId: number;
         if(showConfirmation){
             await vscode.window.showWarningMessage(`Reset ${controller.label}?`, 'Yes', 'No').then((value) => {
-                if(value === 'Yes') controllerId = controller.controllerId;
+                if(value === 'Yes') {
+                    controllerId = controller.controllerId;
+                } else {
+                    return "";
+                }
             });
         } else {
             controllerId = controller.controllerId;
         }
-        if(controllerId === undefined) return "";
-        try {
-            await ConnectionManager.instance.executeCommand(controllerId, 'killall python3');
-            await ConnectionManager.instance.executeCommand(controllerId, 'rm -rf /home/user/python_bootapplication/*');
-            await ConnectionManager.instance.executeCommand(controllerId, 'rm -rf /etc/init.d/S99_python_runtime');
-            await ConnectionManager.instance.executeCommand(controllerId, 'rm -rf /etc/rc.d/S99_python_runtime');
-            await ConnectionManager.instance.executeCommand(controllerId, 'killall tail');
-            
-        } catch (error: any) {
-            vscode.window.showErrorMessage(`Error resetting controller: ${error}`);
+        await vscode.window.withProgress({
+            location: vscode.ProgressLocation.Notification,
+            title: "Reset Controller",
+            cancellable: false
+        }, async (progress, token) => {
+            try {
+                progress.report({ message: "Killing Python..." });
+                await ConnectionManager.instance.executeCommand(controllerId, 'killall python3');
+                progress.report({ increment: 10, message: "Removing Files..." });
+                await ConnectionManager.instance.executeCommand(controllerId, 'rm -rf /home/user/python_bootapplication/*');
+                progress.report({ increment: 10, message: "Removing Python Autostart..." });
+                await ConnectionManager.instance.executeCommand(controllerId, 'rm -rf /etc/init.d/S99_python_runtime');
+                progress.report({ increment: 10 });
+                await ConnectionManager.instance.executeCommand(controllerId, 'rm -rf /etc/rc.d/S99_python_runtime');
+                progress.report({ increment: 10, message: "Killing all tails..." });
+                await ConnectionManager.instance.executeCommand(controllerId, 'killall tail');
+                progress.report({ increment: 10 });
+            } catch (error: any) {
+                vscode.window.showErrorMessage(`Error resetting controller: ${error}`);
 
-        }
+            }
+        });
         return "CC100";
     }
 }
@@ -243,7 +257,6 @@ export class JsonCommands {
         }
     }
 }
-
 /**
  * Enum representing various settings used in the application.
  * Each setting is associated with a string value that describes its purpose.
@@ -260,7 +273,6 @@ export enum setting {
     user = 'User',
     autoupdate = 'Autoupdate'
 }
-
 /**
  * Enum representing the various settings adapters used in the application.
  * Each adapter corresponds to a specific configuration property.
@@ -279,7 +291,6 @@ export enum settingAdapter {
     User = "user",
     Autoupdate = "autoupdate"
 }
-
 /**
  * Enum representing the keys used in the settings JSON configuration.
  * Each key corresponds to a specific configuration option.
@@ -294,7 +305,6 @@ export enum settingsJson {
     user = 'user',
     autoupdate = 'autoupdate'
 }
-
 export class EditSettingsFunctionality {
     
     /**
@@ -418,25 +428,43 @@ export class UploadFunctionality {
             return;
         }
 
-        await this.deactivateCodeSys3(id);
-        if(await this.compareFolders(id, path)) {
-            vscode.window.showInformationMessage(`The files on your Controller are already up to date.`);
-            return;
-        }
-        try {
-            //kill all python processes
-            await connectionManager.executeCommand(id, "killall python3");
-            //Create bootapplication
-            connectionManager.executeCommand(id, "echo '#!/bin/sh\npython3 /home/user/python_bootapplication/lib/runtimeCC.py &\nstty -F /dev/ttySTM1 cstopb brkint -icrnl -ixon -opost -isig icanon -iexten -echo' > /etc/init.d/S99_python_runtime");
-            //Upload Files
-            await connectionManager.upload(id, path, uploadPath);
-            //Execute File
-            await connectionManager.executeCommand(id, `nohup python3 /home/user/python_bootapplication/lib/runtimeCC.py > /dev/null 2>&1 &`);
-            vscode.window.showInformationMessage(`The files on your Controller have been updated.`);
-        } catch (err) {
-            console.error(`Error uploading files: ${err}`);
-            vscode.window.showErrorMessage("An error occurred while uploading the files.");
-        }
+        await vscode.window.withProgress({
+            location: vscode.ProgressLocation.Notification,
+            title: "Reset Controller",
+            cancellable: false
+        }, async (progress, token) => {
+            progress.report({ message: "Deactivating CodeSys3..." });
+            await this.deactivateCodeSys3(id);
+            progress.report({ increment: 20, message: "Comparing Folders..." });
+            if(await this.compareFolders(id, path)) {
+                vscode.window.showInformationMessage(`The files on your Controller are already up to date.`);
+                return;
+            }
+            progress.report({ increment: 20, message: "Killing all Python Scripts..." });
+            try {
+                //kill all python processes
+                await connectionManager.executeCommand(id, "killall python3");
+                progress.report({ increment: 10, message: "Creating Bootapplication..." });
+                //Create bootapplication
+                connectionManager.executeCommand(id, "echo '#!/bin/sh\npython3 /home/user/python_bootapplication/lib/runtimeCC.py &\nstty -F /dev/ttySTM1 cstopb brkint -icrnl -ixon -opost -isig icanon -iexten -echo' > /etc/init.d/S99_python_runtime");
+                progress.report({ increment: 20, message: "Uploading..." });
+                //Upload Files
+                await connectionManager.upload(id, path, uploadPath);
+                progress.report({ increment: 20, message: "Executing..." });
+                //Execute File
+                await connectionManager.executeCommand(id, `nohup python3 /home/user/python_bootapplication/lib/runtimeCC.py > /dev/null 2>&1 &`);
+                progress.report({ increment: 10, message: "The files on your Controller have been updated." });
+            
+                return new Promise<void>((resolve) => {
+                    setTimeout(() => {
+                        resolve();
+                    }, 2000);
+                });
+            } catch (err) {
+                console.error(`Error uploading files: ${err}`);
+                vscode.window.showErrorMessage("An error occurred while uploading the files.");
+            }
+        });
     }
 
     /**
@@ -453,10 +481,12 @@ export class UploadFunctionality {
             // Get Array of remote Hashes
             let remoteHashes = await connectionManager.executeCommand(id, `find ${uploadPath} -type f -exec md5sum {} +`);
             let remoteHash = this.createFolderHash(remoteHashes);
-            
+            console.debug("Remote Hash: " + remoteHash);
+
             //Get Array of local Hashes
             let localHashes = await this.getLocalHashes(localPath);
             let localHash = this.createFolderHash(localHashes);
+            console.debug("Local Hash: " + localHash);
 
             return Promise.resolve(localHash === remoteHash);
 
