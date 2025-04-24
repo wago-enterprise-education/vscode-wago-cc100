@@ -2,8 +2,10 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import { ControllerProvider, Controller, ControllerItem } from './view';
 import { Manager } from '../extensionCore/manager';
+import { ConnectionManager } from './connectionManager';
 
-const FOLDER_REGEX = '^(?!(?:CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\.[^.]*)?$)[^<>:"/\\|?*\x00-\x1F]*[^<>:"/\\|?*\x00-\x1F\ .]$';
+const MAX_RETRIES = 10; // Maximum number of retries for the debugger connection
+const RETRY_DELAY = 2000; // Delay between retries in milliseconds
 
 export class Command {
 
@@ -33,35 +35,83 @@ export class Command {
             ControllerProvider.instance.refresh();
         }));
         
-        commands.push(vscode.commands.registerCommand('vscode-wago-cc100.debug', async function () {
-                vscode.window.showInformationMessage('Python Debugging wird gestartet...');
+        commands.push(vscode.commands.registerCommand('vscode-wago-cc100.debug', async function (element: Controller | undefined) {
+            //Debugger configurations
+            const config = {
+                name: "Python: attach to cc100",
+                type: "python", //Python debug type
+                request: "attach", //Attach Mode
+                connect: {
+                    host: "localhost", //remote host (local for the ssh tunnel)
+                    port: 8765 //Port for the connection
+                },
+                pathMappings: [
+                    {
+                        localRoot: "${workspaceFolder}",
+                        remoteRoot: "/home/user/python_bootaplication"
+                    }
+                ]
+            };
         
-                //Debugger configurations
-                const config = {
-                    name: "Python: attach to cc100",
-                    type: "python", //Python debug type
-                    request: "attach", //Attach Mode
-                    connect: {
-                        host: "192.168.42.42", //remote host (local for the ssh tunnel)
-                        port: 8765 //Port for the connection
-                    },
-                    pathMappings: [
-                        {
-                            localRoot: "${workspaceFolder}",
-                            remoteRoot: "/home/user/python_bootaplication"
-                        }
-                    ]
-                };
-        
-                //Staring debugger
-                const success = await vscode.debug.startDebugging(undefined, config);
+            if(!element) {
+                vscode.window.showErrorMessage('No controller selected');
+                return;
+            }
+
+            await vscode.window.withProgress({
+                location: vscode.ProgressLocation.Notification,
+                title: 'Python Debugging',
+                cancellable: false,
+            }, async (progress) => {
+                progress.report({ increment: 0, message: 'Getting controller connection...' });
+
+                const connection = await ConnectionManager.instance.getConnection(element.controllerId)
+
+                progress.report({ increment: 20, message: 'Stopping old process...' });
+
+                await connection.executeCommand("docker exec pythonRuntime killall -15 python3")
+
+                progress.report({ increment: 20, message: 'Starting new process with debugpy...' });
+
+                await connection.executeCommand("docker exec -d pythonRuntime python3 -Xfrozen_modules=off -m debugpy --listen 0.0.0.0:5678 --wait-for-client main.py")
+
+                progress.report({ increment: 20, message: 'Creating port forwarding...' });
                 
-                if (success) {
-                    vscode.window.showInformationMessage('Debugging session started sucsessfully');
-                } else {
-                    vscode.window.showErrorMessage('ERROR: Could not start a debugging session');
+                await connection.forwardPort(8765, 8765)
+
+                progress.report({ increment: 20, message: 'Waiting for the debugger to connect...' });
+
+                //Wait for the user to stop the debugging session
+                vscode.debug.onDidTerminateDebugSession(async (session) => {
+                    if (session.configuration.name === config.name) {
+                        connection.disconnect();
+                        vscode.window.showInformationMessage('Debugging session stopped');
+                    }
+                });
+                
+                let success = false;
+                for (let i = 1; i <= MAX_RETRIES; i++) {
+                    success = await vscode.debug.startDebugging(undefined, config);
+                    if(success) break;
+                    if (i >= MAX_RETRIES) break;
+                    await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
                 }
-            }));
+
+                if (success) {
+                    progress.report({ increment: 100, message: 'Debugging session started' });
+                } else {
+                    connection.disconnect();
+                    progress.report({ increment: 100, message: 'Debugging session failed' });
+                }
+
+                return new Promise<void>((resolve) => {
+                    setTimeout(() => {
+                        resolve();
+                    }, 2000);
+                })
+            })
+            
+        }));
 
         commands.push(vscode.commands.registerCommand('vscode-wago-cc100.upload', async (controller: Controller | undefined) => {
             Manager.getInstance().upload(controller);

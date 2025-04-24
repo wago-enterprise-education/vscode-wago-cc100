@@ -5,6 +5,7 @@ import * as Path  from 'path';
 import * as fs from 'fs';
 import { ControllerProvider } from './view';
 import YAML from 'yaml';
+import * as net from 'net'; 
 
 const publicKeyPath = Path.join(homedir(), '.ssh', 'id_rsa_wago.pub');
 const privateKeyPath = Path.join(homedir(), '.ssh', 'id_rsa_wago');
@@ -307,7 +308,7 @@ export class ConnectionManager {
      */
     public async getConnection(controllerId: number): Promise<Connection> {
         return this.getControllerConnections(controllerId)[0].duplicate();
-    }
+    }   
 
     /**
      * Ping controller and return the time in milliseconds
@@ -349,6 +350,7 @@ class Connection {
     public connected: boolean = false;
     public client: Client;
     private askForPassword: boolean = true;
+    private server: net.Server | null = null;
 
     /**
      * Creates a new `Connection` instance.
@@ -387,7 +389,7 @@ class Connection {
                     host: this.urn.split(':')[0],
                     port: parseInt(this.urn.split(':')[1]),
                     username: this.username,
-                    privateKey: fs.readFileSync(privateKeyPath)
+                    privateKey: fs.readFileSync(privateKeyPath),
                 });
             }
         }
@@ -460,6 +462,47 @@ class Connection {
                 .catch((error) => {
                     reject(error);
                 })
+        })
+    }
+
+    public forwardPort(localPort: number, remotePort: number): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            this.server = net.createServer((socket) => {
+                console.debug(`New connection from ${socket.remoteAddress}:${socket.remotePort}`);
+                if(socket.remoteAddress === undefined) throw new Error('No remote address');
+                if(socket.remotePort === undefined) throw new Error('No remote port');
+                this.client.forwardOut(socket.remoteAddress, socket.remotePort, this.urn.split(":")[0], remotePort, (err, stream) => {
+                    if (err) {
+                        console.error('Error forwarding port:', err);
+                        socket.destroy();
+                        return
+                    }
+                    console.debug(`Forwarding port ${localPort} to ${this.urn.split(":")[0]}:${remotePort}`)
+
+                    stream.on('error', (err: Error) => {
+                        console.error('Error in forwarded port stream:', err);
+                    });
+
+                    stream.on('end', () => {
+                        socket.end();
+                    });
+                    socket.pipe(stream).pipe(socket)
+                })
+
+            })
+            this.client.on('close', () => {
+                console.debug(`Connection closed`);
+                if(this.server) this.server.close();
+            })
+            this.server.on('error', (err: Error) => {
+                console.error('Error in local server:', err);
+                if(this.server) this.server.close();
+                reject(err);
+            })
+            this.server.listen(localPort, () => {
+                console.debug(`Listening on local port ${localPort}`);
+                resolve();
+            })
         })
     }
 
@@ -588,6 +631,7 @@ class Connection {
      */
     public disconnect() {
         this.client.removeAllListeners();
+        if(this.server) this.server.close();
         this.client.end();
     }
 }
