@@ -597,7 +597,7 @@ class Connection {
                 let answered = 0;
                 for await(const file of this.getAllLocalFiles(localPath)) {
                     requested++;
-                    sftp.fastPut(file, remotePath.concat(file.replace(localPath + '\\', '').replaceAll('\\', '/')), (err) => {
+                    sftp.fastPut(file, remotePath.concat(file.replace(localPath + '\\', '').replaceAll('\\', '/')), async (err) => {
                         answered++;
                         if (err) {
                             console.error('Upload error:', err);
@@ -605,8 +605,9 @@ class Connection {
                         }
                         if(requested === answered) {
                             sftp.destroy();
-                            this.busy = false;
                             resolve('Upload successful');
+                            await new Promise(resolve => setTimeout(resolve, 200));
+                            this.busy = false;
                         }
                     })
                 }
