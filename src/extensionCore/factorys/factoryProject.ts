@@ -181,7 +181,7 @@ export class ProjectFactory {
      */
     public createCreateProjectCommand(versionNr: number): Interface.CreateProjectInterface{
         switch (versionNr) {
-            case 0.2:
+            case 0:
                 return new V2.CreateProject();
             default:
                 throw new Error("Invalid version number");

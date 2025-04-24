@@ -190,7 +190,7 @@ export class AddController implements Interface.AddControllerInterface{
             ignoreFocusOut: true
         }) || '';
 
-        const controllerEngine = await vscode.window.showQuickPick(['CC100-v0.1', 'CC100-v0.2'], {
+        const controllerEngine = await vscode.window.showQuickPick(['CC100'], {
             title: 'Add Controller / Engine',
             canPickMany: false,
             ignoreFocusOut: true
@@ -611,7 +611,11 @@ export class EditSettingsFunctionality {
 
                 // wago.yaml QuickPick
                 case wagoSettings.engine:
-                    //TODO - No Enums of available engines yet----------------------------------------------
+                    let pickedEngine = await vscode.window.showQuickPick(Object.values(engine) , {
+                        title: 'Engine',
+                        canPickMany: false
+                    }) || '';
+                    YamlCommands.writeWagoYaml(id, wagoSettings[settingToEdit], pickedEngine);
                     break;
 
                 case wagoSettings.src:
@@ -961,6 +965,9 @@ export class YamlCommands {
         }
         return id;
     }
+}
+export enum engine{
+    CC100 = 'CC100'
 }
 /**
  * Enum representing available settings for the wago.yaml.

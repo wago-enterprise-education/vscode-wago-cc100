@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { ControllerProvider } from './extension/view';
 import { webviewIoCheck } from './extension/webviewIoCheck';
-import { verifyProject } from './extension/versionDetection';
+import { ProjectVersion, verifyProject } from './extension/versionDetection';
 import { Command } from './extension/command';
 import { Manager } from './extensionCore/manager';
 
@@ -20,7 +20,9 @@ export async function activate(context: vscode.ExtensionContext) {
 	await verifyProject();
 
 	//Connect to Controllers
-	Manager.getInstance().establishConnections();
+	if (ProjectVersion != 0) {
+		Manager.getInstance().establishConnections();
+	}
 }
 
 // This method is called when your extension is deactivated
