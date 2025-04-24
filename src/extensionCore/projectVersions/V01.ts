@@ -390,13 +390,6 @@ export class EditSettingsFunctionality {
 // Upload Functionality
 //===================================================================================
 
-//Roadmap for the extension
-//+1. Get Path to the file structure to be uploaded -> Throw Error if not available
-//+2. Create Command to send to the Connection Manager
-//+3. Integrate Hash-Comparison of files
-//+4. Integrate File Upload in Case of older Version
-//5. Integrate Containerversion Check and update
-
 const uploadPath = "/home/user/python_bootapplication/";
 let connectionManager = ConnectionManager.instance;
 
