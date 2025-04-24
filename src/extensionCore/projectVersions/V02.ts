@@ -190,11 +190,11 @@ export class AddController implements Interface.AddControllerInterface{
             ignoreFocusOut: true
         }) || '';
 
-        const controllerEngine = await vscode.window.showQuickPick(['CC100'], {
+        const controllerEngine = await vscode.window.showQuickPick(Object.values(engine) , {
             title: 'Add Controller / Engine',
             canPickMany: false,
             ignoreFocusOut: true
-        }) || 'CC100-v0.2';
+        }) || '';
 
         const workspacePath = vscode.workspace.workspaceFolders![0].uri.fsPath;
         const controllerSrc = await vscode.window.showQuickPick(
