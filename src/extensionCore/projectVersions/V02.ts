@@ -140,15 +140,15 @@ export class ResetController implements Interface.ResetControllerInterface{
             try {
                 //---------------- TO EDIT
                 progress.report({ message: `Stopping Container...` });
-                await ConnectionManager.instance.executeCommand(controllerId, 'docker container stop #Container name');
+                await ConnectionManager.instance.executeCommand(controllerId, 'docker container stop pythonRuntime');
                 progress.report({ increment: 20, message: `Removing Container...` });
-                await ConnectionManager.instance.executeCommand(controllerId, 'docker rm #Container name');
+                await ConnectionManager.instance.executeCommand(controllerId, 'docker rm pythonRuntime');
                 progress.report({ increment: 10, message: `Removing Image...` });
                 //---------------- TO EDIT
-                await ConnectionManager.instance.executeCommand(controllerId, 'docker irm cc100_python');
+                await ConnectionManager.instance.executeCommand(controllerId, 'docker rmi cc100_python');
                 progress.report({ increment: 10, message: `Deleting Files...` });
                 await ConnectionManager.instance.executeCommand(controllerId, 'rm -rf /home/user/python_bootapplication/*');
-                progress.report({ increment: 10, message: `Deactivating Digital Outputs...` });
+                progress.report({ increment: 10 });
             } catch (error) {
                 vscode.window.showErrorMessage('Error resetting controller');
             }
