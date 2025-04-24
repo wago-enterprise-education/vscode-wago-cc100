@@ -13,58 +13,49 @@ export class ResetController implements Interface.ResetControllerInterface {
      * 
      * @throws Will display an error message if any of the commands fail during execution.
      */
-    async reset( controller: any) {
+    async reset( controller: any ) {
         let controllerId = controller.controllerId;
 
         vscode.window.withProgress({
-                    location: vscode.ProgressLocation.Notification,
-                    title: "Reset Controller",
-                    cancellable: false
-                }, async (progress, token) => {
-                    try {
-                        progress.report({ increment: 50, message: `Resetting controller ${controller.label}` });
-
-                        await ConnectionManager.instance.executeCommand(controllerId, 'echo 0 >> /sys/kernel/dout_drv/DOUT_DATA');
-                        progress.report({ increment: 4, message: "Deactivated Digital Outputs" });
-                        await ConnectionManager.instance.executeCommand(controllerId, 'echo 0 >> /sys/bus/iio/devices/iio:device0/out_voltage1_powerdown');
-                        progress.report({ increment: 2, message: "Deactivated Analog Outputs" });
-                        await ConnectionManager.instance.executeCommand(controllerId, 'echo 0 >> /sys/bus/iio/devices/iio:device0/out_voltage1_raw');
-                        progress.report({ increment: 2, message: "Deactivated Analog Outputs" });
-                        await ConnectionManager.instance.executeCommand(controllerId, 'echo 0 >> /sys/bus/iio/devices/iio:device0/out_voltage2_powerdown');
-                        progress.report({ increment: 2, message: "Deactivated Analog Outputs" });
-                        await ConnectionManager.instance.executeCommand(controllerId, 'echo 0 >> /sys/bus/iio/devices/iio:device0/out_voltage2_raw');
-                        progress.report({ increment: 2, message: "Deactivated Analog Outputs" });
-                        await ConnectionManager.instance.executeCommand(controllerId, 'echo 0 >> /dev/leds/run-green/brightness');
-                        progress.report({ increment: 3, message: "Deactivated LED" });
-                        await ConnectionManager.instance.executeCommand(controllerId, 'echo 0 >> /dev/leds/run-red/brightness');
-                        progress.report({ increment: 3, message: "Deactivated LED" });
-                        await ConnectionManager.instance.executeCommand(controllerId, '/etc/config-tools/config_docker deactivate');
-                        progress.report({ increment: 10, message: "Deactivated Docker" });
-                        await ConnectionManager.instance.executeCommand(controllerId, '/etc/config-tools/config_runtime runtime-version=1');
-                        progress.report({ increment: 10, message: "Stopped Python Runtime" });
-                        await ConnectionManager.instance.executeCommand(controllerId, 'codesys3 &');
-                        progress.report({ increment: 10, message: "Started Codesys" });
-
-                        ControllerProvider.instance.refresh();
-                        
-                        progress.report({ message: "Finished Resetting" });
-                        return new Promise<void>((resolve) => {
-                            setTimeout(() => {
-                                resolve();
-                            }, 2000);
-                        });
-     
-                    } catch (error: any) {
-                        vscode.window.showErrorMessage(`Error reseting controller: ${error}`);
-                        progress.report({ message: "An Error occured while Resetting" });
-                        return new Promise<void>((resolve) => {
-                            setTimeout(() => {
-                                resolve();
-                            }, 2000);
-                        });
-                    }
-                });
-
-        
+            location: vscode.ProgressLocation.Notification,
+            title: "Reset Controller",
+            cancellable: false
+        }, async (progress, token) => {
+            try {
+                progress.report({ increment: 50, message: "Deactivating Digital Outputs..." })
+                await ConnectionManager.instance.executeCommand(controllerId, 'echo 0 >> /sys/kernel/dout_drv/DOUT_DATA');
+                progress.report({ increment: 4, message: "Deactivating Analog Outputs..." });
+                await ConnectionManager.instance.executeCommand(controllerId, 'echo 0 >> /sys/bus/iio/devices/iio:device0/out_voltage1_powerdown');
+                progress.report({ increment: 2, message: "Deactivating Analog Outputs..." });
+                await ConnectionManager.instance.executeCommand(controllerId, 'echo 0 >> /sys/bus/iio/devices/iio:device0/out_voltage1_raw');
+                progress.report({ increment: 2, message: "Deactivating Analog Outputs..." });
+                await ConnectionManager.instance.executeCommand(controllerId, 'echo 0 >> /sys/bus/iio/devices/iio:device0/out_voltage2_powerdown');
+                progress.report({ increment: 2, message: "Deactivating Analog Outputs..." });
+                await ConnectionManager.instance.executeCommand(controllerId, 'echo 0 >> /sys/bus/iio/devices/iio:device0/out_voltage2_raw');
+                progress.report({ increment: 2, message: "Deactivating LEDs..." });
+                await ConnectionManager.instance.executeCommand(controllerId, 'echo 0 >> /dev/leds/run-green/brightness');
+                progress.report({ increment: 3, message: "Deactivating LEDs..." });
+                await ConnectionManager.instance.executeCommand(controllerId, 'echo 0 >> /dev/leds/run-red/brightness');
+                progress.report({ increment: 3, message: "Deactivating Docker..." });
+                await ConnectionManager.instance.executeCommand(controllerId, '/etc/config-tools/config_docker deactivate');
+                progress.report({ increment: 10, message: "Stopping Python Runtime..." });
+                await ConnectionManager.instance.executeCommand(controllerId, '/etc/config-tools/config_runtime runtime-version=1');
+                progress.report({ increment: 10, message: "Starting CodeSys3..." });
+                await ConnectionManager.instance.executeCommand(controllerId, 'codesys3 &');
+                progress.report({ increment: 10, message: "Finished Resetting" })
+                ControllerProvider.instance.refresh();
+                
+                progress.report({ message: "Finished Resetting" });
+                return new Promise<void>((resolve) => {
+                    setTimeout(() => {
+                        resolve();
+                    }, 2000);
+                });    
+            } catch (error: any) {
+                progress.report({ increment:100, message: "An Error occured while Resetting" });
+                console.error(`Error resetting controller: ${error}`);
+                vscode.window.showErrorMessage("An Error occured while Resetting the Controller");
+            }
+        });
     }
 }

@@ -73,12 +73,13 @@ export class UploadAllControllers implements Interface.UploadAllInterface{
             controllers.forEach(async (controller) => {
                 if(!controller) return;
     
+                progress.report({ message: `Uploading to ${controller.displayname}...` });
                 upload.uploadController({controllerId: controller.id, label: controller.displayname, online: true}).then(() => {
                     vscode.window.showInformationMessage(`Controller ${controller.displayname} uploaded`);
                 }).catch((error) => {
                     vscode.window.showErrorMessage(`Error uploading controller ${controller.displayname}: ${error}`);
                 });
-                progress.report({increment: 100/controllers.length, message: `Uploading to ${controller.displayname}`});
+                progress.report({ increment: 100/controllers.length });
             });
             return Promise.resolve(true);
         });
@@ -137,15 +138,18 @@ export class ResetController implements Interface.ResetControllerInterface{
 			cancellable: false
         }, async (progress, token) => {
             try {
+                //---------------- TO EDIT
+                progress.report({ message: `Stopping Container...` });
                 await ConnectionManager.instance.executeCommand(controllerId, 'docker container stop #Container name');
-                progress.report({ increment: 20, message: `Stopped Container` });
+                progress.report({ increment: 20, message: `Removing Container...` });
                 await ConnectionManager.instance.executeCommand(controllerId, 'docker rm #Container name');
-                progress.report({ increment: 10, message: `Removed Container` });
+                progress.report({ increment: 10, message: `Removing Image...` });
+                //---------------- TO EDIT
                 await ConnectionManager.instance.executeCommand(controllerId, 'docker irm cc100_python');
-                progress.report({ increment: 10, message: `Removed Image` });
+                progress.report({ increment: 10, message: `Deleting Files...` });
                 await ConnectionManager.instance.executeCommand(controllerId, 'rm -rf /home/user/python_bootapplication/*');
-                progress.report({ increment: 10, message: `Deleted Files` });
-            } catch (error: any) {
+                progress.report({ increment: 10, message: `Deactivating Digital Outputs...` });
+            } catch (error) {
                 vscode.window.showErrorMessage('Error resetting controller');
             }
         });
@@ -598,19 +602,19 @@ export class EditSettingsFunctionality {
         if (settingToEdit in wagoSettings) {
             switch (settingToEdit) {
                 // wago.yaml Setting
-                case "displayname": 
-                case "description":
+                case wagoSettings.displayname: 
+                case wagoSettings.description:
                     let content = await this.getInput(settingToEdit);
                     if (!content) return;
                     YamlCommands.writeWagoYaml(id, wagoSettings[settingToEdit], content);
                     break;
 
                 // wago.yaml QuickPick
-                case "engine":
+                case wagoSettings.engine:
                     //TODO - No Enums of available engines yet----------------------------------------------
                     break;
 
-                case "src":
+                case wagoSettings.src:
                     const workspacePath = vscode.workspace.workspaceFolders![0].uri.fsPath;
                     const controllerSrc = await vscode.window.showQuickPick(
                         fs.readdirSync(workspacePath)
@@ -643,7 +647,7 @@ export class EditSettingsFunctionality {
                         YamlCommands.writeWagoYaml(id, wagoSettings[settingToEdit], newFolder);
                     }
                     break;
-                case "imageVersion": 
+                case wagoSettings.imageVersion: 
                     //TODO - Not yet determined how they will be managed-------------------------------------------
                     break;
             }
@@ -652,7 +656,7 @@ export class EditSettingsFunctionality {
         } else if (settingToEdit in controllerSettings) {
             switch (settingToEdit) {
                 // controller.yaml Setting
-                case "connection":
+                case controllerSettings.connection:
                     let conType = await vscode.window.showQuickPick(['usb-c', 'ethernet'], {
                         title: 'Connection Type',
                         canPickMany: false
@@ -662,9 +666,9 @@ export class EditSettingsFunctionality {
                     YamlCommands.writeControllerYaml(id, controllerSettings[settingToEdit], conType);
                     break;
 
-                case "ip": 
-                case "port":
-                case "user":
+                case controllerSettings.ip: 
+                case controllerSettings.port:
+                case controllerSettings.user:
                     if (settingToEdit === controllerSettings.ip) YamlCommands.writeControllerYaml(id, controllerSettings.connection, 'usb-c');
                     let content = await this.getInput(settingToEdit);
                     if (!content) return;
@@ -672,7 +676,7 @@ export class EditSettingsFunctionality {
                     break;
     
                 // controller.yaml QuickPick
-                case "autoupdate": 
+                case controllerSettings.autoupdate: 
                     let status = await vscode.window.showQuickPick(['on', 'off'], {
                         title: 'Autoupdate',
                         canPickMany: false
@@ -998,7 +1002,6 @@ export class UploadFunctionality {
      * 
      * @param id The id of the used controller
      */
-
     public async uploadFile(id: number) {
 
         let controller = YamlCommands.getController(id);
@@ -1015,47 +1018,50 @@ export class UploadFunctionality {
 			title: "Upload Progress",
 			cancellable: false
         }, async (progress, token) => {
+            try {
+                progress.report({ message: "Deactivating Codesys..." });
+                await this.deactivateCodeSys3(id);
+                progress.report({ increment: 10 });
 
-            console.debug("Deactivating CodeSys3...");
-            await this.deactivateCodeSys3(id);
-            progress.report({ increment: 10, message: "Deactivated Codesys" });
+                progress.report({ message: "Comparing Folders..." });
+                if(await this.compareFolders(id, path)) {
+                    vscode.window.showInformationMessage(`The files on ${controller?.displayname} are already up to date.`);
+                    return;
+                }
+                progress.report({ increment: 10 });
 
-            console.debug("Comparing Folders...");
-            if(await this.compareFolders(id, path)) {
-                vscode.window.showInformationMessage(`The files on ${controller?.displayname} are already up to date.`);
-                return;
+                progress.report({ message: "Activating Docker..." });
+                await connectionManager.executeCommand(id, '/etc/config-tools/config_docker activate');
+                progress.report({ increment: 15 });
+
+                progress.report({ message: "Updating Container..." });
+                this.updateContainer(id);
+                progress.report({ increment: 20 });
+
+                progress.report({ message: "Uploading..." });
+                await connectionManager.upload(id, path, uploadPath).then(() => {
+                }).catch((err) => {
+                    console.error(`Error uploading files: ${err}`);
+                    vscode.window.showErrorMessage("An error occurred while uploading the files.");
+                });
+                progress.report({ increment: 30 });
+
+                progress.report({ message: "Starting Python Runtime..." });
+                await connectionManager.executeCommand(id, "docker exec -d pythonRuntime python3 /lib/runtimeCC.py"); 
+                progress.report({ increment: 15, message: "Finished Uploading" });
+
+                return new Promise<void>((resolve) => {
+                    setTimeout(() => {
+                        resolve();
+                    }, 2000);
+                });
+
+            } catch (error) {
+                progress.report({ increment:100, message: "An Error occured while Uploading" });
+                console.error(`Error uploading to controller: ${error}`);
+                vscode.window.showErrorMessage("An Error occured while Uploading to the Controller");
             }
-            progress.report({ increment: 10, message: "Compared Folders" });
-
-            console.debug("Activating Docker...");
-            await connectionManager.executeCommand(id, '/etc/config-tools/config_docker activate');
-            progress.report({ increment: 15, message: "Activated Docker" });
-
-            console.debug("Updating Container...");
-            this.updateContainer(id);
-            progress.report({ increment: 20, message: "Updated Docker Container" });
-
-            console.debug("Uploading Files...");
-            await connectionManager.upload(id, path, uploadPath).then(() => {
-            }).catch((err) => {
-                console.error(`Error uploading files: ${err}`);
-                vscode.window.showErrorMessage("An error occurred while uploading the files.");
-            });
-            progress.report({ increment: 30, message: "Uploaded Files" });
-
-            console.debug("Starting Python Runtime...");
-            await connectionManager.executeCommand(id, "docker exec -d pythonRuntime python3 /lib/runtimeCC.py"); 
-            progress.report({ increment: 15, message: "Started Script" });
-
-            progress.report({ message: "Finished Uploading" });
-            return new Promise<void>((resolve) => {
-                setTimeout(() => {
-                    resolve();
-                }, 2000);
-            });
-        });
-
-           
+        });   
     }
 
     /**
@@ -1066,18 +1072,19 @@ export class UploadFunctionality {
      * @param localPath The Path to the local folder with the python program
      * @returns Returns true, if folder contents are equivalent, false if not
      */
-    
     private async compareFolders(id:number, localPath: string): Promise<Boolean> {
         try {
             // Get Array of remote Hashes
             console.log("Getting remote Hashes...");
             let remoteHashes = await connectionManager.executeCommand(id, `find ${uploadPath} -type f -exec md5sum {} +`);
             let remoteHash = this.createFolderHash(remoteHashes);
+            console.debug("Remote Hash: " + remoteHash);
             
             //Get Array of local Hashes
             console.log("Getting local Hashes...");
             let localHashes = await this.getLocalHashes(localPath);
             let localHash = this.createFolderHash(localHashes);
+            console.debug("Local Hash: " + localHash);
 
             return Promise.resolve(localHash === remoteHash);
 
@@ -1095,7 +1102,6 @@ export class UploadFunctionality {
      * @param path The Path to the directory to get the Hashes from
      * @returns Returns a String with Hashes and Paths to all files in the directory
      */
-
     private async getLocalHashes(path: string): Promise<string> {
         try {
             let localFiles = await this.getFilesInDirectory(path);
@@ -1128,7 +1134,6 @@ export class UploadFunctionality {
      * @param dirPath The current folder to be iterated
      * @returns Returns an Array with all Paths to files in the directory
      */
-
     private async getFilesInDirectory(dirPath: string): Promise<string[]> {
         
         try {
@@ -1150,7 +1155,7 @@ export class UploadFunctionality {
             return files;
 
         } catch (error) {
-            console.error('Error getting files in directory:', error);
+            console.error('Error getting files in local directory:', error);
             return Promise.reject(error);
         }
     }
@@ -1185,11 +1190,15 @@ export class UploadFunctionality {
             return hash;
     }
 
+    /**
+     * Kills all running codesys3 processes and deactivates the Codesys3 runtime on the WAGO Controller.
+     * 
+     * @param id The id of the used controller
+     */
     private async deactivateCodeSys3(id: number) {
         await connectionManager.executeCommand(id, "kill $(pidof codesys3)");
         await connectionManager.executeCommand(id, "/etc/config-tools/config_runtime runtime-version=0")
             .then(() => {
-                
                 console.log("CodeSys3 deactivated.");
             })
             .catch((err) => {
@@ -1213,51 +1222,55 @@ export class UploadFunctionality {
             return;
         }
         
-        console.log("Comparing Versions...");
-        // Check if there is a new version
-        // => Get Newest Tag of the image
-        let newestVersion: number = 1;
+        try {
+            console.debug("Comparing Versions...");
+            // Check if there is a new version
+            // => Get Newest Tag of the image
+            let newestVersion: number = 1;
 
-        // Get current version on controller
-        let conImageVersion : number = 1;
+            // Get current version on controller
+            let conImageVersion : number = 1;
 
-        if ( newestVersion == conImageVersion ) {
-            return;
-        }
+            if ( newestVersion == conImageVersion ) {
+                return;
+            }
 
-        let conName = YamlCommands.getController(id)?.displayname;
-        let autoupdate = YamlCommands.getControllerSettings(id).autoupdate; 
-        if( autoupdate === 'off') {
-            await vscode.window.showWarningMessage(`Update Container on ${conName}?`, 'Yes', 'No').then((value) => {
-                if(value === 'No') return;
-            });
-        }
+            let conName = YamlCommands.getController(id)?.displayname;
+            let autoupdate = YamlCommands.getControllerSettings(id).autoupdate; 
+            if( autoupdate === 'off') {
+                await vscode.window.showWarningMessage(`Update Container on ${conName}?`, 'Yes', 'No').then((value) => {
+                    if(value === 'No') return;
+                });
+            }
 
-        // Stop current container
-        console.log("Stopping Container...");
-        await connectionManager.executeCommand(id, "docker exec pythonRuntime killall -15 python3");
+            // Stop current container
+            console.debug("Stopping Container...");
+            await connectionManager.executeCommand(id, "docker exec pythonRuntime killall -15 python3");
 
-        //remove all images and containers
-        console.log("Removing Images and Containers...");
-        await connectionManager.executeCommand(id, "docker rm pythonRuntime");
-        await connectionManager.executeCommand(id, `docker rmi -f ${imageName}`);
+            //remove all images and containers
+            console.debug("Removing Images and Containers...");
+            await connectionManager.executeCommand(id, "docker rm pythonRuntime");
+            await connectionManager.executeCommand(id, `docker rmi -f ${imageName}`);
 
-        // Download and Upload new Image
-        console.log("Downloading new Image...");
-        const stream = fs.createWriteStream(`${vscode.workspace.workspaceFolders![0].uri.fsPath}/image.tar`);
-        const { body } = await fetch('https://svgithub01001.wago.local/education/vscode-docker-engines/raw/refs/heads/CC100_v0.2/cc100_python.tar');
-        if (!body) {
-            vscode.window.showErrorMessage("Error downloading image.");
-            return;
-        }
-        await finished(Readable.fromWeb(body).pipe(stream));
+            // Download and Upload new Image
+            console.debug("Downloading new Image...");
+            const stream = fs.createWriteStream(`${vscode.workspace.workspaceFolders![0].uri.fsPath}/image.tar`);
+            const { body } = await fetch('https://svgithub01001.wago.local/education/vscode-docker-engines/raw/refs/heads/CC100_v0.2/cc100_python.tar');
+            if (!body) {
+                vscode.window.showErrorMessage("Error downloading image.");
+                return;
+            }
+            await finished(Readable.fromWeb(body).pipe(stream));
 
-        await connectionManager.upload(id, `${vscode.workspace.workspaceFolders![0].uri.fsPath}/image.tar`, "/home/");
+            await connectionManager.upload(id, `${vscode.workspace.workspaceFolders![0].uri.fsPath}/image.tar`, "/home/");
 
-        // Load new Image
-        console.log("Loading new Image...");
-        await connectionManager.executeCommand(id, `docker load -i /home/image.tar`);
-        await connectionManager.executeCommand(id, `rm /home/image.tar`);
-        await connectionManager.executeScript(id, `../../../res/dockerCommand.sh`);
+            // Load new Image
+            console.debug("Loading new Image...");
+            await connectionManager.executeCommand(id, `docker load -i /home/image.tar`);
+            await connectionManager.executeCommand(id, `rm /home/image.tar`);
+            await connectionManager.executeScript(id, `../../../res/dockerCommand.sh`);
+        } catch(error) {
+            console.error(`Error Updating Container: ${error}`);
+        } 
     }
 }
