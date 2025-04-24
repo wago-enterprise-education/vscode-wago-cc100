@@ -1,20 +1,15 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
-import { SSH } from '../oldFiles/ssh';
-import { Connection } from './connection';
 import sanitizeHtml from 'sanitize-html';
 import { ConnectionManager } from './connectionManager';
 import { Controller } from './view';
 import { ProjectVersion } from './versionDetection';
 import YAML from 'yaml';
 
-let ssh = new SSH('192.168.42.42', 22, 'root', '');
-
 export class webviewIoCheck {
     private windowClosed: boolean = false
     private test: boolean = false;
-    private Connection = new Connection();
 
     public canLoadPanel: boolean = true;
     public ioCheckPanel: vscode.WebviewPanel | undefined = undefined;
@@ -180,7 +175,9 @@ export class webviewIoCheck {
             });
             await this.startEventForSerialCommunication(id);
             await this.startEventForSwitch(id);
-            await ssh.setupSerialInterface();
+
+            // serieller Zugriff fehlt
+
             await ConnectionManager.instance.executeCommand(id,"stty -F /dev/ttySTM1 cstopb brkint -icrnl -ixon -opost -isig icanon -iexten -echo");
             this.ioCheckPanel.webview.postMessage({
                 command: 'start'

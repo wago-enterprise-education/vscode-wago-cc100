@@ -1,5 +1,5 @@
 import * as vscode from 'vscode'
-import { SSH } from '../oldFiles/ssh';
+import { SSH } from './ssh';
 
 export class Connection {
 
