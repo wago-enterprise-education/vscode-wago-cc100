@@ -26,10 +26,6 @@ export class Command {
             Manager.getInstance().addController(context);
         }));
 
-        commands.push(vscode.commands.registerCommand('vscode-wago-cc100.reset-controller', async (controller) => {
-            Manager.getInstance().resetController(controller, );
-        }));
-
         //Debugger Command
         commands.push(vscode.commands.registerCommand('vscode-wago-cc100.refresh-view', async () => {
             ControllerProvider.instance.refresh();
