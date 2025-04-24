@@ -1226,6 +1226,8 @@ export class UploadFunctionality {
 
         // Cancel if Image Version is specifically chosen
         if (YamlCommands.getController(id)?.imageVersion !== 'latest') {
+            //CHECK IF IMAGE ON CONTROLLER IS THE WANTED VERSION
+            
             return;
         }
         
@@ -1275,7 +1277,7 @@ export class UploadFunctionality {
             console.debug("Loading new Image...");
             await connectionManager.executeCommand(id, `docker load -i /home/image.tar`);
             await connectionManager.executeCommand(id, `rm /home/image.tar`);
-            await connectionManager.executeScript(id, `../../../res/dockerCommand.sh`);
+            await connectionManager.executeScript(id, `../../../res/dockerCommand.sh ${newestVersion}`);
         } catch(error) {
             console.error(`Error Updating Container: ${error}`);
         } 
