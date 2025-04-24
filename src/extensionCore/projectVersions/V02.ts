@@ -299,7 +299,8 @@ export class ConfigureController implements Interface.ConfigureControllerInterfa
      * This method is intended to be implemented with specific logic.
      */
     configure() {
-        
+        // root@CC100-55DFB8:/etc/config-tools ./config_routing --change static index=0 dest=192.168.1.102 dest-mask=255.255.255.0 gw=0.0.0.0 state=disabled
+        // root@CC100-55DFB8:/etc/config-tools ./network_config --ip-config --write-last-error --set {"br0":{"source":"static","ipaddr":"192.168.1.100","netmask":"0.0.0.0"}}
     }
 }
 export class EditSettings implements Interface.EditSettingsInterface{
