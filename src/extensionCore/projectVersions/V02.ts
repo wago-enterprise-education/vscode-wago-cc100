@@ -1223,10 +1223,11 @@ export class UploadFunctionality {
     private async updateContainer(id: number) {
           
         let imageName = "cc100_python";
+        let containerName = "pythonRuntime";
 
         // Cancel if Image Version is specifically chosen
         if (YamlCommands.getController(id)?.imageVersion !== 'latest') {
-            //CHECK IF IMAGE ON CONTROLLER IS THE WANTED VERSION
+            //CHECK IF IMAGE ON CONTROLLER IS THE WANTED VERSION - combine with code below
             
             return;
         }
@@ -1236,9 +1237,11 @@ export class UploadFunctionality {
             // Check if there is a new version
             // => Get Newest Tag of the image
             let newestVersion: number = 1;
+            //API request to GitHub packages to determine latest tag
 
             // Get current version on controller
-            let conImageVersion : number = 1;
+            let conImageVersion: number = 1;
+            //Print images, filter for imageName and get version
 
             if ( newestVersion == conImageVersion ) {
                 return;
@@ -1254,22 +1257,23 @@ export class UploadFunctionality {
 
             // Stop current container
             console.debug("Stopping Container...");
-            await connectionManager.executeCommand(id, "docker exec pythonRuntime killall -15 python3");
-
-            //remove all images and containers
-            console.debug("Removing Images and Containers...");
-            await connectionManager.executeCommand(id, "docker rm pythonRuntime");
-            await connectionManager.executeCommand(id, `docker rmi -f ${imageName}`);
+            connectionManager.executeCommand(id, `docker stop ${containerName}`);
 
             // Download and Upload new Image
             console.debug("Downloading new Image...");
             const stream = fs.createWriteStream(`${vscode.workspace.workspaceFolders![0].uri.fsPath}/image.tar`);
+            //Download from GitHub packages through Manifest and digest hash
             const { body } = await fetch('https://svgithub01001.wago.local/education/vscode-docker-engines/raw/refs/heads/CC100_v0.2/cc100_python.tar');
             if (!body) {
                 vscode.window.showErrorMessage("Error downloading image.");
                 return;
             }
             await finished(Readable.fromWeb(body).pipe(stream));
+
+            //remove all images and containers
+            console.debug("Removing Images and Containers...");
+            await connectionManager.executeCommand(id, `docker rm ${containerName}`);
+            await connectionManager.executeCommand(id, `docker rmi -f ${imageName}`);
 
             await connectionManager.upload(id, `${vscode.workspace.workspaceFolders![0].uri.fsPath}/image.tar`, "/home/");
 
