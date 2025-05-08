@@ -806,7 +806,7 @@ export class YamlCommands {
         try {
             return YAML.parse(fs.readFileSync(`${vscode.workspace.workspaceFolders![0].uri.fsPath}/controller/controller${id}.yaml`, 'utf8'));
         } catch (error) {
-            console.error("No File Found! Creating new File");
+            console.log("getControllerYaml: No File Found! Creating new File");
             fs.cpSync(`${extensionContext.extensionPath}/res/template/controller/controller1.yaml`, `${vscode.workspace.workspaceFolders![0].uri.fsPath}/controller/controller${id}.yaml`);
         }
         
