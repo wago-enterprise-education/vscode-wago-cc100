@@ -1012,6 +1012,8 @@ let connectionManager = ConnectionManager.instance;
 
 export class UploadFunctionality {
 
+    static repo = "wago-enterprise-education/flask-simple-web";
+
     /**
      * This Method uploads the corresponding files to the WAGO Controller.
      * 
@@ -1230,28 +1232,34 @@ export class UploadFunctionality {
      */
     private async updateContainer(id: number) {
           
-        let imageName = "cc100_python";
-        let containerName = "pythonRuntime";
+        const imageName = "cc100_python";
+        const containerName = "pythonRuntime";
 
         // Cancel if Image Version is specifically chosen
-        if (YamlCommands.getController(id)?.imageVersion !== 'latest') {
-            //CHECK IF IMAGE ON CONTROLLER IS THE WANTED VERSION - combine with code below
-            
-            return;
-        }
+        let wantedVers = YamlCommands.getController(id)?.imageVersion;
+        if (!wantedVers) return;
         
         try {
             console.debug("Comparing Versions...");
             // Check if there is a new version
-            // => Get Newest Tag of the image
-            let newestVersion: number = 1;
-            //API request to GitHub packages to determine latest tag
 
-            // Get current version on controller
-            let conImageVersion: number = 1;
-            //Print images, filter for imageName and get version
+            let token = await this.getToken();
 
-            if ( newestVersion == conImageVersion ) {
+            // Get current Controller Image Hash
+            console.debug("Getting controller Image Hash...");
+            let currTag = await connectionManager.executeCommand(id, "docker images | grep 'cc100_python' | awk '{print $2}' | head -n 1");
+            let conManifest = await connectionManager.executeCommand(id, `docker inspect ${imageName}:${currTag}`);
+            let json = JSON.parse(conManifest);
+            let layers = json[0].RootFS.Layers;
+            let conImageHash = this.getImageHash(layers);
+
+            // Get new Image Hash from GitHub Packages
+            console.debug("Getting newest Image Hash...");
+            let latestManifest = await this.getImageManifest(wantedVers, token);
+            let latestHash = this.getImageHash(latestManifest.layers);
+            let imageDigest = latestManifest.digest;
+            
+            if ( latestHash == conImageHash ) {
                 return;
             }
 
@@ -1259,7 +1267,7 @@ export class UploadFunctionality {
             let autoupdate = YamlCommands.getControllerSettings(id).autoupdate; 
             if( autoupdate === 'off') {
                 await vscode.window.showWarningMessage(`Update Container on ${conName}?`, 'Yes', 'No').then((value) => {
-                    if(value === 'No') return;
+                    if( value === 'No' ) return;
                 });
             }
 
@@ -1269,9 +1277,15 @@ export class UploadFunctionality {
 
             // Download and Upload new Image
             console.debug("Downloading new Image...");
-            const stream = fs.createWriteStream(`${vscode.workspace.workspaceFolders![0].uri.fsPath}/image.tar`);
+            const stream = fs.createWriteStream(`%tmp%/image.tar`);
+
             //Download from GitHub packages through Manifest and digest hash
-            const { body } = await fetch('https://svgithub01001.wago.local/education/vscode-docker-engines/raw/refs/heads/CC100_v0.2/cc100_python.tar');
+            const { body } = await fetch(`https://ghcr.io/v2/${UploadFunctionality.repo}/blobs/${imageDigest}`, {
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Accept": "application/vnd.oci.image.layer.v1.tar+gzip"
+                }
+            });
             if (!body) {
                 vscode.window.showErrorMessage("Error downloading image.");
                 return;
@@ -1283,15 +1297,87 @@ export class UploadFunctionality {
             await connectionManager.executeCommand(id, `docker rm ${containerName}`);
             await connectionManager.executeCommand(id, `docker rmi -f ${imageName}`);
 
-            await connectionManager.upload(id, `${vscode.workspace.workspaceFolders![0].uri.fsPath}/image.tar`, "/home/");
+            await connectionManager.upload(id, `%tmp%/image.tar`, "/home/");
+
+            //TODO DELETE IMAGE TAR FROM TEMP!
 
             // Load new Image
             console.debug("Loading new Image...");
             await connectionManager.executeCommand(id, `docker load -i /home/image.tar`);
             await connectionManager.executeCommand(id, `rm /home/image.tar`);
-            await connectionManager.executeScript(id, `../../../res/dockerCommand.sh ${newestVersion}`);
+            await connectionManager.executeScript(id, `../../../res/dockerCommand.sh ${imageName}`);
         } catch(error) {
             console.error(`Error Updating Container: ${error}`);
         } 
+    }
+
+    /**
+     * This Method is used to get the Hash of an image manifest
+     * 
+     * @param layers an Array of Hashes
+     */
+    private getImageHash(layers: string[]): string {
+        let hash = crypto
+            .createHash('md5')
+            .update(layers.toString())
+            .digest('hex');
+        console.debug("Image Hash: " + hash);
+        return hash;
+    }
+    
+    /**
+     * This Method returns the token for all GitHub Packages Calls 
+     * 
+     * @param token 
+     * @returns The Token for the gitHub Packages
+     */
+    private async getToken(): Promise<string> {
+        let tokenResponse = await fetch(`https://ghcr.io/token?service=ghcr.io&scope=repository:${UploadFunctionality.repo}:pull`); 
+        if (!tokenResponse.ok) throw new Error(`Failed to fetch token: ${tokenResponse.statusText}`);
+        let tokenObj: any = await tokenResponse.json();
+        console.debug(`Token: ${tokenObj.token}`);
+        return tokenObj.token;
+    }
+
+    /**
+     * This Method returns the List of all Tags in the GitHub Packages 
+     * 
+     * @param token 
+     * @returns The Token for the GitHub Packages
+     */
+    private async getTagList(token: string): Promise<string[]> {
+        let tagListResponse = await fetch(`https://ghcr.io/v2/${UploadFunctionality.repo}/tags/list`, {
+            headers: {
+                "Authorization": `Bearer ${token}`
+            }
+        }); 
+        if (!tagListResponse.ok) throw new Error(`Failed to fetch tag list: ${tagListResponse.statusText}`);
+        let tagList: any = await tagListResponse.json();
+        return tagList;
+    }
+
+    /**
+     * This Method is used to get the Manifest of a docker image with a specific tag
+     * 
+     * @param tag The tag you want to get the manifest of
+     * @returns Promise<string>, the Manifest of the docker image
+     */
+    private async getImageManifest(tag: string, token: string): Promise<{digest: string, layers: string[]}> {
+        let manifestResponse = await fetch(`https://ghcr.io/v2/${UploadFunctionality.repo}/manifests/${tag}`, {
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Accept": "application/vnd.oci.image.index.v1+json"
+            }
+        }); 
+        if (!manifestResponse.ok) throw new Error(`Failed to fetch manifest: ${manifestResponse.statusText}`);
+        let manifest: any = await manifestResponse.json();
+        
+        // Shrinks the Manifest to the size needed later on
+        let shrinkedManifest = {
+            digest: manifest.config.digest,
+            layers: manifest.layers.map((layer: any) => layer.digest)
+        }
+
+        return Promise.resolve(shrinkedManifest);
     }
 }
