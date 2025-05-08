@@ -59,15 +59,55 @@ export class Command {
                 title: 'Python Debugging',
                 cancellable: false,
             }, async (progress) => {
-                progress.report({ increment: 0, message: 'Getting controller connection...' });
+                progress.report({ increment: 0, message: 'Checking if port forwarding is enabled...' });
+
+                const pfEnabled = await ConnectionManager.instance.executeCommand(element.controllerId, "cat /etc/dropbear/dropbear.conf | grep LOCAL_PORT_FORWARDING | cut -d'=' -f2");
+
+                if (pfEnabled !== 'true') {
+                    progress.report({ increment: 10, message: 'Port forwarding is not enabled. Enabling...' });
+
+                    await ConnectionManager.instance.executeCommand(element.controllerId, `
+                        grep -q "LOCAL_PORT_FORWARDING=false" /etc/dropbear/dropbear.conf &&
+                        sed -i 's/LOCAL_PORT_FORWARDING=false/LOCAL_PORT_FORWARDING=true/' /etc/dropbear/dropbear.conf ||
+                        grep -q "LOCAL_PORT_FORWARDING=true" /etc/dropbear/dropbear.conf ||
+                        echo "LOCAL_PORT_FORWARDING=true" >> /etc/dropbear/dropbear.conf
+                    `);
+
+                    await ConnectionManager.instance.executeCommand(element.controllerId, "/etc/init.d/dropbear restart").catch();
+                } else {
+                    progress.report({ increment: 10 });
+                }
+
+                progress.report({ increment: 10, message: 'Waiting for controller to connect...' });
 
                 const connection = await ConnectionManager.instance.getConnection(element.controllerId)
 
-                progress.report({ increment: 20, message: 'Stopping old process...' });
+                let isConnected = false;
+                for (let i = 0; i < MAX_RETRIES; i++) {
+                    const out = await connection.executeCommand("echo ping")
+                    if (out == "ping") {
+                        isConnected = true;
+                        break;
+                    }
+                    await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
+                }
+
+                if(!isConnected) {
+                    connection.disconnect();
+                    vscode.window.showErrorMessage('Could not connect to controller. Please check your connection and try again.');
+                    progress.report({ increment: 100, message: 'Debugging session failed' });
+                    return new Promise<void>((resolve) => {
+                        setTimeout(() => {
+                            resolve();
+                        }, 2000);
+                    });
+                }
+
+                progress.report({ increment: 10, message: 'Stopping old process...' });
 
                 await connection.executeCommand("docker exec pythonRuntime killall -15 python3")
 
-                progress.report({ increment: 20, message: 'Starting new process with debugpy...' });
+                progress.report({ increment: 10, message: 'Starting new process with debugpy...' });
 
                 await connection.executeCommand("docker exec -d pythonRuntime python3 -Xfrozen_modules=off -m debugpy --listen 0.0.0.0:5678 --wait-for-client main.py")
 

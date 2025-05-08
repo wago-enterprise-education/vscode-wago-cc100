@@ -406,12 +406,17 @@ class Connection {
                     ControllerProvider.instance.refresh()
                     resolve()
                 })
+                .on('close', async () => {
+                    console.debug(`Connection to ${this.urn} closed`)
+                    ControllerProvider.instance.refresh()
+                    setTimeout(attemptConnection, reconnectionTimeout);
+                })
                 .on('error', async (error) => {
-                    console.error(`Error connecting to ${this.urn}: ${error.message}`)
                     if(this.connected) {
                         vscode.window.showErrorMessage(`Connection to ${YamlCommands.getController(this.controllerId)?.displayname} lost: ${error.message}`)
                     }
                     this.connected = false;
+
                     if(error.level === 'client-authentication') {
                         if(!this.askForPassword) {
                             password = await this.requestPassword();
@@ -421,8 +426,6 @@ class Connection {
                             }
                         }
                     }
-                    setTimeout(attemptConnection, reconnectionTimeout);
-                    ControllerProvider.instance.refresh()
                     reject(error)
                 })
 
@@ -468,20 +471,14 @@ class Connection {
     public forwardPort(localPort: number, remotePort: number): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             this.server = net.createServer((socket) => {
-                console.debug(`New connection from ${socket.remoteAddress}:${socket.remotePort}`);
                 if(socket.remoteAddress === undefined) throw new Error('No remote address');
                 if(socket.remotePort === undefined) throw new Error('No remote port');
                 this.client.forwardOut(socket.remoteAddress, socket.remotePort, this.urn.split(":")[0], remotePort, (err, stream) => {
                     if (err) {
-                        console.error('Error forwarding port:', err);
                         socket.destroy();
                         return
                     }
                     console.debug(`Forwarding port ${localPort} to ${this.urn.split(":")[0]}:${remotePort}`)
-
-                    stream.on('error', (err: Error) => {
-                        console.error('Error in forwarded port stream:', err);
-                    });
 
                     stream.on('end', () => {
                         socket.end();
@@ -491,16 +488,13 @@ class Connection {
 
             })
             this.client.on('close', () => {
-                console.debug(`Connection closed`);
                 if(this.server) this.server.close();
             })
             this.server.on('error', (err: Error) => {
-                console.error('Error in local server:', err);
                 if(this.server) this.server.close();
                 reject(err);
             })
             this.server.listen(localPort, () => {
-                console.debug(`Listening on local port ${localPort}`);
                 resolve();
             })
         })
@@ -559,7 +553,7 @@ class Connection {
                 stream.on('close', () => {
                     this.busy = false;
                     this.lastUsed = Date.now();
-                    resolve(output);
+                    resolve(output.replaceAll('\n', ''));
                 });
             });
         });
