@@ -8,6 +8,7 @@ import YAML from 'yaml';
 import * as path from 'path';
 import { Readable } from 'stream';
 import { finished } from 'stream/promises';
+import { extensionContext } from "../../extension";
 
 const FOLDER_REGEX = '^(?!(?:CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\.[^.]*)?$)[^<>:"/\\|?*\x00-\x1F]*[^<>:"/\\|?*\x00-\x1F\ .]$';
 
@@ -802,7 +803,13 @@ export class YamlCommands {
      * @returns The content of the wago.yaml file as a JS object
      */
     private static getControllerYaml(id: number) {
-        return YAML.parse(fs.readFileSync(`${vscode.workspace.workspaceFolders![0].uri.fsPath}/controller/controller${id}.yaml`, 'utf8'));
+        try {
+            return YAML.parse(fs.readFileSync(`${vscode.workspace.workspaceFolders![0].uri.fsPath}/controller/controller${id}.yaml`, 'utf8'));
+        } catch (error) {
+            console.error("No File Found! Creating new File");
+            fs.cpSync(`${extensionContext.extensionPath}/res/template/controller/controller1.yaml`, `${vscode.workspace.workspaceFolders![0].uri.fsPath}/controller/controller${id}.yaml`);
+        }
+        
     }
 
     /**

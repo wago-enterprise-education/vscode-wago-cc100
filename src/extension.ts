@@ -4,11 +4,13 @@ import { webviewIoCheck } from './extension/webviewIoCheck';
 import { ProjectVersion, verifyProject } from './extension/versionDetection';
 import { Command } from './extension/command';
 import { Manager } from './extensionCore/manager';
-
+export let extensionContext: vscode.ExtensionContext
 
 export async function activate(context: vscode.ExtensionContext) {
 	//Register TreeDataProvider for sidebar
 	vscode.window.registerTreeDataProvider('controller-view', ControllerProvider.instance);
+	
+	extensionContext = context;
 
 	//create IO-Check
 	new webviewIoCheck(context);
