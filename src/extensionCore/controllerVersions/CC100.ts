@@ -42,7 +42,9 @@ export class ResetController implements Interface.ResetControllerInterface {
                 await ConnectionManager.instance.executeCommand(controllerId, '/etc/config-tools/config_runtime runtime-version=1');
                 progress.report({ increment: 10, message: "Starting CodeSys3..." });
                 await ConnectionManager.instance.executeCommand(controllerId, 'codesys3 &');
-                progress.report({ increment: 10, message: "Finished Resetting" })
+                progress.report({ increment: 5, message: "Deactivate Portforwarding..." });
+                await ConnectionManager.instance.executeCommand(controllerId, 'grep -q "LOCAL_PORT_FORWARDING=true" /etc/dropbear/dropbear.conf && sed -i "s/LOCAL_PORT_FORWARDING=true/LOCAL_PORT_FORWARDING=false/" /etc/dropbear/dropbear.conf');
+                progress.report({ increment: 5, message: "Finished Resetting" })
                 ControllerProvider.instance.refresh();
                 
                 progress.report({ message: "Finished Resetting" });
