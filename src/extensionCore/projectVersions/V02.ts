@@ -654,7 +654,16 @@ export class EditSettingsFunctionality {
                     }
                     break;
                 case wagoSettings.imageVersion: 
-                    //TODO - Not yet determined how they will be managed-------------------------------------------
+                    const imageToken = await new UploadFunctionality().getToken();
+                    
+                    const dockerImage = await vscode.window.showQuickPick(
+                        await new UploadFunctionality().getTagList(imageToken), {
+                            title: 'Image Version',
+                            canPickMany: false
+                        }) || '';
+
+                    YamlCommands.writeWagoYaml(id, wagoSettings[settingToEdit], dockerImage);
+                    
                     break;
             }
             return;
