@@ -50,6 +50,32 @@ Hier findet sich die Factory Struktur, die die Funktionalität von Commands inne
 
 ---
 
+Hier liegen Zusatzdateien, Bilder und Gifs für das GitHub-Repository, Templates, Docs und Webview-Bezogene Dateien. Allgemein handelt es sich hier nur um einen Ordner, der Zusätzliche Ressorucen enthält.
+
+#### devDocs
+
+In diesem Ordner finden sich Dokumentations-Dateien, wie diese hier, die den Developern der Extension helfen solle, den Aufbau dieser zu verstehen.
+
+#### images
+
+Hier finden sich Bilder für die Darstellung des IO-Check Webviews.
+
+#### template
+
+Hier findet sich das Template für ein Wago-Projekt. Bei der Erstellung eines neuen Projekts oder beim anlegen neuer Controller werden die Beispieldateien aus diesem Ordner gezogen.
+
+#### Videos
+
+Hier finden sich Gifs, die in der Primär-Readme genutzt zu werden, um den Aufbau der Extension einfach in GitHub darzustellen.
+
+#### webviews
+
+Hier finden sich die css und die html Konfiguration für das IO-Check Webview.
+
+#### dockerCommand.sh
+
+Dieses Shell Skript dient dem korrekten Starten eines Docker-Containers. Beim Starten des Containers wird dieser direkt mit mehreren Ordnern auf dem Controller gemounted, um die entsprechenden Dateien auf dem Controller verändern zu können. Dies it für zum Beispiel die Inputs und Outputs relevant.
+
 ## Anleitungen
 
 ### Hinzufügen von neuen Controllern
