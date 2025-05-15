@@ -642,7 +642,10 @@ class Connection {
                 stream.on('close', () => {
                     this.busy = false;
                     this.lastUsed = Date.now();
-                    resolve(output.replaceAll('\n', ''));
+                    if(output.endsWith('\n')) {
+                        output = output.slice(0, -1);
+                    }
+                    resolve(output);
                 });
             });
         });

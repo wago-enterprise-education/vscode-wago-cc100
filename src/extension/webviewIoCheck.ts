@@ -9,27 +9,22 @@ import YAML from 'yaml';
 import { extensionContext } from '../extension';
 
 export class webviewIoCheck {
-    private windowClosed: boolean = false;
-    private test: boolean = false;
-
     public canLoadPanel: boolean = true;
     public ioCheckPanel: vscode.WebviewPanel | undefined = undefined;
-    private readonly pathToLibFile: string = 'src/lib/CC100IO.py';
-    private wsPath: string = '';
-    private connectionLost: boolean = false;
-    calibData: any[][] = [
-        ['PT1', 'PT2', 'AI1', 'AI2', 'AO1', 'AO2'],
-        ['9663', '1000', '40753', '3000'],
-        ['9551', '1000', '40571', '3000'],
-        ['14129', '2494', '41910', '7492'],
-        ['14106', '2494', '41873', '7492'],
-        ['1050', '350', '8978', '3000'],
-        ['1044', '350', '8970', '3000'],
-    ];
+    private context: vscode.ExtensionContext;
+
+    calibData: any[][] = [['PT1', 'PT2', 'AI1', 'AI2', 'AO1', 'AO2'],
+    ['9663', '1000', '40753', '3000'],
+    ['9551', '1000', '40571', '3000'],
+    ['14129', '2494', '41910', '7492'],
+    ['14106', '2494', '41873', '7492'],
+    ['1050', '350', '8978', '3000'],
+    ['1044', '350', '8970', '3000']];
     private switchStatus: string;
     private serialConnection: any;
 
-    constructor() {
+    constructor(con: vscode.ExtensionContext) {
+        this.context = con;
         this.calibData = [];
         this.switchStatus = '';
         this.createNewWebview();
@@ -97,7 +92,6 @@ export class webviewIoCheck {
                             () => {
                                 // this.test = false;
                                 this.ioCheckPanel = undefined;
-                                this.windowClosed = true;
                             },
                             null,
                             extensionContext.subscriptions
@@ -288,72 +282,40 @@ export class webviewIoCheck {
                                         'ethtool ethX2 | grep "Link detected*"'
                                 ) // LNK ACT2
                                 .then((data: any) => {
-                                    /**
-                                     * `[0]` => digital inputs
-                                     * `[1]` => digital outputs
-                                     * `[2]` => analog input 1
-                                     * `[3]` => analog input 2
-                                     * `[4]` => analog output 1
-                                     * `[5]` => analog output 2
-                                     * `[6]` => PT 1
-                                     * `[7]` => PT 2
-                                     * `[8]` => SYS LED green
-                                     * `[9]` => SYS LED red
-                                     * `[10]` => RUN LED green
-                                     * `[11]` => RUN LED red
-                                     * `[12]` => USR LED green
-                                     * `[13]` => USR LED red
-                                     * `[14]` => µSD LED
-                                     * `[15]` => LNK ACT1 LED
-                                     * `[16]` => LNK ACT2 LED
-                                     */
-                                    result = data;
-                                    let dataArray =
-                                        this.splitDataToStringArray(data);
-                                    dataArray[0] = this.convertDigital(
-                                        Number(dataArray[0]),
-                                        'IN'
-                                    ).toString(); // DI
-                                    dataArray[1] = this.convertDigital(
-                                        Number(dataArray[1]),
-                                        'OUT'
-                                    ).toString(); // DO
-                                    dataArray[2] = this.calcCalibratedValues(
-                                        Number(dataArray[2]),
-                                        this.calibData[3]
-                                    ).toString(); // AI1
-                                    dataArray[3] = this.calcCalibratedValues(
-                                        Number(dataArray[3]),
-                                        this.calibData[4]
-                                    ).toString(); // AI2
-                                    dataArray[4] = this.calcCalibratedAoValue(
-                                        Number(dataArray[4]),
-                                        this.calibData[5]
-                                    ).toString(); // AO1
-                                    dataArray[5] = this.calcCalibratedAoValue(
-                                        Number(dataArray[5]),
-                                        this.calibData[6]
-                                    ).toString(); // AO2
-                                    dataArray[6] = this.calcCelsius(
-                                        this.calcCalibratedValues(
-                                            Number(dataArray[6]),
-                                            this.calibData[1]
-                                        )
-                                    ); // PT1
-                                    dataArray[7] = this.calcCelsius(
-                                        this.calcCalibratedValues(
-                                            Number(dataArray[7]),
-                                            this.calibData[2]
-                                        )
-                                    ); // PT2
-                                    this.ioCheckPanel?.webview.postMessage({
-                                        command: 'readData',
-                                        values: dataArray,
-                                    });
-                                });
-                            if (result.includes('Error')) {
-                                this.connectionLost = true;
-                            }
+                                /**
+                                 * `[0]` => digital inputs
+                                 * `[1]` => digital outputs
+                                 * `[2]` => analog input 1
+                                 * `[3]` => analog input 2
+                                 * `[4]` => analog output 1
+                                 * `[5]` => analog output 2
+                                 * `[6]` => PT 1
+                                 * `[7]` => PT 2
+                                 * `[8]` => SYS LED green
+                                 * `[9]` => SYS LED red
+                                 * `[10]` => RUN LED green
+                                 * `[11]` => RUN LED red
+                                 * `[12]` => USR LED green
+                                 * `[13]` => USR LED red
+                                 * `[14]` => µSD LED 
+                                 * `[15]` => LNK ACT1 LED
+                                 * `[16]` => LNK ACT2 LED
+                                 */
+                                result = data;
+                                let dataArray = this.splitDataToStringArray(data);
+                                dataArray[0] = this.convertDigital(Number(dataArray[0]), 'IN').toString(); // DI
+                                dataArray[1] = this.convertDigital(Number(dataArray[1]), 'OUT').toString(); // DO
+                                dataArray[2] = this.calcCalibratedValues(Number(dataArray[2]), this.calibData[3]).toString(); // AI1
+                                dataArray[3] = this.calcCalibratedValues(Number(dataArray[3]), this.calibData[4]).toString(); // AI2
+                                dataArray[4] = this.calcCalibratedAoValue(Number(dataArray[4]), this.calibData[5]).toString(); // AO1
+                                dataArray[5] = this.calcCalibratedAoValue(Number(dataArray[5]), this.calibData[6]).toString(); // AO2
+                                dataArray[6] = this.calcCelsius(this.calcCalibratedValues(Number(dataArray[6]), this.calibData[1])); // PT1
+                                dataArray[7] = this.calcCelsius(this.calcCalibratedValues(Number(dataArray[7]), this.calibData[2])); // PT2
+                                this.ioCheckPanel?.webview.postMessage({
+                                    command: 'readData',
+                                    values: dataArray
+                                })
+                            })
                             break;
                         }
                         case 'readSwitch': {
