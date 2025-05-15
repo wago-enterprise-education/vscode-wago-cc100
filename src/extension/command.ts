@@ -3,27 +3,28 @@ import * as fs from 'fs';
 import { ControllerProvider, Controller, ControllerItem } from './view';
 import { Manager } from '../extensionCore/manager';
 import { ConnectionManager } from './connectionManager';
+import { extensionContext } from '../extension';
 
 const MAX_RETRIES = 10; // Maximum number of retries for the debugger connection
 const RETRY_DELAY = 2000; // Delay between retries in milliseconds
 
 export class Command {
 
-    public static createCommands(context: vscode.ExtensionContext) {
+    public static createCommands() {
         const commands = [];
 
         commands.push(vscode.commands.registerCommand('vscode-wago-cc100.create-project', async () => {
-            Manager.getInstance().createProject(context);
+            Manager.getInstance().createProject();
         }));
 
         commands.push(vscode.commands.registerCommand('vscode-wago-cc100.init-project', async () => {
-            fs.cpSync(`${context.extensionPath}/res/template/controller`, `${vscode.workspace.workspaceFolders![0].uri.fsPath}/controller`, { recursive: true });
-            fs.cpSync(`${context.extensionPath}/res/template/wago.yaml`, `${vscode.workspace.workspaceFolders![0].uri.fsPath}/wago.yaml`);
+            fs.cpSync(`${extensionContext.extensionPath}/res/template/controller`, `${vscode.workspace.workspaceFolders![0].uri.fsPath}/controller`, { recursive: true });
+            fs.cpSync(`${extensionContext.extensionPath}/res/template/wago.yaml`, `${vscode.workspace.workspaceFolders![0].uri.fsPath}/wago.yaml`);
             vscode.window.showInformationMessage('Project initialized');
         }));
 
         commands.push(vscode.commands.registerCommand('vscode-wago-cc100.add-controller', async () => {
-            Manager.getInstance().addController(context);
+            Manager.getInstance().addController();
         }));
 
         //Debugger Command
@@ -179,6 +180,6 @@ export class Command {
             Manager.getInstance().removeReset(controller);
         }));
 
-        context.subscriptions.concat(commands);
+        extensionContext.subscriptions.concat(commands);
     }
 }

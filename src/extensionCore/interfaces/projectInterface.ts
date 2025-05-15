@@ -48,7 +48,7 @@ export interface ViewChildrenInterface{
 }
 
 export interface AddControllerInterface{
-    addController: (context: vscode.ExtensionContext) => void;
+    addController: () => void;
 }
 
 export interface RemoveControllerInterface{
@@ -60,7 +60,7 @@ export interface RenameControllerInterface{
 }
 
 export interface CreateProjectInterface{
-    createController: (context: vscode.ExtensionContext) => void;
+    createController: () => void;
 }
 
 export interface RemoveResetControllerInterface{

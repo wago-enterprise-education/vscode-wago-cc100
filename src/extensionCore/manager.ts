@@ -72,11 +72,9 @@ export class Manager {
     /**
      * Adds a controller to the extension context using the project factory.
      * Creates and registers the controller using the current version number.
-     *
-     * @param context - The VS Code extension context to register the controller with
      */
-    public addController(context: vscode.ExtensionContext){
-        ProjectFactory.getInstance().createAddCommand(this.versionNr).addController(context);
+    public addController(){
+        ProjectFactory.getInstance().createAddCommand(this.versionNr).addController();
     }
     /**
      * Removes a controller from the current project.
@@ -101,11 +99,9 @@ export class Manager {
      * Creates a new project by initializing a project creation command and its controller.
      * This method uses the ProjectFactory singleton to instantiate a command with the current version
      * and associates it with the given extension context.
-     * 
-     * @param context - The VS Code extension context used to register the project creation command
      */
-    public createProject(context: vscode.ExtensionContext){
-        ProjectFactory.getInstance().createCreateProjectCommand(this.versionNr).createController(context);
+    public createProject(){
+        ProjectFactory.getInstance().createCreateProjectCommand(this.versionNr).createController();
     }
     /**
      * Resets and then removes a controller from the project.

@@ -176,7 +176,7 @@ export class AddController implements Interface.AddControllerInterface{
      *
      * @throws Will throw an error if the workspace folder is not defined or if file system operations fail.
      */
-    async addController(context: vscode.ExtensionContext) {
+    async addController() {
         const controllerName = await vscode.window.showInputBox({
             prompt: 'Enter the name of the controller',
             title: 'Add Controller / Name',
@@ -236,14 +236,14 @@ export class AddController implements Interface.AddControllerInterface{
 
             if(newFolder) {
                 fs.mkdirSync(`${workspacePath}/${newFolder}`);
-                fs.cpSync(`${context.extensionPath}/res/template/src/main.py`, `${workspacePath}/${newFolder}/main.py`)
+                fs.cpSync(`${extensionContext.extensionPath}/res/template/src/main.py`, `${workspacePath}/${newFolder}/main.py`)
                 controllerSrc.label = newFolder;
             } else {
                 controllerSrc.label = 'src';
             }
         }
 
-        await YamlCommands.createController(context, controllerName, controllerDescription, controllerEngine, controllerSrc.label, "latest");
+        await YamlCommands.createController(extensionContext, controllerName, controllerDescription, controllerEngine, controllerSrc.label, "latest");
         vscode.window.showInformationMessage(`Controller ${controllerName} added`);
         ControllerProvider.instance.refresh();
     }
@@ -491,7 +491,7 @@ export class CreateProject implements Interface.CreateProjectInterface{
      * 
      * @throws Will show an error message if the project folder already exists or if any file system operation fails.
      */
-    async createController(context: vscode.ExtensionContext){
+    async createController(){
         const projectName = await vscode.window.showInputBox({
             prompt: 'Enter the name of the project',
             title: 'Create Project',
@@ -514,7 +514,7 @@ export class CreateProject implements Interface.CreateProjectInterface{
             if(uri && projectName) {
                 try {
                     fs.mkdirSync(`${uri[0].fsPath}/${projectName}`);
-                    fs.cpSync(`${context.extensionPath}/res/template`, `${uri[0].fsPath}/${projectName}`, { recursive: true });
+                    fs.cpSync(`${extensionContext.extensionPath}/res/template`, `${uri[0].fsPath}/${projectName}`, { recursive: true });
                     await vscode.commands.executeCommand('vscode.openFolder', vscode.Uri.file(`${uri[0].fsPath}/${projectName}`));
                 } catch (error: any) {
                     vscode.window.showErrorMessage('Project already exists');

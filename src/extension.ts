@@ -16,7 +16,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	new webviewIoCheck(extensionContext);
 
 	//Create Commands
-	Command.createCommands(extensionContext);
+	Command.createCommands();
 
 	await verifyProject();
 
