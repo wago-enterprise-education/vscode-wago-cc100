@@ -1275,6 +1275,11 @@ export class UploadFunctionality {
             console.debug("Stopping Container...");
             connectionManager.executeCommand(id, `docker stop ${containerName}`);
 
+            // remove all images and containers
+            console.debug("Removing Images and Containers...");
+            await connectionManager.executeCommand(id, `docker rm ${containerName}`);
+            await connectionManager.executeCommand(id, `docker rmi -f ${imageName}`);
+
             // Download and Upload new Image
             console.debug("Downloading new Image...");
             const stream = fs.createWriteStream(`%tmp%/image.tar`);
@@ -1292,14 +1297,12 @@ export class UploadFunctionality {
             }
             await finished(Readable.fromWeb(body).pipe(stream));
 
-            //remove all images and containers
-            console.debug("Removing Images and Containers...");
-            await connectionManager.executeCommand(id, `docker rm ${containerName}`);
-            await connectionManager.executeCommand(id, `docker rmi -f ${imageName}`);
-
+            // Upload new Image
             await connectionManager.upload(id, `%tmp%/image.tar`, "/home/");
-
-            //TODO DELETE IMAGE TAR FROM TEMP!
+            fs.unlink(`%tmp%/image.tar`, (err) => {
+                if (err) console.debug("Error removing image.tar from the temp folder.");
+                console.debug("Removed image.tar from the temp folder.");
+            });
 
             // Load new Image
             console.debug("Loading new Image...");
