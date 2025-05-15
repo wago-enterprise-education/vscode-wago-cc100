@@ -1012,7 +1012,7 @@ let connectionManager = ConnectionManager.instance;
 
 export class UploadFunctionality {
 
-    static repo = "wago-enterprise-education/flask-simple-web";
+    static repo = "wago-enterprise-education/docker-engine-cc100";
 
     /**
      * This Method uploads the corresponding files to the WAGO Controller.
@@ -1036,15 +1036,15 @@ export class UploadFunctionality {
 			cancellable: false
         }, async (progress, token) => {
             try {
-                progress.report({ message: "Deactivating Codesys..." });
-                await this.deactivateCodeSys3(id);
-                progress.report({ increment: 10 });
-
                 progress.report({ message: "Comparing Folders..." });
                 if(await this.compareFolders(id, path)) {
                     vscode.window.showInformationMessage(`The files on ${controller?.displayname} are already up to date.`);
                     return;
                 }
+                progress.report({ increment: 10 });
+
+                progress.report({ message: "Deactivating Codesys..." });
+                await this.deactivateCodeSys3(id);
                 progress.report({ increment: 10 });
 
                 progress.report({ message: "Activating Docker..." });
@@ -1245,21 +1245,31 @@ export class UploadFunctionality {
 
             let token = await this.getToken();
 
+            let tagList: string[] = await this.getTagList(token);
+            if ( !tagList.includes(wantedVers) ) {
+                vscode.window.showErrorMessage("Configured Image Tag is not a viable tag");
+                return;
+            }
+
             // Get current Controller Image Hash
             console.debug("Getting controller Image Hash...");
             let currTag = await connectionManager.executeCommand(id, "docker images | grep 'cc100_python' | awk '{print $2}' | head -n 1");
-            let conManifest = await connectionManager.executeCommand(id, `docker inspect ${imageName}:${currTag}`);
-            let json = JSON.parse(conManifest);
-            let layers = json[0].RootFS.Layers;
-            let conImageHash = this.getImageHash(layers);
+            
+            let conImageHash = "";
+            if ( currTag != "" ) {
+                let conManifest = await connectionManager.executeCommand(id, `docker inspect ${imageName}:${currTag}`);
+                let json = JSON.parse(conManifest);
+                let layers = json[0].RootFS.Layers;
+                conImageHash = this.getImageHash(layers);
+            }
 
             // Get new Image Hash from GitHub Packages
             console.debug("Getting newest Image Hash...");
-            let latestManifest = await this.getImageManifest(wantedVers, token);
-            let latestHash = this.getImageHash(latestManifest.layers);
-            let imageDigest = latestManifest.digest;
+            let wantedVersManifest = await this.getImageManifest(wantedVers, token);
+            let wantedVersHash = this.getImageHash(wantedVersManifest.layers);
+            let imageDigest = wantedVersManifest.digest;
             
-            if ( latestHash == conImageHash ) {
+            if ( wantedVersHash == conImageHash ) {
                 return;
             }
 
@@ -1334,7 +1344,7 @@ export class UploadFunctionality {
      * @param token 
      * @returns The Token for the gitHub Packages
      */
-    private async getToken(): Promise<string> {
+    public async getToken(): Promise<string> {
         let tokenResponse = await fetch(`https://ghcr.io/token?service=ghcr.io&scope=repository:${UploadFunctionality.repo}:pull`); 
         if (!tokenResponse.ok) throw new Error(`Failed to fetch token: ${tokenResponse.statusText}`);
         let tokenObj: any = await tokenResponse.json();
@@ -1348,7 +1358,7 @@ export class UploadFunctionality {
      * @param token 
      * @returns The Token for the GitHub Packages
      */
-    private async getTagList(token: string): Promise<string[]> {
+    public async getTagList(token: string): Promise<string[]> {
         let tagListResponse = await fetch(`https://ghcr.io/v2/${UploadFunctionality.repo}/tags/list`, {
             headers: {
                 "Authorization": `Bearer ${token}`
@@ -1356,7 +1366,7 @@ export class UploadFunctionality {
         }); 
         if (!tagListResponse.ok) throw new Error(`Failed to fetch tag list: ${tagListResponse.statusText}`);
         let tagList: any = await tagListResponse.json();
-        return tagList;
+        return tagList.tags;
     }
 
     /**
