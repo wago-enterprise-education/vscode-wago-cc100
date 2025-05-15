@@ -22,6 +22,7 @@ export class ResetController implements Interface.ResetControllerInterface {
             cancellable: false
         }, async (progress, token) => {
             try {
+                // Starting at 50 because it continues the Progress bar from the reset in the V2.ts code
                 progress.report({ increment: 50, message: "Deactivating Digital Outputs..." })
                 await ConnectionManager.instance.executeCommand(controllerId, 'echo 0 >> /sys/kernel/dout_drv/DOUT_DATA');
                 progress.report({ increment: 4, message: "Deactivating Analog Outputs..." });
