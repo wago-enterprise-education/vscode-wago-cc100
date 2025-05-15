@@ -13,7 +13,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	extensionContext = context;
 
 	//create IO-Check
-	new webviewIoCheck(extensionContext);
+	new webviewIoCheck();
 
 	//Create Commands
 	Command.createCommands();

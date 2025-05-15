@@ -6,6 +6,7 @@ import { ConnectionManager } from './connectionManager';
 import { Controller } from './view';
 import { ProjectVersion } from './versionDetection';
 import YAML from 'yaml';
+import { extensionContext } from '../extension';
 
 export class webviewIoCheck {
     private windowClosed: boolean = false
@@ -13,7 +14,6 @@ export class webviewIoCheck {
 
     public canLoadPanel: boolean = true;
     public ioCheckPanel: vscode.WebviewPanel | undefined = undefined;
-    private context: vscode.ExtensionContext;
     private readonly pathToLibFile: string = 'src/lib/CC100IO.py';
     private wsPath: string = '';
     private connectionLost: boolean = false;
@@ -27,15 +27,14 @@ export class webviewIoCheck {
     private switchStatus: string;
     private serialConnection: any;
 
-    constructor(private con: vscode.ExtensionContext) {
-        this.context = con;
+    constructor() {
         this.calibData = [];
         this.switchStatus = '';
         this.createNewWebview();
     }
 
     private createNewWebview() {
-        this.context.subscriptions.push(
+        extensionContext.subscriptions.push(
             vscode.commands.registerCommand('vscode-wago-cc100.iocheck', async (element: Controller) => {
                     // Check if an activeTextEditor is there, either it exists or it is undefined
                     const columnToShowIn = vscode.window.activeTextEditor
@@ -49,8 +48,8 @@ export class webviewIoCheck {
                         this.ioCheckPanel = vscode.window.createWebviewPanel("iocheck", "IO-Check", columnToShowIn || vscode.ViewColumn.One, {
                             enableScripts: true,
                             retainContextWhenHidden: true,
-                            localResourceRoots: [vscode.Uri.joinPath(this.context.extensionUri, 'src'), vscode.Uri.joinPath(this.context.extensionUri, 'out'),
-                            vscode.Uri.joinPath(this.context.extensionUri, 'res')]
+                            localResourceRoots: [vscode.Uri.joinPath(extensionContext.extensionUri, 'src'), vscode.Uri.joinPath(extensionContext.extensionUri, 'out'),
+                            vscode.Uri.joinPath(extensionContext.extensionUri, 'res')]
                         });
     
                         this.ioCheckPanel.webview.html = this.getIOCheckWebviewContent();
@@ -67,7 +66,7 @@ export class webviewIoCheck {
                         );
     
                         // Webview Tab Icon
-                        this.ioCheckPanel.iconPath = vscode.Uri.joinPath(this.context.extensionUri, 'res/images/WAGOW.png');
+                        this.ioCheckPanel.iconPath = vscode.Uri.joinPath(extensionContext.extensionUri, 'res/images/WAGOW.png');
     
                         // Reset when the current panel is closed
                         this.ioCheckPanel.onDidDispose(() => {
@@ -76,7 +75,7 @@ export class webviewIoCheck {
                             this.windowClosed = true
                         },
                             null,
-                            this.context.subscriptions
+                            extensionContext.subscriptions
                         );
                         
                         if (this.ioCheckPanel) {
@@ -119,8 +118,8 @@ export class webviewIoCheck {
      */
     public getPath(path: any) {
         // Get path to resource on disk
-        const onDiskPath = vscode.Uri.joinPath(this.context.extensionUri, path);
-        var webviewPath = vscode.Uri.joinPath(this.context.extensionUri);
+        const onDiskPath = vscode.Uri.joinPath(extensionContext.extensionUri, path);
+        var webviewPath = vscode.Uri.joinPath(extensionContext.extensionUri);
         if (this.ioCheckPanel) {
             webviewPath = this.ioCheckPanel.webview.asWebviewUri(onDiskPath);
         }
@@ -133,7 +132,7 @@ export class webviewIoCheck {
      * @returns The modified HTML file as string
      */
     public getIOCheckWebviewContent() {
-        var pathHTML = path.join(this.context.extensionPath, 'res/webviews/ioCheck.html');
+        var pathHTML = path.join(extensionContext.extensionPath, 'res/webviews/ioCheck.html');
         var html = fs.readFileSync(pathHTML).toString();
 
         const pathCC100 = this.getPath('res/images/cc100Neu11.png').toString();
@@ -300,7 +299,7 @@ export class webviewIoCheck {
                     }
                 },
                 undefined,
-                this.context.subscriptions
+                extensionContext.subscriptions
             );
         }
     }
