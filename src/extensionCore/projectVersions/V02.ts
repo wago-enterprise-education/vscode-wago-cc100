@@ -1580,6 +1580,7 @@ export class UploadFunctionality {
     private async updateContainer(id: number) {
         const imageName = 'cc100_python';
         const containerName = 'pythonRuntime';
+        const downloadPath = `${extensionContext.storageUri}/image.tar`;
 
         // Cancel if Image Version is specifically chosen
         let wantedVers = YamlCommands.getController(id)?.imageVersion;
@@ -1664,7 +1665,7 @@ export class UploadFunctionality {
 
             // Download and Upload new Image
             console.debug('Downloading new Image...');
-            const stream = fs.createWriteStream(`%tmp%/image.tar`);
+            const stream = fs.createWriteStream(downloadPath)
 
             //Download from GitHub packages through Manifest and digest hash
             const { body } = await fetch(
@@ -1683,8 +1684,8 @@ export class UploadFunctionality {
             await finished(Readable.fromWeb(body).pipe(stream));
 
             // Upload new Image
-            await connectionManager.upload(id, `%tmp%/image.tar`, '/home/');
-            fs.unlink(`%tmp%/image.tar`, (err) => {
+            await connectionManager.upload(id, downloadPath, '/home/');
+            fs.unlink(downloadPath, (err) => {
                 if (err)
                     console.debug(
                         'Error removing image.tar from the temp folder.'
