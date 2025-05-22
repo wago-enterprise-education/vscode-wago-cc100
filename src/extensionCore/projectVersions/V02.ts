@@ -16,6 +16,8 @@ import { extensionContext } from '../../extension';
 
 const FOLDER_REGEX =
     '^(?!(?:CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\.[^.]*)?$)[^<>:"/\\|?*\x00-\x1F]*[^<>:"/\\|?*\x00-\x1F\ .]$';
+const IP_REGEX =
+    '^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$';
 
 export class UploadController implements Interface.UploadInterface {
     /**
@@ -919,14 +921,24 @@ export class EditSettingsFunctionality {
                 case controllerSettings.ip:
                 case controllerSettings.port:
                 case controllerSettings.user:
-                    if (settingToEdit === controllerSettings.ip)
+                    const content = await this.getInput(settingToEdit);
+                    if (!content) return;
+
+                    // Change connection to ethernet and check input if ip is to be modified
+                    if (settingToEdit === controllerSettings.ip) {
+                        if (!RegExp(IP_REGEX).test(content)) {
+                            vscode.window.showErrorMessage(
+                                'The given IP-Adress is not valid'
+                            );
+                            return;
+                        }
                         YamlCommands.writeControllerYaml(
                             id,
                             controllerSettings.connection,
                             'ethernet'
                         );
-                    const content = await this.getInput(settingToEdit);
-                    if (!content) return;
+                    }
+
                     YamlCommands.writeControllerYaml(
                         id,
                         controllerSettings[settingToEdit],
