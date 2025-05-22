@@ -771,30 +771,37 @@ export class EditSettingsFunctionality {
             return
         }
 
-    if (settingToEdit in wagoSettings) {
-      switch (settingToEdit) {
-        // wago.yaml Setting
-        case wagoSettings.displayname:
-        case wagoSettings.description:
-          const content = await this.getInput(settingToEdit);
-          if (!content) return;
-          YamlCommands.writeWagoYaml(id, wagoSettings[settingToEdit], content);
-          break;
+        if (settingToEdit in wagoSettings) {
+            switch (settingToEdit) {
+                // wago.yaml Setting
+                case wagoSettings.displayname:
+                case wagoSettings.description:
+                    const content = await this.getInput(settingToEdit)
+                    if (!content) return
+                    YamlCommands.writeWagoYaml(
+                        id,
+                        wagoSettings[settingToEdit],
+                        content
+                    )
+                    break
 
-        // wago.yaml QuickPick
-        case wagoSettings.engine:
-          const pickedEngine =
-            (await vscode.window.showQuickPick(Object.values(engine), {
-              title: "Engine",
-              canPickMany: false,
-            })) || "";
-          if (!pickedEngine) return;
-          YamlCommands.writeWagoYaml(
-            id,
-            wagoSettings[settingToEdit],
-            pickedEngine,
-          );
-          break;
+                // wago.yaml QuickPick
+                case wagoSettings.engine:
+                    const pickedEngine =
+                        (await vscode.window.showQuickPick(
+                            Object.values(engine),
+                            {
+                                title: 'Engine',
+                                canPickMany: false,
+                            }
+                        )) || ''
+                    if (!pickedEngine) return
+                    YamlCommands.writeWagoYaml(
+                        id,
+                        wagoSettings[settingToEdit],
+                        pickedEngine
+                    )
+                    break
 
                 case wagoSettings.src:
                     const workspacePath =
@@ -858,15 +865,17 @@ export class EditSettingsFunctionality {
                     const imageToken =
                         await new UploadFunctionality().getToken()
 
-          const dockerImage =
-            (await vscode.window.showQuickPick(
-              await new UploadFunctionality().getTagList(imageToken),
-              {
-                title: "Image Version",
-                canPickMany: false,
-              },
-            )) || "";
-          if (!dockerImage) return;
+                    const dockerImage =
+                        (await vscode.window.showQuickPick(
+                            await new UploadFunctionality().getTagList(
+                                imageToken
+                            ),
+                            {
+                                title: 'Image Version',
+                                canPickMany: false,
+                            }
+                        )) || ''
+                    if (!dockerImage) return
 
                     YamlCommands.writeWagoYaml(
                         id,
@@ -874,58 +883,61 @@ export class EditSettingsFunctionality {
                         dockerImage
                     )
 
-          break;
-      }
-      return;
-    } else if (settingToEdit in controllerSettings) {
-      switch (settingToEdit) {
-        // controller.yaml Setting
-        case controllerSettings.connection:
-          const conType =
-            (await vscode.window.showQuickPick(["usb-c", "ethernet"], {
-              title: "Connection Type",
-              canPickMany: false,
-            })) || "";
-          if (!conType) return;
-          if (conType === "usb-c")
-            YamlCommands.writeControllerYaml(
-              id,
-              controllerSettings.ip,
-              "192.168.42.42",
-            );
-          YamlCommands.writeControllerYaml(
-            id,
-            controllerSettings[settingToEdit],
-            conType,
-          );
-          break;
+                    break
+            }
+            return
+        } else if (settingToEdit in controllerSettings) {
+            switch (settingToEdit) {
+                // controller.yaml Setting
+                case controllerSettings.connection:
+                    const conType =
+                        (await vscode.window.showQuickPick(
+                            ['usb-c', 'ethernet'],
+                            {
+                                title: 'Connection Type',
+                                canPickMany: false,
+                            }
+                        )) || ''
+                    if (!conType) return
+                    if (conType === 'usb-c')
+                        YamlCommands.writeControllerYaml(
+                            id,
+                            controllerSettings.ip,
+                            '192.168.42.42'
+                        )
+                    YamlCommands.writeControllerYaml(
+                        id,
+                        controllerSettings[settingToEdit],
+                        conType
+                    )
+                    break
 
-        case controllerSettings.ip:
-        case controllerSettings.port:
-        case controllerSettings.user:
-          if (settingToEdit === controllerSettings.ip)
-            YamlCommands.writeControllerYaml(
-              id,
-              controllerSettings.connection,
-              "usb-c",
-            );
-          const content = await this.getInput(settingToEdit);
-          if (!content) return;
-          YamlCommands.writeControllerYaml(
-            id,
-            controllerSettings[settingToEdit],
-            content,
-          );
-          break;
+                case controllerSettings.ip:
+                case controllerSettings.port:
+                case controllerSettings.user:
+                    if (settingToEdit === controllerSettings.ip)
+                        YamlCommands.writeControllerYaml(
+                            id,
+                            controllerSettings.connection,
+                            'usb-c'
+                        )
+                    const content = await this.getInput(settingToEdit)
+                    if (!content) return
+                    YamlCommands.writeControllerYaml(
+                        id,
+                        controllerSettings[settingToEdit],
+                        content
+                    )
+                    break
 
-        // controller.yaml QuickPick
-        case controllerSettings.autoupdate:
-          const status =
-            (await vscode.window.showQuickPick(["on", "off"], {
-              title: "Autoupdate",
-              canPickMany: false,
-            })) || "";
-          if (!status) return;
+                // controller.yaml QuickPick
+                case controllerSettings.autoupdate:
+                    const status =
+                        (await vscode.window.showQuickPick(['on', 'off'], {
+                            title: 'Autoupdate',
+                            canPickMany: false,
+                        })) || ''
+                    if (!status) return
 
                     YamlCommands.writeControllerYaml(
                         id,
