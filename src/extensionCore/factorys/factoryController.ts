@@ -1,16 +1,16 @@
-import * as Interface from '../interfaces/controllerInterface'
-import * as CC100 from '../controllerVersions/CC100'
+import * as Interface from '../interfaces/controllerInterface';
+import * as CC100 from '../controllerVersions/CC100';
 export class ControllerFactory {
-    private static instance: ControllerFactory | null = null
+    private static instance: ControllerFactory | null = null;
     private constructor() {
         // Private constructor to prevent instantiation from outside
     }
 
     public static getInstance(): ControllerFactory {
         if (!ControllerFactory.instance) {
-            ControllerFactory.instance = new ControllerFactory()
+            ControllerFactory.instance = new ControllerFactory();
         }
-        return ControllerFactory.instance!
+        return ControllerFactory.instance!;
     }
 
     public createResetCommand(
@@ -18,9 +18,9 @@ export class ControllerFactory {
     ): Interface.ResetControllerInterface {
         switch (engine) {
             case 'CC100':
-                return new CC100.ResetController()
+                return new CC100.ResetController();
             default:
-                throw new Error('Invalid Controller')
+                throw new Error('Invalid Controller');
         }
     }
 }

@@ -1,187 +1,187 @@
-const vscode = acquireVsCodeApi()
+const vscode = acquireVsCodeApi();
 
-var doData = [0, 0, 0, 0]
-var displayDoData = [0, 0, 0, 0]
-var doChanged = false
-var aoData1 = -1
-var aoData2 = -1
-var serialText = ''
-var ledRunOn = false
-let switchStatus
-let previousTimestamp = Date.now()
+var doData = [0, 0, 0, 0];
+var displayDoData = [0, 0, 0, 0];
+var doChanged = false;
+var aoData1 = -1;
+var aoData2 = -1;
+var serialText = '';
+var ledRunOn = false;
+let switchStatus;
+let previousTimestamp = Date.now();
 
-const red = '#FF0000'
-const orange = '#FF6000'
-const wagoGreen = '#6EC800'
-const white = '#FFFFFF'
-const black = '#000000'
+const red = '#FF0000';
+const orange = '#FF6000';
+const wagoGreen = '#6EC800';
+const white = '#FFFFFF';
+const black = '#000000';
 
 // Get all HTML-Elements
 
-const body = document.getElementById('body')
+const body = document.getElementById('body');
 
-const elemDo = document.getElementsByClassName('btnDo')
-const ledDo = document.getElementsByClassName('ledDo')
+const elemDo = document.getElementsByClassName('btnDo');
+const ledDo = document.getElementsByClassName('ledDo');
 
-const elemDi = document.getElementsByClassName('btnDi')
-const ledDi = document.getElementsByClassName('ledDi')
+const elemDi = document.getElementsByClassName('btnDi');
+const ledDi = document.getElementsByClassName('ledDi');
 
-const elemPtAi = document.getElementsByClassName('analogDisplay')
+const elemPtAi = document.getElementsByClassName('analogDisplay');
 
-var elemSwitch = document.getElementById('switch')
+var elemSwitch = document.getElementById('switch');
 
-const elemAoValue = document.getElementsByClassName('textInput')
-var elemAo1Val = document.getElementById('valAo1')
-var elemAo2Val = document.getElementById('valAo2')
-var elemAo1Write = document.getElementById('btnAo1Write')
-var elemAo2Write = document.getElementById('btnAo2Write')
+const elemAoValue = document.getElementsByClassName('textInput');
+var elemAo1Val = document.getElementById('valAo1');
+var elemAo2Val = document.getElementById('valAo2');
+var elemAo1Write = document.getElementById('btnAo1Write');
+var elemAo2Write = document.getElementById('btnAo2Write');
 
-var btnSend = document.getElementById('btnSerialSend')
-var transMessage = document.getElementById('inputSerial')
-var chatSerial = document.getElementById('chatSerial')
+var btnSend = document.getElementById('btnSerialSend');
+var transMessage = document.getElementById('inputSerial');
+var chatSerial = document.getElementById('chatSerial');
 
-const sideNav = document.getElementsByClassName('sideItems')
+const sideNav = document.getElementsByClassName('sideItems');
 
-const rightParams = []
-rightParams[0] = document.getElementById('rightParamsInputs')
-rightParams[1] = document.getElementById('rightParamsOutputs')
-rightParams[2] = document.getElementById('rightParamsSerial')
-rightParams[3] = document.getElementById('rightParamsTemperature')
+const rightParams = [];
+rightParams[0] = document.getElementById('rightParamsInputs');
+rightParams[1] = document.getElementById('rightParamsOutputs');
+rightParams[2] = document.getElementById('rightParamsSerial');
+rightParams[3] = document.getElementById('rightParamsTemperature');
 
-var ledSys = document.getElementById('ledSys')
-var ledRun = document.getElementById('ledRun')
-var ledUsr = document.getElementById('ledUsr')
-var ledLnkAct1 = document.getElementById('ledLact1')
-var ledLnkAct2 = document.getElementById('ledLact2')
-var ledµSd = document.getElementById('ledMsd')
+var ledSys = document.getElementById('ledSys');
+var ledRun = document.getElementById('ledRun');
+var ledUsr = document.getElementById('ledUsr');
+var ledLnkAct1 = document.getElementById('ledLact1');
+var ledLnkAct2 = document.getElementById('ledLact2');
+var ledµSd = document.getElementById('ledMsd');
 
-var refrashRate = document.getElementById('refrashRate')
+var refrashRate = document.getElementById('refrashRate');
 
 // Set Event Listener
 // POST-Event for the communication to the `webviewIoCheck.ts` file
 window.addEventListener('message', (event) => {
     // The JSON data our extension sent
-    const message = event.data
+    const message = event.data;
 
     switch (message.command) {
         case 'start': {
-            body.style.opacity = 1
-            body.style.pointerEvents = 'auto'
-            readData()
-            break
+            body.style.opacity = 1;
+            body.style.pointerEvents = 'auto';
+            readData();
+            break;
         }
         case 'serialRead': {
-            showRecievingMessage(message.text)
-            break
+            showRecievingMessage(message.text);
+            break;
         }
         case 'readData': {
-            updateRefrashRate()
-            updateEverything(message.values)
-            readSwitch()
-            break
+            updateRefrashRate();
+            updateEverything(message.values);
+            readSwitch();
+            break;
         }
         case 'readSwitch': {
             if (message.value != switchStatus) {
                 if (switchStatus == '3') {
-                    upToDate = false
+                    upToDate = false;
                 }
-                switchStatus = message.value
-                updateSwitch(message.value)
-                doData = displayDoData
+                switchStatus = message.value;
+                updateSwitch(message.value);
+                doData = displayDoData;
             }
             if (switchStatus == '1') {
-                readData()
+                readData();
             } else {
-                buttonClick()
+                buttonClick();
             }
-            break
+            break;
         }
         case 'buttonClick': {
             if (doChanged) {
-                digitalWrite(doData)
-                doChanged = false
+                digitalWrite(doData);
+                doChanged = false;
             } else if (serialText != '') {
-                serialWrite(serialText)
-                serialText = ''
+                serialWrite(serialText);
+                serialText = '';
             } else if (aoData1 >= 0) {
-                analogWrite(1, aoData1)
-                aoData1 = -1
+                analogWrite(1, aoData1);
+                aoData1 = -1;
             } else if (aoData2 >= 0) {
-                analogWrite(2, aoData2)
-                aoData2 = -1
+                analogWrite(2, aoData2);
+                aoData2 = -1;
             } else {
-                readData()
+                readData();
             }
-            break
+            break;
         }
         case 'serialWrite': {
-            showMessage(message.text)
-            buttonClick()
-            break
+            showMessage(message.text);
+            buttonClick();
+            break;
         }
         case 'connectionLost': {
-            body.style.opacity = 0.375
-            body.style.pointerEvents = 'none'
+            body.style.opacity = 0.375;
+            body.style.pointerEvents = 'none';
         }
         case 'reload': {
-            doData = [0, 0, 0, 0]
+            doData = [0, 0, 0, 0];
         }
     }
-})
+});
 
 // Click-Event for the Write-Button of AO1
 elemAo1Write.onclick = function () {
-    clickedAo(0)
-}
+    clickedAo(0);
+};
 
 // Keypress-Event for the textfield of AO1
 elemAoValue[0].addEventListener('keypress', function (event) {
     if (event.key === 'Enter') {
-        event.preventDefault()
-        elemAoValue[0].blur()
-        clickedAo(0)
+        event.preventDefault();
+        elemAoValue[0].blur();
+        clickedAo(0);
     }
-})
+});
 
 // Click-Event for the Write-Button of AO2
 elemAo2Write.onclick = function () {
-    clickedAo(1)
-}
+    clickedAo(1);
+};
 
 // Keypress-Event for the textfield of AO1
 elemAoValue[1].addEventListener('keypress', function (event) {
     if (event.key === 'Enter') {
-        event.preventDefault()
-        elemAoValue[1].blur()
-        clickedAo(1)
+        event.preventDefault();
+        elemAoValue[1].blur();
+        clickedAo(1);
     }
-})
+});
 
 // Click-Event for the Send-Button of RS-485
-btnSend.addEventListener('click', clickedSend)
+btnSend.addEventListener('click', clickedSend);
 
 // Keypress-Event for the textfield of RS-485
 transMessage.addEventListener('keypress', function (event) {
     if (event.key === 'Enter') {
-        event.preventDefault()
-        btnSend.click()
+        event.preventDefault();
+        btnSend.click();
     }
-})
+});
 
 window.addEventListener('DOMContentLoaded', (event) => {
     vscode.postMessage({
         command: 'windowLoaded',
-    })
-})
+    });
+});
 
 // Click-Event for the DO-Buttons and Side-Nav
 for (let index = 0; index < elemDo.length; index++) {
     elemDo[index].onclick = function () {
-        clickedDo(index)
-    }
+        clickedDo(index);
+    };
     sideNav[index].onclick = function () {
-        clickedNav(index)
-    }
+        clickedNav(index);
+    };
 }
 
 // SSH functions
@@ -192,7 +192,7 @@ for (let index = 0; index < elemDo.length; index++) {
 async function readData() {
     vscode.postMessage({
         command: 'readData',
-    })
+    });
 }
 
 /**
@@ -203,7 +203,7 @@ function digitalWrite(value) {
     vscode.postMessage({
         command: 'digitalWrite',
         value: value,
-    })
+    });
 }
 
 /**
@@ -212,7 +212,7 @@ function digitalWrite(value) {
 async function buttonClick() {
     vscode.postMessage({
         command: 'buttonClick',
-    })
+    });
 }
 
 /**
@@ -221,7 +221,7 @@ async function buttonClick() {
 async function serialRead() {
     vscode.postMessage({
         command: 'serialRead',
-    })
+    });
 }
 
 /**
@@ -232,7 +232,7 @@ function serialWrite(text) {
     vscode.postMessage({
         command: 'serialWrite',
         text: text,
-    })
+    });
 }
 
 /**
@@ -245,7 +245,7 @@ function analogWrite(pin, value) {
         command: 'analogWrite',
         value: value,
         pin: pin,
-    })
+    });
 }
 
 /**
@@ -254,24 +254,24 @@ function analogWrite(pin, value) {
 function readSwitch() {
     vscode.postMessage({
         command: 'readSwitch',
-    })
+    });
 }
 
 async function updateEverything(dataArray) {
-    updateAo(0, dataArray[4])
-    updateAo(1, dataArray[5])
-    displayDoData = dataArray[1].split(',').map((x) => +x)
+    updateAo(0, dataArray[4]);
+    updateAo(1, dataArray[5]);
+    displayDoData = dataArray[1].split(',').map((x) => +x);
 
     updateDigital(
         dataArray[0].split(',').map((x) => +x),
         elemDi,
         ledDi
-    )
-    updateDigital(displayDoData, elemDo, ledDo)
-    updatePtAi(3, dataArray[2])
-    updatePtAi(4, dataArray[3])
-    updatePtAi(1, dataArray[6])
-    updatePtAi(2, dataArray[7])
+    );
+    updateDigital(displayDoData, elemDo, ledDo);
+    updatePtAi(3, dataArray[2]);
+    updatePtAi(4, dataArray[3]);
+    updatePtAi(1, dataArray[6]);
+    updatePtAi(2, dataArray[7]);
     updateStatusLeds(
         dataArray[8],
         dataArray[9],
@@ -282,12 +282,12 @@ async function updateEverything(dataArray) {
         dataArray[14],
         dataArray[15],
         dataArray[16]
-    )
+    );
 }
 
 function updateRefrashRate() {
-    refrashRate.innerHTML = Date.now() - previousTimestamp + ' ms'
-    previousTimestamp = Date.now()
+    refrashRate.innerHTML = Date.now() - previousTimestamp + ' ms';
+    previousTimestamp = Date.now();
 }
 
 /**
@@ -299,14 +299,14 @@ function updateRefrashRate() {
 async function updateDigital(value, elements, LEDs) {
     for (let index = 0; index < elements.length; index++) {
         if (value[index] == 1) {
-            elements[index].style.backgroundColor = wagoGreen
-            elements[index].value = 'HIGH'
-            LEDs[index].style.fill = wagoGreen
+            elements[index].style.backgroundColor = wagoGreen;
+            elements[index].value = 'HIGH';
+            LEDs[index].style.fill = wagoGreen;
         } else {
             elements[index].style.backgroundColor =
-                'var(--vscode-sideBar-border)'
-            elements[index].value = 'LOW'
-            LEDs[index].style.fill = white
+                'var(--vscode-sideBar-border)';
+            elements[index].value = 'LOW';
+            LEDs[index].style.fill = white;
         }
     }
 }
@@ -334,54 +334,54 @@ async function updateStatusLeds(
     lnkAct2
 ) {
     if (sysLedGreen == '1' && sysLedRed == '1') {
-        ledSys.style.fill = orange
+        ledSys.style.fill = orange;
     } else if (sysLedGreen == '0' && sysLedRed == '1') {
-        ledSys.style.fill = red
+        ledSys.style.fill = red;
     } else if (sysLedGreen == '1' && sysLedRed == '0') {
-        ledSys.style.fill = wagoGreen
+        ledSys.style.fill = wagoGreen;
     } else {
-        ledSys.style.fill = white
+        ledSys.style.fill = white;
     }
 
     if (runLedGreen == '1' && runLedRed == '1') {
-        ledRun.style.fill = orange
+        ledRun.style.fill = orange;
     } else if (runLedGreen == '0' && runLedRed == '1') {
-        ledRun.style.fill = red
+        ledRun.style.fill = red;
     } else if (runLedGreen == '1' && runLedRed == '0') {
-        ledRun.style.fill = wagoGreen
+        ledRun.style.fill = wagoGreen;
     } else {
-        ledRun.style.fill = white
+        ledRun.style.fill = white;
     }
 
     if (usrLedGreen == '1' && usrLedRed == '1') {
-        ledUsr.style.fill = orange
+        ledUsr.style.fill = orange;
     } else if (usrLedGreen == '0' && usrLedRed == '1') {
-        ledUsr.style.fill = red
+        ledUsr.style.fill = red;
     } else if (usrLedGreen == '1' && usrLedRed == '0') {
-        ledUsr.style.fill = wagoGreen
+        ledUsr.style.fill = wagoGreen;
     } else {
-        ledUsr.style.fill = white
+        ledUsr.style.fill = white;
     }
 
     if (lnkAct1) {
         if (lnkAct1.includes('yes')) {
-            ledLnkAct1.style.fill = wagoGreen
+            ledLnkAct1.style.fill = wagoGreen;
         } else {
-            ledLnkAct1.style.fill = white
+            ledLnkAct1.style.fill = white;
         }
     }
 
     if (lnkAct2) {
         if (lnkAct2.includes('yes')) {
-            ledLnkAct2.style.fill = wagoGreen
+            ledLnkAct2.style.fill = wagoGreen;
         } else {
-            ledLnkAct2.style.fill = white
+            ledLnkAct2.style.fill = white;
         }
     }
     if (µsdLed == '1') {
-        ledµSd.style.fill = red
+        ledµSd.style.fill = red;
     } else {
-        ledµSd.style.fill = white
+        ledµSd.style.fill = white;
     }
 }
 
@@ -391,7 +391,7 @@ async function updateStatusLeds(
  * @param analogVal The analog value to update with
  */
 async function updatePtAi(index, analogVal) {
-    elemPtAi[index - 1].innerHTML = analogVal
+    elemPtAi[index - 1].innerHTML = analogVal;
 }
 
 /**
@@ -401,9 +401,9 @@ async function updatePtAi(index, analogVal) {
  */
 function updateAo(index, value) {
     if (index == 0) {
-        elemAo1Val.innerHTML = value
+        elemAo1Val.innerHTML = value;
     } else if (index == 1) {
-        elemAo2Val.innerHTML = value
+        elemAo2Val.innerHTML = value;
     }
     // elemAoValue[index].value = value;
 }
@@ -414,13 +414,13 @@ function updateAo(index, value) {
  */
 function updateSwitch(value) {
     if (value == '1') {
-        elemSwitch.setAttribute('y', '370')
-        disableOutputElements()
+        elemSwitch.setAttribute('y', '370');
+        disableOutputElements();
     } else if (value == '2') {
-        elemSwitch.setAttribute('y', '395')
-        enableOutputElements()
+        elemSwitch.setAttribute('y', '395');
+        enableOutputElements();
     } else if (value == '3') {
-        elemSwitch.setAttribute('y', '420')
+        elemSwitch.setAttribute('y', '420');
     }
 }
 
@@ -430,11 +430,11 @@ function updateSwitch(value) {
  */
 async function showRecievingMessage(message) {
     if (message != '') {
-        var html = '<p align="left" style="background-color: #616a73;">'
-        html += message
-        html += '</p>'
-        chatSerial.innerHTML = chatSerial.innerHTML + html
-        chatSerial.scrollTop = chatSerial.scrollHeight
+        var html = '<p align="left" style="background-color: #616a73;">';
+        html += message;
+        html += '</p>';
+        chatSerial.innerHTML = chatSerial.innerHTML + html;
+        chatSerial.scrollTop = chatSerial.scrollHeight;
     }
 }
 
@@ -445,35 +445,35 @@ async function showRecievingMessage(message) {
  * @param index `0` AO1 was clicked, `1` AO2 was clicked
  */
 function clickedAo(index) {
-    var val = elemAoValue[index].value
+    var val = elemAoValue[index].value;
     if (val) {
-        val = parseFloat(val)
+        val = parseFloat(val);
         if (val > 10000) {
-            val = 10000
+            val = 10000;
             vscode.postMessage({
                 command: 'alert',
                 text: 'Maximum value is 10000',
-            })
+            });
         } else if (val < 0) {
-            val = 0
+            val = 0;
             vscode.postMessage({
                 command: 'alert',
                 text: 'No negative value allowed',
-            })
+            });
         }
 
-        elemAoValue[index].value = ''
+        elemAoValue[index].value = '';
         if (index == 0) {
-            aoData1 = val
+            aoData1 = val;
         } else {
-            aoData2 = val
+            aoData2 = val;
         }
     } else {
         vscode.postMessage({
             command: 'alert',
             text: 'Undefined Value',
-        })
-        return
+        });
+        return;
     }
 }
 
@@ -484,11 +484,11 @@ function clickedAo(index) {
 function clickedNav(index) {
     for (var i = 0; i < sideNav.length; i++) {
         if (i == index) {
-            sideNav[i].style.borderColor = wagoGreen
-            rightParams[i].style.display = 'flex'
+            sideNav[i].style.borderColor = wagoGreen;
+            rightParams[i].style.display = 'flex';
         } else {
-            sideNav[i].style.borderColor = 'var(--vscode-sideBar-border)'
-            rightParams[i].style.display = 'none'
+            sideNav[i].style.borderColor = 'var(--vscode-sideBar-border)';
+            rightParams[i].style.display = 'none';
         }
     }
 }
@@ -498,13 +498,13 @@ function clickedNav(index) {
  * @param index The index of clicked DO
  */
 function clickedDo(index) {
-    console.log('DO')
+    console.log('DO');
     if (elemDo[index].value == 'HIGH') {
-        doData[index] = 0
+        doData[index] = 0;
     } else {
-        doData[index] = 1
+        doData[index] = 1;
     }
-    doChanged = true
+    doChanged = true;
 }
 
 /**
@@ -512,18 +512,18 @@ function clickedDo(index) {
  */
 function clickedSend() {
     if (transMessage.value) {
-        serialText = transMessage.value
-        transMessage.value = ''
+        serialText = transMessage.value;
+        transMessage.value = '';
     }
 }
 
 function showMessage(message) {
     if (message) {
-        var html = '<p align="right">'
-        html += message
-        html += '</p>'
-        chatSerial.innerHTML += html
-        chatSerial.scrollTop = chatSerial.scrollHeight
+        var html = '<p align="right">';
+        html += message;
+        html += '</p>';
+        chatSerial.innerHTML += html;
+        chatSerial.scrollTop = chatSerial.scrollHeight;
     }
 }
 
@@ -534,13 +534,13 @@ function showMessage(message) {
  */
 function disableOutputElements() {
     for (let index = 0; index < elemDo.length; index++) {
-        elemDo[index].setAttribute('disabled', 'disabled')
+        elemDo[index].setAttribute('disabled', 'disabled');
     }
-    elemAoValue[0].setAttribute('disabled', 'disabled')
-    elemAoValue[1].setAttribute('disabled', 'disabled')
-    elemAo1Write.setAttribute('disabled', 'disabled')
-    elemAo2Write.setAttribute('disabled', 'disabled')
-    btnSend.setAttribute('disabled', 'disabled')
+    elemAoValue[0].setAttribute('disabled', 'disabled');
+    elemAoValue[1].setAttribute('disabled', 'disabled');
+    elemAo1Write.setAttribute('disabled', 'disabled');
+    elemAo2Write.setAttribute('disabled', 'disabled');
+    btnSend.setAttribute('disabled', 'disabled');
 }
 
 /**
@@ -548,11 +548,11 @@ function disableOutputElements() {
  */
 function enableOutputElements() {
     for (let index = 0; index < elemDo.length; index++) {
-        elemDo[index].removeAttribute('disabled')
+        elemDo[index].removeAttribute('disabled');
     }
-    elemAoValue[0].removeAttribute('disabled')
-    elemAoValue[1].removeAttribute('disabled')
-    elemAo1Write.removeAttribute('disabled')
-    elemAo2Write.removeAttribute('disabled')
-    btnSend.removeAttribute('disabled')
+    elemAoValue[0].removeAttribute('disabled');
+    elemAoValue[1].removeAttribute('disabled');
+    elemAo1Write.removeAttribute('disabled');
+    elemAo2Write.removeAttribute('disabled');
+    btnSend.removeAttribute('disabled');
 }

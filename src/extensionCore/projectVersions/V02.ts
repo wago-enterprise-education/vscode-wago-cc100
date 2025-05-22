@@ -2,20 +2,20 @@ import {
     Controller,
     ControllerItem,
     ControllerProvider,
-} from '../../extension/view'
-import * as vscode from 'vscode'
-import * as Interface from '../interfaces/projectInterface'
-import crypto from 'crypto'
-import { ConnectionManager } from '../../extension/connectionManager'
-import * as fs from 'fs'
-import YAML from 'yaml'
-import * as path from 'path'
-import { Readable } from 'stream'
-import { finished } from 'stream/promises'
-import { extensionContext } from '../../extension'
+} from '../../extension/view';
+import * as vscode from 'vscode';
+import * as Interface from '../interfaces/projectInterface';
+import crypto from 'crypto';
+import { ConnectionManager } from '../../extension/connectionManager';
+import * as fs from 'fs';
+import YAML from 'yaml';
+import * as path from 'path';
+import { Readable } from 'stream';
+import { finished } from 'stream/promises';
+import { extensionContext } from '../../extension';
 
 const FOLDER_REGEX =
-    '^(?!(?:CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\.[^.]*)?$)[^<>:"/\\|?*\x00-\x1F]*[^<>:"/\\|?*\x00-\x1F\ .]$'
+    '^(?!(?:CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\.[^.]*)?$)[^<>:"/\\|?*\x00-\x1F]*[^<>:"/\\|?*\x00-\x1F\ .]$';
 
 export class UploadController implements Interface.UploadInterface {
     /**
@@ -28,8 +28,8 @@ export class UploadController implements Interface.UploadInterface {
      */
     async uploadController(controller: Controller | undefined) {
         if (!vscode.workspace.workspaceFolders) {
-            vscode.window.showErrorMessage('No workspace is open')
-            return
+            vscode.window.showErrorMessage('No workspace is open');
+            return;
         }
 
         if (!controller) {
@@ -44,12 +44,12 @@ export class UploadController implements Interface.UploadInterface {
                     title: 'Upload to Controller',
                     canPickMany: false,
                 }
-            )
-            if (!controller) return
+            );
+            if (!controller) return;
         }
 
-        await new UploadFunctionality().uploadFile(controller.controllerId)
-        return
+        await new UploadFunctionality().uploadFile(controller.controllerId);
+        return;
     }
 }
 export class UploadAllControllers implements Interface.UploadAllInterface {
@@ -65,11 +65,11 @@ export class UploadAllControllers implements Interface.UploadAllInterface {
      */
     public uploadAllControllers() {
         if (!vscode.workspace.workspaceFolders) {
-            vscode.window.showErrorMessage('No workspace is open')
-            return
+            vscode.window.showErrorMessage('No workspace is open');
+            return;
         }
-        let upload = new UploadController()
-        const controllers = YamlCommands.getControllers()
+        let upload = new UploadController();
+        const controllers = YamlCommands.getControllers();
 
         vscode.window.withProgress(
             {
@@ -79,11 +79,11 @@ export class UploadAllControllers implements Interface.UploadAllInterface {
             },
             (progress, token) => {
                 controllers.forEach(async (controller) => {
-                    if (!controller) return
+                    if (!controller) return;
 
                     progress.report({
                         message: `Uploading to ${controller.displayname}...`,
-                    })
+                    });
                     upload
                         .uploadController({
                             controllerId: controller.id,
@@ -93,18 +93,18 @@ export class UploadAllControllers implements Interface.UploadAllInterface {
                         .then(() => {
                             vscode.window.showInformationMessage(
                                 `Controller ${controller.displayname} uploaded`
-                            )
+                            );
                         })
                         .catch((error) => {
                             vscode.window.showErrorMessage(
                                 `Error uploading controller ${controller.displayname}: ${error}`
-                            )
-                        })
-                    progress.report({ increment: 100 / controllers.length })
-                })
-                return Promise.resolve(true)
+                            );
+                        });
+                    progress.report({ increment: 100 / controllers.length });
+                });
+                return Promise.resolve(true);
             }
-        )
+        );
     }
 }
 export class ResetController implements Interface.ResetControllerInterface {
@@ -120,9 +120,9 @@ export class ResetController implements Interface.ResetControllerInterface {
      */
     async reset(controller: Controller | undefined, showConfirmation: boolean) {
         if (!vscode.workspace.workspaceFolders) {
-            vscode.window.showErrorMessage('No workspace is open')
+            vscode.window.showErrorMessage('No workspace is open');
 
-            return ''
+            return '';
         }
         if (!controller) {
             controller = await vscode.window.showQuickPick(
@@ -136,21 +136,21 @@ export class ResetController implements Interface.ResetControllerInterface {
                     title: 'Reset Controller',
                     canPickMany: false,
                 }
-            )
-            if (!controller) return ''
+            );
+            if (!controller) return '';
         }
 
-        let controllerId: any
+        let controllerId: any;
 
         if (showConfirmation) {
             await vscode.window
                 .showWarningMessage(`Reset ${controller.label}?`, 'Yes', 'No')
                 .then((value) => {
-                    if (value === 'Yes') controllerId = controller.controllerId
-                })
-            if (!controllerId) return ''
+                    if (value === 'Yes') controllerId = controller.controllerId;
+                });
+            if (!controllerId) return '';
         } else {
-            controllerId = controller.controllerId
+            controllerId = controller.controllerId;
         }
 
         await vscode.window.withProgress(
@@ -162,44 +162,46 @@ export class ResetController implements Interface.ResetControllerInterface {
             async (progress, token) => {
                 try {
                     //---------------- TO EDIT
-                    progress.report({ message: `Stopping Container...` })
+                    progress.report({ message: `Stopping Container...` });
                     await ConnectionManager.instance.executeCommand(
                         controllerId,
                         'docker container stop pythonRuntime'
-                    )
+                    );
                     progress.report({
                         increment: 20,
                         message: `Removing Container...`,
-                    })
+                    });
                     await ConnectionManager.instance.executeCommand(
                         controllerId,
                         'docker rm pythonRuntime'
-                    )
+                    );
                     progress.report({
                         increment: 10,
                         message: `Removing Image...`,
-                    })
+                    });
                     //---------------- TO EDIT
                     await ConnectionManager.instance.executeCommand(
                         controllerId,
                         'docker rmi cc100_python'
-                    )
+                    );
                     progress.report({
                         increment: 10,
                         message: `Deleting Files...`,
-                    })
+                    });
                     await ConnectionManager.instance.executeCommand(
                         controllerId,
                         'rm -rf /home/user/python_bootapplication/*'
-                    )
-                    progress.report({ increment: 10 })
+                    );
+                    progress.report({ increment: 10 });
                 } catch (error) {
-                    vscode.window.showErrorMessage('Error resetting controller')
+                    vscode.window.showErrorMessage(
+                        'Error resetting controller'
+                    );
                 }
             }
-        )
+        );
 
-        return YamlCommands.getController(controllerId)?.engine || ''
+        return YamlCommands.getController(controllerId)?.engine || '';
     }
 }
 export class AddController implements Interface.AddControllerInterface {
@@ -226,25 +228,25 @@ export class AddController implements Interface.AddControllerInterface {
                 prompt: 'Enter the name of the controller',
                 title: 'Add Controller / Name',
                 ignoreFocusOut: true,
-            })) || ''
+            })) || '';
 
-        if (!controllerName) return
+        if (!controllerName) return;
 
         const controllerDescription =
             (await vscode.window.showInputBox({
                 prompt: 'Enter the description of the controller',
                 title: 'Add Controller / Description',
                 ignoreFocusOut: true,
-            })) || ''
+            })) || '';
 
         const controllerEngine =
             (await vscode.window.showQuickPick(Object.values(engine), {
                 title: 'Add Controller / Engine',
                 canPickMany: false,
                 ignoreFocusOut: true,
-            })) || ''
+            })) || '';
 
-        const workspacePath = vscode.workspace.workspaceFolders![0].uri.fsPath
+        const workspacePath = vscode.workspace.workspaceFolders![0].uri.fsPath;
         const controllerSrc = (await vscode.window.showQuickPick(
             fs
                 .readdirSync(workspacePath)
@@ -253,9 +255,9 @@ export class AddController implements Interface.AddControllerInterface {
                         return {
                             label: `${folder}`,
                             description: `${folder}/main.py`,
-                        }
+                        };
                     }
-                    return { label: '' }
+                    return { label: '' };
                 })
                 .filter((path) => (path.label.length > 0 ? true : false))
                 .concat({ label: 'New', description: 'Create a new folder' }),
@@ -264,7 +266,7 @@ export class AddController implements Interface.AddControllerInterface {
                 canPickMany: false,
                 ignoreFocusOut: true,
             }
-        )) || { label: 'src' }
+        )) || { label: 'src' };
 
         if (controllerSrc.label === 'New') {
             const newFolder =
@@ -274,24 +276,24 @@ export class AddController implements Interface.AddControllerInterface {
                     ignoreFocusOut: true,
                     validateInput: (value: string) => {
                         if (!RegExp(FOLDER_REGEX).test(value)) {
-                            return 'Invalid folder name'
+                            return 'Invalid folder name';
                         }
                         if (fs.existsSync(`${workspacePath}/${value}`)) {
-                            return 'Folder already exists'
+                            return 'Folder already exists';
                         }
-                        return null
+                        return null;
                     },
-                })) || ''
+                })) || '';
 
             if (newFolder) {
-                fs.mkdirSync(`${workspacePath}/${newFolder}`)
+                fs.mkdirSync(`${workspacePath}/${newFolder}`);
                 fs.cpSync(
                     `${extensionContext.extensionPath}/res/template/src/main.py`,
                     `${workspacePath}/${newFolder}/main.py`
-                )
-                controllerSrc.label = newFolder
+                );
+                controllerSrc.label = newFolder;
             } else {
-                controllerSrc.label = 'src'
+                controllerSrc.label = 'src';
             }
         }
 
@@ -302,11 +304,11 @@ export class AddController implements Interface.AddControllerInterface {
             controllerEngine,
             controllerSrc.label,
             'latest'
-        )
+        );
         vscode.window.showInformationMessage(
             `Controller ${controllerName} added`
-        )
-        ControllerProvider.instance.refresh()
+        );
+        ControllerProvider.instance.refresh();
     }
 }
 export class RemoveController implements Interface.RemoveControllerInterface {
@@ -324,9 +326,9 @@ export class RemoveController implements Interface.RemoveControllerInterface {
         controller: Controller | undefined,
         showConfirmation: boolean
     ) {
-        let selectedController
+        let selectedController;
         if (controller) {
-            selectedController = controller
+            selectedController = controller;
         } else {
             selectedController = await vscode.window.showQuickPick(
                 YamlCommands.getControllers().map((controller) => ({
@@ -338,11 +340,11 @@ export class RemoveController implements Interface.RemoveControllerInterface {
                     title: 'Remove Controller',
                     canPickMany: false,
                 }
-            )
-            if (!selectedController) return
+            );
+            if (!selectedController) return;
         }
 
-        let controllerId
+        let controllerId;
         if (showConfirmation) {
             await vscode.window
                 .showWarningMessage(
@@ -352,19 +354,19 @@ export class RemoveController implements Interface.RemoveControllerInterface {
                 )
                 .then((value) => {
                     if (value === 'Yes')
-                        controllerId = selectedController.controllerId
-                })
-            if (!controllerId) return
+                        controllerId = selectedController.controllerId;
+                });
+            if (!controllerId) return;
         } else {
-            controllerId = selectedController.controllerId
+            controllerId = selectedController.controllerId;
         }
 
-        YamlCommands.removeController(controllerId)
+        YamlCommands.removeController(controllerId);
         vscode.window.showInformationMessage(
             `Controller ${selectedController.label} removed`
-        )
+        );
 
-        ControllerProvider.instance.refresh()
+        ControllerProvider.instance.refresh();
     }
 }
 export class ConfigureController
@@ -405,11 +407,11 @@ export class EditSettings implements Interface.EditSettingsInterface {
      */
     async editSettings(controller: ControllerItem | undefined) {
         if (!vscode.workspace.workspaceFolders) {
-            vscode.window.showErrorMessage('No workspace is open')
-            return
+            vscode.window.showErrorMessage('No workspace is open');
+            return;
         }
 
-        let settingToEdit: string
+        let settingToEdit: string;
 
         if (controller === undefined) {
             let con = await vscode.window.showQuickPick(
@@ -422,31 +424,31 @@ export class EditSettings implements Interface.EditSettingsInterface {
                     title: 'Pick Controller',
                     canPickMany: false,
                 }
-            )
-            if (con === undefined) return
-            let id = con.id
+            );
+            if (con === undefined) return;
+            let id = con.id;
 
             settingToEdit =
                 (await vscode.window.showQuickPick(Object.values(setting), {
                     title: 'Choose Setting',
                     canPickMany: false,
-                })) || ''
-            if (!settingToEdit) return
+                })) || '';
+            if (!settingToEdit) return;
 
             await EditSettingsFunctionality.editSetting(
                 id,
                 settingAdapter[settingToEdit as keyof typeof settingAdapter]
-            )
+            );
         } else {
             await EditSettingsFunctionality.editSetting(
                 controller.controllerId,
                 settingAdapter[
                     controller.setting as keyof typeof settingAdapter
                 ]
-            )
+            );
         }
 
-        ControllerProvider.instance.refresh()
+        ControllerProvider.instance.refresh();
     }
 }
 export class ViewChildren implements Interface.ViewChildrenInterface {
@@ -462,47 +464,47 @@ export class ViewChildren implements Interface.ViewChildrenInterface {
         element?: Controller | ControllerItem | undefined
     ): Promise<vscode.ProviderResult<Controller[] | ControllerItem[]>> {
         if (!element) {
-            let controllers = YamlCommands.getControllers()
-            if (!controllers) return Promise.resolve([])
+            let controllers = YamlCommands.getControllers();
+            if (!controllers) return Promise.resolve([]);
 
             return Promise.all(
                 controllers.map(async (controller) => {
-                    let online = false
+                    let online = false;
                     try {
                         let settings = YamlCommands.getControllerSettings(
                             controller.id
-                        )
+                        );
                         await ConnectionManager.instance.updateController(
                             controller.id,
                             `${settings.ip}:${settings.port}`,
                             settings.user
-                        )
-                        await ConnectionManager.instance.ping(controller.id)
-                        online = true
+                        );
+                        await ConnectionManager.instance.ping(controller.id);
+                        online = true;
                     } catch (error) {
                         console.debug(
                             `Controller ${controller.id} is offline. ${error}`
-                        )
+                        );
                     }
                     return new Controller(
                         controller.id,
                         controller.displayname,
                         online
-                    )
+                    );
                 })
-            )
+            );
         } else {
             if (element instanceof Controller) {
                 const settings = YamlCommands.getControllerSettings(
                     element.controllerId
-                )
-                if (!settings) return Promise.resolve([])
+                );
+                if (!settings) return Promise.resolve([]);
 
                 const controller = YamlCommands.getController(
                     element.controllerId
-                )
+                );
 
-                const settingArray = []
+                const settingArray = [];
 
                 settingArray.push(
                     new ControllerItem(
@@ -510,7 +512,7 @@ export class ViewChildren implements Interface.ViewChildrenInterface {
                         setting.connection,
                         settings.connection
                     )
-                )
+                );
                 if (settings.connection === 'ethernet') {
                     settingArray.push(
                         new ControllerItem(
@@ -518,7 +520,7 @@ export class ViewChildren implements Interface.ViewChildrenInterface {
                             setting.ip,
                             settings.ip
                         )
-                    )
+                    );
                 }
                 settingArray.push(
                     new ControllerItem(
@@ -526,21 +528,21 @@ export class ViewChildren implements Interface.ViewChildrenInterface {
                         setting.port,
                         settings.port
                     )
-                )
+                );
                 settingArray.push(
                     new ControllerItem(
                         element.controllerId,
                         setting.user,
                         settings.user
                     )
-                )
+                );
                 settingArray.push(
                     new ControllerItem(
                         element.controllerId,
                         setting.autoupdate,
                         settings.autoupdate
                     )
-                )
+                );
 
                 return Promise.resolve(
                     [
@@ -565,10 +567,10 @@ export class ViewChildren implements Interface.ViewChildrenInterface {
                             controller?.src
                         ),
                     ].concat(settingArray)
-                )
+                );
             }
         }
-        return Promise.resolve([])
+        return Promise.resolve([]);
     }
 }
 export class RenameController implements Interface.RenameControllerInterface {
@@ -587,11 +589,11 @@ export class RenameController implements Interface.RenameControllerInterface {
      *          if no controller or name is provided.
      */
     async renameController(controller: Controller | undefined) {
-        let newController
+        let newController;
         if (controller) {
-            newController = controller
+            newController = controller;
         } else {
-            const controllers = YamlCommands.getControllers()
+            const controllers = YamlCommands.getControllers();
             if (controllers.length > 1) {
                 newController = await vscode.window.showQuickPick(
                     controllers.map((controller) => {
@@ -599,35 +601,35 @@ export class RenameController implements Interface.RenameControllerInterface {
                             label: controller.displayname,
                             description: controller.description,
                             controllerId: controller.id,
-                        }
+                        };
                     }),
                     {
                         title: 'Rename Controller',
                         canPickMany: false,
                     }
-                )
+                );
             } else {
                 newController = {
                     label: controllers[0].displayname,
                     controllerId: controllers[0].id,
-                }
+                };
             }
         }
-        if (!newController) return
+        if (!newController) return;
 
         const controllerName =
             (await vscode.window.showInputBox({
                 prompt: 'Enter the name of the controller',
                 title: 'Rename Controller',
                 value: newController.label,
-            })) || ''
-        if (!controllerName) return
+            })) || '';
+        if (!controllerName) return;
 
         YamlCommands.writeWagoYaml(
             newController.controllerId,
             wagoSettings.displayname,
             controllerName
-        )
+        );
     }
 }
 export class CreateProject implements Interface.CreateProjectInterface {
@@ -651,13 +653,13 @@ export class CreateProject implements Interface.CreateProjectInterface {
             title: 'Create Project',
             validateInput: (value: string) => {
                 if (!RegExp(FOLDER_REGEX).test(value)) {
-                    return 'Invalid project name'
+                    return 'Invalid project name';
                 }
-                return null
+                return null;
             },
-        })
+        });
 
-        if (!projectName) return
+        if (!projectName) return;
 
         await vscode.window
             .showOpenDialog({
@@ -669,21 +671,23 @@ export class CreateProject implements Interface.CreateProjectInterface {
             .then(async (uri) => {
                 if (uri && projectName) {
                     try {
-                        fs.mkdirSync(`${uri[0].fsPath}/${projectName}`)
+                        fs.mkdirSync(`${uri[0].fsPath}/${projectName}`);
                         fs.cpSync(
                             `${extensionContext.extensionPath}/res/template`,
                             `${uri[0].fsPath}/${projectName}`,
                             { recursive: true }
-                        )
+                        );
                         await vscode.commands.executeCommand(
                             'vscode.openFolder',
                             vscode.Uri.file(`${uri[0].fsPath}/${projectName}`)
-                        )
+                        );
                     } catch (error: any) {
-                        vscode.window.showErrorMessage('Project already exists')
+                        vscode.window.showErrorMessage(
+                            'Project already exists'
+                        );
                     }
                 }
-            })
+            });
     }
 }
 export class RemoveResetController
@@ -710,9 +714,9 @@ export class RemoveResetController
                     title: 'Reset Controller',
                     canPickMany: false,
                 }
-            )
+            );
         }
-        return controller
+        return controller;
     }
 }
 export class EstablishConnections
@@ -729,15 +733,15 @@ export class EstablishConnections
      * @throws Will propagate any errors encountered during the connection process.
      */
     establishConnections() {
-        const controllers = YamlCommands.getControllers()
+        const controllers = YamlCommands.getControllers();
         controllers.forEach(async (controller) => {
-            const settings = YamlCommands.getControllerSettings(controller.id)
+            const settings = YamlCommands.getControllerSettings(controller.id);
             await ConnectionManager.instance.addController(
                 controller.id,
                 `${settings.ip}:${settings.port}`,
                 settings.user
-            )
-        })
+            );
+        });
     }
 }
 //===================================================================================
@@ -767,8 +771,8 @@ export class EditSettingsFunctionality {
      */
     public static async editSetting(id: number, settingToEdit: string) {
         if (!vscode.workspace.workspaceFolders) {
-            vscode.window.showErrorMessage('No workspace is open')
-            return
+            vscode.window.showErrorMessage('No workspace is open');
+            return;
         }
 
         if (settingToEdit in wagoSettings) {
@@ -776,14 +780,14 @@ export class EditSettingsFunctionality {
                 // wago.yaml Setting
                 case wagoSettings.displayname:
                 case wagoSettings.description:
-                    const content = await this.getInput(settingToEdit)
-                    if (!content) return
+                    const content = await this.getInput(settingToEdit);
+                    if (!content) return;
                     YamlCommands.writeWagoYaml(
                         id,
                         wagoSettings[settingToEdit],
                         content
-                    )
-                    break
+                    );
+                    break;
 
                 // wago.yaml QuickPick
                 case wagoSettings.engine:
@@ -794,18 +798,18 @@ export class EditSettingsFunctionality {
                                 title: 'Engine',
                                 canPickMany: false,
                             }
-                        )) || ''
-                    if (!pickedEngine) return
+                        )) || '';
+                    if (!pickedEngine) return;
                     YamlCommands.writeWagoYaml(
                         id,
                         wagoSettings[settingToEdit],
                         pickedEngine
-                    )
-                    break
+                    );
+                    break;
 
                 case wagoSettings.src:
                     const workspacePath =
-                        vscode.workspace.workspaceFolders![0].uri.fsPath
+                        vscode.workspace.workspaceFolders![0].uri.fsPath;
                     const controllerSrc = await vscode.window.showQuickPick(
                         fs
                             .readdirSync(workspacePath)
@@ -818,9 +822,9 @@ export class EditSettingsFunctionality {
                                     return {
                                         label: `${folder}`,
                                         description: `${folder}/main.py`,
-                                    }
+                                    };
                                 }
-                                return { label: '' }
+                                return { label: '' };
                             })
                             .filter((path) =>
                                 path.label.length > 0 ? true : false
@@ -829,41 +833,41 @@ export class EditSettingsFunctionality {
                                 label: 'New',
                                 description: 'Create a new folder',
                             })
-                    )
-                    if (!controllerSrc) return
-                    let newFolder
+                    );
+                    if (!controllerSrc) return;
+                    let newFolder;
                     if (controllerSrc.label === 'New') {
-                        newFolder = await this.getInput(settingToEdit)
+                        newFolder = await this.getInput(settingToEdit);
                         fs.mkdirSync(
                             `${path.resolve(workspacePath)}/${newFolder}`
-                        )
+                        );
                         fs.writeFile(
                             `${path.resolve(workspacePath)}/${newFolder}/main.py`,
                             '',
                             (err) => {
                                 if (err) {
-                                    console.error('Error writing file:', err)
+                                    console.error('Error writing file:', err);
                                 }
                             }
-                        )
+                        );
                     }
                     if (!newFolder) {
                         YamlCommands.writeWagoYaml(
                             id,
                             wagoSettings[settingToEdit],
                             controllerSrc.label
-                        )
+                        );
                     } else {
                         YamlCommands.writeWagoYaml(
                             id,
                             wagoSettings[settingToEdit],
                             newFolder
-                        )
+                        );
                     }
-                    break
+                    break;
                 case wagoSettings.imageVersion:
                     const imageToken =
-                        await new UploadFunctionality().getToken()
+                        await new UploadFunctionality().getToken();
 
                     const dockerImage =
                         (await vscode.window.showQuickPick(
@@ -874,18 +878,18 @@ export class EditSettingsFunctionality {
                                 title: 'Image Version',
                                 canPickMany: false,
                             }
-                        )) || ''
-                    if (!dockerImage) return
+                        )) || '';
+                    if (!dockerImage) return;
 
                     YamlCommands.writeWagoYaml(
                         id,
                         wagoSettings[settingToEdit],
                         dockerImage
-                    )
+                    );
 
-                    break
+                    break;
             }
-            return
+            return;
         } else if (settingToEdit in controllerSettings) {
             switch (settingToEdit) {
                 // controller.yaml Setting
@@ -897,20 +901,20 @@ export class EditSettingsFunctionality {
                                 title: 'Connection Type',
                                 canPickMany: false,
                             }
-                        )) || ''
-                    if (!conType) return
+                        )) || '';
+                    if (!conType) return;
                     if (conType === 'usb-c')
                         YamlCommands.writeControllerYaml(
                             id,
                             controllerSettings.ip,
                             '192.168.42.42'
-                        )
+                        );
                     YamlCommands.writeControllerYaml(
                         id,
                         controllerSettings[settingToEdit],
                         conType
-                    )
-                    break
+                    );
+                    break;
 
                 case controllerSettings.ip:
                 case controllerSettings.port:
@@ -920,15 +924,15 @@ export class EditSettingsFunctionality {
                             id,
                             controllerSettings.connection,
                             'usb-c'
-                        )
-                    const content = await this.getInput(settingToEdit)
-                    if (!content) return
+                        );
+                    const content = await this.getInput(settingToEdit);
+                    if (!content) return;
                     YamlCommands.writeControllerYaml(
                         id,
                         controllerSettings[settingToEdit],
                         content
-                    )
-                    break
+                    );
+                    break;
 
                 // controller.yaml QuickPick
                 case controllerSettings.autoupdate:
@@ -936,19 +940,19 @@ export class EditSettingsFunctionality {
                         (await vscode.window.showQuickPick(['on', 'off'], {
                             title: 'Autoupdate',
                             canPickMany: false,
-                        })) || ''
-                    if (!status) return
+                        })) || '';
+                    if (!status) return;
 
                     YamlCommands.writeControllerYaml(
                         id,
                         controllerSettings[settingToEdit],
                         status
-                    )
-                    break
+                    );
+                    break;
             }
-            return
+            return;
         } else {
-            vscode.window.showErrorMessage('Invalid Attribute Type')
+            vscode.window.showErrorMessage('Invalid Attribute Type');
         }
     }
 
@@ -976,8 +980,8 @@ export class EditSettingsFunctionality {
                     settingToEdit +
                     ' should be set to',
                 title: 'Set ' + settingToEdit + ' Value',
-            })) || ''
-        return input
+            })) || '';
+        return input;
     }
 }
 /**
@@ -1028,13 +1032,13 @@ export enum settingAdapter {
  * @property imageVersion - The version of the controller's image.
  */
 type ControllerType = {
-    id: number
-    displayname: string
-    description: string
-    engine: string
-    src: string
-    imageVersion: string
-}
+    id: number;
+    displayname: string;
+    description: string;
+    engine: string;
+    src: string;
+    imageVersion: string;
+};
 /**
  * Represents the settings for a controller.
  *
@@ -1045,12 +1049,12 @@ type ControllerType = {
  * @property autoupdate - The auto-update setting for the controller (e.g., "on", "off").
  */
 type ControllerSettingsType = {
-    connection: string
-    ip: string
-    port: number
-    user: string
-    autoupdate: string
-}
+    connection: string;
+    ip: string;
+    port: number;
+    user: string;
+    autoupdate: string;
+};
 export class YamlCommands {
     /**
      * Function to read the content of the wago.yaml file.
@@ -1063,7 +1067,7 @@ export class YamlCommands {
                 `${vscode.workspace.workspaceFolders![0].uri.fsPath}/wago.yaml`,
                 'utf8'
             )
-        )
+        );
     }
 
     /**
@@ -1078,13 +1082,13 @@ export class YamlCommands {
                     `${vscode.workspace.workspaceFolders![0].uri.fsPath}/controller/controller${id}.yaml`,
                     'utf8'
                 )
-            )
+            );
         } catch (error) {
-            console.log('getControllerYaml: No File Found! Creating new File')
+            console.log('getControllerYaml: No File Found! Creating new File');
             fs.cpSync(
                 `${extensionContext.extensionPath}/res/template/controller/controller1.yaml`,
                 `${vscode.workspace.workspaceFolders![0].uri.fsPath}/controller/controller${id}.yaml`
-            )
+            );
         }
     }
 
@@ -1100,7 +1104,7 @@ export class YamlCommands {
      * - `imageVersion`: The version of the controller's image.
      */
     public static getControllers(): Array<ControllerType> {
-        const nodes = this.getWagoYaml().nodes
+        const nodes = this.getWagoYaml().nodes;
         return Object.keys(nodes).map((key: string) => ({
             id: Number.parseInt(key),
             displayname: nodes[key].displayname,
@@ -1108,7 +1112,7 @@ export class YamlCommands {
             engine: nodes[key].engine,
             src: nodes[key].src,
             imageVersion: nodes[key].imageVersion,
-        }))
+        }));
     }
 
     /**
@@ -1118,7 +1122,7 @@ export class YamlCommands {
      * @returns The controller matching the given ID, or `undefined` if no match is found.
      */
     public static getController(id: number): ControllerType | undefined {
-        return this.getControllers().find((controller) => controller.id === id)
+        return this.getControllers().find((controller) => controller.id === id);
     }
 
     /**
@@ -1133,14 +1137,14 @@ export class YamlCommands {
      * - `autoupdate`: A flag indicating whether auto-update is enabled.
      */
     public static getControllerSettings(id: number): ControllerSettingsType {
-        const settings = this.getControllerYaml(id)
+        const settings = this.getControllerYaml(id);
         return {
             connection: settings.connection,
             ip: settings.ip,
             port: settings.port,
             user: settings.user,
             autoupdate: settings.autoupdate,
-        }
+        };
     }
 
     /**
@@ -1155,12 +1159,12 @@ export class YamlCommands {
         attribute: wagoSettings,
         value: string
     ) {
-        let yaml = this.getWagoYaml()
-        yaml.nodes[id][attribute] = value
+        let yaml = this.getWagoYaml();
+        yaml.nodes[id][attribute] = value;
         fs.writeFileSync(
             `${vscode.workspace.workspaceFolders![0].uri.fsPath}/wago.yaml`,
             YAML.stringify(yaml, null, '\t')
-        )
+        );
     }
 
     /**
@@ -1177,16 +1181,16 @@ export class YamlCommands {
         attribute: controllerSettings,
         value: string
     ) {
-        let yaml = this.getControllerYaml(id)
+        let yaml = this.getControllerYaml(id);
         if (attribute === controllerSettings.port) {
-            yaml[attribute] = Number(value)
+            yaml[attribute] = Number(value);
         } else {
-            yaml[attribute] = value
+            yaml[attribute] = value;
         }
         fs.writeFileSync(
             `${vscode.workspace.workspaceFolders![0].uri.fsPath}/controller/controller${id}.yaml`,
             YAML.stringify(yaml, null, '\t')
-        )
+        );
     }
 
     /**
@@ -1209,7 +1213,7 @@ export class YamlCommands {
         imageVersion: string
     ) {
         //Addition of the Controller to wago.yaml
-        let id = this.findNextID()
+        let id = this.findNextID();
 
         let obj = {
             nodes: {
@@ -1221,21 +1225,21 @@ export class YamlCommands {
                     imageVersion: imageVersion,
                 },
             },
-        }
+        };
 
-        let yaml = this.getWagoYaml()
-        yaml.nodes[id] = obj.nodes[id]
+        let yaml = this.getWagoYaml();
+        yaml.nodes[id] = obj.nodes[id];
 
         fs.writeFileSync(
             `${vscode.workspace.workspaceFolders![0].uri.fsPath}/wago.yaml`,
             YAML.stringify(yaml, null, '\t')
-        )
+        );
 
         //Adding Controller to corresponding controllers/controller[id].yaml file
         fs.cpSync(
             `${context.extensionPath}/res/template/controller/controller1.yaml`,
             `${vscode.workspace.workspaceFolders![0].uri.fsPath}/controller/controller${id}.yaml`
-        )
+        );
     }
 
     /**
@@ -1250,16 +1254,16 @@ export class YamlCommands {
      */
     public static removeController(id: number) {
         //remove from wago.yaml
-        let yaml = this.getWagoYaml()
-        delete yaml.nodes[id]
+        let yaml = this.getWagoYaml();
+        delete yaml.nodes[id];
         fs.writeFileSync(
             `${vscode.workspace.workspaceFolders![0].uri.fsPath}/wago.yaml`,
             YAML.stringify(yaml, null, '\t')
-        )
+        );
 
         //remove Controller configuration file
-        let controllerPath = `${vscode.workspace.workspaceFolders![0].uri.fsPath}/controller/controller${id}.yaml`
-        if (fs.existsSync(controllerPath)) fs.unlinkSync(controllerPath)
+        let controllerPath = `${vscode.workspace.workspaceFolders![0].uri.fsPath}/controller/controller${id}.yaml`;
+        if (fs.existsSync(controllerPath)) fs.unlinkSync(controllerPath);
     }
 
     /**
@@ -1271,12 +1275,12 @@ export class YamlCommands {
      * @returns {number} The next available controller ID.
      */
     private static findNextID(): number {
-        let yaml = this.getWagoYaml()
-        let id = 1
+        let yaml = this.getWagoYaml();
+        let id = 1;
         while (yaml.nodes[id] != undefined) {
-            id++
+            id++;
         }
-        return id
+        return id;
     }
 }
 export enum engine {
@@ -1312,11 +1316,11 @@ export enum controllerSettings {
 // Upload Functionality
 //===================================================================================
 
-const uploadPath = '/home/user/python_bootapplication/'
-let connectionManager = ConnectionManager.instance
+const uploadPath = '/home/user/python_bootapplication/';
+let connectionManager = ConnectionManager.instance;
 
 export class UploadFunctionality {
-    static repo = 'wago-enterprise-education/docker-engine-cc100'
+    static repo = 'wago-enterprise-education/docker-engine-cc100';
 
     /**
      * This Method uploads the corresponding files to the WAGO Controller.
@@ -1324,15 +1328,15 @@ export class UploadFunctionality {
      * @param id The id of the used controller
      */
     public async uploadFile(id: number) {
-        let controller = YamlCommands.getController(id)
-        let src = controller?.src
-        let path = `${vscode.workspace.workspaceFolders![0].uri.fsPath}\\${src}`
+        let controller = YamlCommands.getController(id);
+        let src = controller?.src;
+        let path = `${vscode.workspace.workspaceFolders![0].uri.fsPath}\\${src}`;
 
         if (!fs.existsSync(`${path}/main.py`)) {
             vscode.window.showErrorMessage(
                 'The selected Folder does not exist or does not contain a main.py.'
-            )
-            return
+            );
+            return;
         }
 
         vscode.window.withProgress(
@@ -1343,69 +1347,69 @@ export class UploadFunctionality {
             },
             async (progress, token) => {
                 try {
-                    progress.report({ message: 'Comparing Folders...' })
+                    progress.report({ message: 'Comparing Folders...' });
                     if (await this.compareFolders(id, path)) {
                         vscode.window.showInformationMessage(
                             `The files on ${controller?.displayname} are already up to date.`
-                        )
-                        return
+                        );
+                        return;
                     }
-                    progress.report({ increment: 10 })
+                    progress.report({ increment: 10 });
 
-                    progress.report({ message: 'Deactivating Codesys...' })
-                    await this.deactivateCodeSys3(id)
-                    progress.report({ increment: 10 })
+                    progress.report({ message: 'Deactivating Codesys...' });
+                    await this.deactivateCodeSys3(id);
+                    progress.report({ increment: 10 });
 
-                    progress.report({ message: 'Activating Docker...' })
+                    progress.report({ message: 'Activating Docker...' });
                     await connectionManager.executeCommand(
                         id,
                         '/etc/config-tools/config_docker activate'
-                    )
-                    progress.report({ increment: 15 })
+                    );
+                    progress.report({ increment: 15 });
 
-                    progress.report({ message: 'Updating Container...' })
-                    this.updateContainer(id)
-                    progress.report({ increment: 20 })
+                    progress.report({ message: 'Updating Container...' });
+                    this.updateContainer(id);
+                    progress.report({ increment: 20 });
 
-                    progress.report({ message: 'Uploading...' })
+                    progress.report({ message: 'Uploading...' });
                     await connectionManager
                         .upload(id, path, uploadPath)
                         .then(() => {})
                         .catch((err) => {
-                            console.error(`Error uploading files: ${err}`)
+                            console.error(`Error uploading files: ${err}`);
                             vscode.window.showErrorMessage(
                                 'An error occurred while uploading the files.'
-                            )
-                        })
-                    progress.report({ increment: 30 })
+                            );
+                        });
+                    progress.report({ increment: 30 });
 
-                    progress.report({ message: 'Starting Python Runtime...' })
+                    progress.report({ message: 'Starting Python Runtime...' });
                     await connectionManager.executeCommand(
                         id,
                         'docker exec -d pythonRuntime python3 /lib/runtimeCC.py'
-                    )
+                    );
                     progress.report({
                         increment: 15,
                         message: 'Finished Uploading',
-                    })
+                    });
 
                     return new Promise<void>((resolve) => {
                         setTimeout(() => {
-                            resolve()
-                        }, 2000)
-                    })
+                            resolve();
+                        }, 2000);
+                    });
                 } catch (error) {
                     progress.report({
                         increment: 100,
                         message: 'An Error occured while Uploading',
-                    })
-                    console.error(`Error uploading to controller: ${error}`)
+                    });
+                    console.error(`Error uploading to controller: ${error}`);
                     vscode.window.showErrorMessage(
                         'An Error occured while Uploading to the Controller'
-                    )
+                    );
                 }
             }
-        )
+        );
     }
 
     /**
@@ -1422,24 +1426,24 @@ export class UploadFunctionality {
     ): Promise<Boolean> {
         try {
             // Get Array of remote Hashes
-            console.log('Getting remote Hashes...')
+            console.log('Getting remote Hashes...');
             let remoteHashes = await connectionManager.executeCommand(
                 id,
                 `find ${uploadPath} -type f -exec md5sum {} +`
-            )
-            let remoteHash = this.createFolderHash(remoteHashes)
-            console.debug('Remote Hash: ' + remoteHash)
+            );
+            let remoteHash = this.createFolderHash(remoteHashes);
+            console.debug('Remote Hash: ' + remoteHash);
 
             //Get Array of local Hashes
-            console.log('Getting local Hashes...')
-            let localHashes = await this.getLocalHashes(localPath)
-            let localHash = this.createFolderHash(localHashes)
-            console.debug('Local Hash: ' + localHash)
+            console.log('Getting local Hashes...');
+            let localHashes = await this.getLocalHashes(localPath);
+            let localHash = this.createFolderHash(localHashes);
+            console.debug('Local Hash: ' + localHash);
 
-            return Promise.resolve(localHash === remoteHash)
+            return Promise.resolve(localHash === remoteHash);
         } catch (error) {
-            console.error('Error comparing folders:', error)
-            return Promise.reject(error)
+            console.error('Error comparing folders:', error);
+            return Promise.reject(error);
         }
     }
 
@@ -1453,27 +1457,27 @@ export class UploadFunctionality {
      */
     private async getLocalHashes(path: string): Promise<string> {
         try {
-            let localFiles = await this.getFilesInDirectory(path)
-            let localHashes = ''
+            let localFiles = await this.getFilesInDirectory(path);
+            let localHashes = '';
 
             //For Each File from Path in localFiles Array create Hash and add to localHashes
             for (let file of localFiles) {
-                let fileContent = fs.readFileSync(file, 'utf8')
+                let fileContent = fs.readFileSync(file, 'utf8');
                 let hash = crypto
                     .createHash('md5')
                     .update(fileContent)
-                    .digest('hex')
+                    .digest('hex');
                 if (localHashes.length == 0) {
-                    localHashes = `${localHashes}${hash}  ${file}`
+                    localHashes = `${localHashes}${hash}  ${file}`;
                 } else {
-                    localHashes = `${localHashes}\n${hash}  ${file}`
+                    localHashes = `${localHashes}\n${hash}  ${file}`;
                 }
             }
 
-            return Promise.resolve(localHashes)
+            return Promise.resolve(localHashes);
         } catch (error) {
-            console.error('Error getting local hashes:', error)
-            return Promise.reject(error)
+            console.error('Error getting local hashes:', error);
+            return Promise.reject(error);
         }
     }
 
@@ -1485,25 +1489,25 @@ export class UploadFunctionality {
      */
     private async getFilesInDirectory(dirPath: string): Promise<string[]> {
         try {
-            let files: string[] = []
-            let read = fs.readdirSync(dirPath, { recursive: true })
-            let dirFiles = read.map(String)
+            let files: string[] = [];
+            let read = fs.readdirSync(dirPath, { recursive: true });
+            let dirFiles = read.map(String);
 
             for (const file of dirFiles) {
-                const fullPath = path.join(dirPath, file)
-                let stat = fs.statSync(fullPath)
+                const fullPath = path.join(dirPath, file);
+                let stat = fs.statSync(fullPath);
                 fs.stat(fullPath, (err, stats) => {
-                    stat = stats
-                })
+                    stat = stats;
+                });
                 if (stat.isFile()) {
-                    files.push(fullPath)
+                    files.push(fullPath);
                 }
             }
 
-            return files
+            return files;
         } catch (error) {
-            console.error('Error getting files in local directory:', error)
-            return Promise.reject(error)
+            console.error('Error getting files in local directory:', error);
+            return Promise.reject(error);
         }
     }
 
@@ -1523,15 +1527,15 @@ export class UploadFunctionality {
             .replaceAll('\n', '  ')
             .split('  ')
             .filter((val, index) => {
-                return index % 2 === 0
+                return index % 2 === 0;
             })
             .sort((a, b) => a.localeCompare(b))
             .toString()
-            .replaceAll(',', '')
+            .replaceAll(',', '');
 
-        let hash = crypto.createHash('md5').update(hashes).digest('hex')
+        let hash = crypto.createHash('md5').update(hashes).digest('hex');
 
-        return hash
+        return hash;
     }
 
     /**
@@ -1540,18 +1544,18 @@ export class UploadFunctionality {
      * @param id The id of the used controller
      */
     private async deactivateCodeSys3(id: number) {
-        await connectionManager.executeCommand(id, 'kill $(pidof codesys3)')
+        await connectionManager.executeCommand(id, 'kill $(pidof codesys3)');
         await connectionManager
             .executeCommand(
                 id,
                 '/etc/config-tools/config_runtime runtime-version=0'
             )
             .then(() => {
-                console.log('CodeSys3 deactivated.')
+                console.log('CodeSys3 deactivated.');
             })
             .catch((err) => {
-                console.error(`Error deactivating CodeSys3: ${err}`)
-            })
+                console.error(`Error deactivating CodeSys3: ${err}`);
+            });
     }
 
     /**
@@ -1562,60 +1566,60 @@ export class UploadFunctionality {
      * @param id The id of the used controller
      */
     private async updateContainer(id: number) {
-        const imageName = 'cc100_python'
-        const containerName = 'pythonRuntime'
+        const imageName = 'cc100_python';
+        const containerName = 'pythonRuntime';
 
         // Cancel if Image Version is specifically chosen
-        let wantedVers = YamlCommands.getController(id)?.imageVersion
-        if (!wantedVers) return
+        let wantedVers = YamlCommands.getController(id)?.imageVersion;
+        if (!wantedVers) return;
 
         try {
-            console.debug('Comparing Versions...')
+            console.debug('Comparing Versions...');
             // Check if there is a new version
 
-            let token = await this.getToken()
+            let token = await this.getToken();
 
-            let tagList: string[] = await this.getTagList(token)
+            let tagList: string[] = await this.getTagList(token);
             if (!tagList.includes(wantedVers)) {
                 vscode.window.showErrorMessage(
                     'Configured Image Tag is not a viable tag'
-                )
-                return
+                );
+                return;
             }
 
             // Get current Controller Image Hash
-            console.debug('Getting controller Image Hash...')
+            console.debug('Getting controller Image Hash...');
             let currTag = await connectionManager.executeCommand(
                 id,
                 "docker images | grep 'cc100_python' | awk '{print $2}' | head -n 1"
-            )
+            );
 
-            let conImageHash = ''
+            let conImageHash = '';
             if (currTag != '') {
                 let conManifest = await connectionManager.executeCommand(
                     id,
                     `docker inspect ${imageName}:${currTag}`
-                )
-                let json = JSON.parse(conManifest)
-                let layers = json[0].RootFS.Layers
-                conImageHash = this.getImageHash(layers)
+                );
+                let json = JSON.parse(conManifest);
+                let layers = json[0].RootFS.Layers;
+                conImageHash = this.getImageHash(layers);
             }
 
             // Get new Image Hash from GitHub Packages
-            console.debug('Getting newest Image Hash...')
+            console.debug('Getting newest Image Hash...');
             let wantedVersManifest = await this.getImageManifest(
                 wantedVers,
                 token
-            )
-            let wantedVersHash = this.getImageHash(wantedVersManifest.layers)
-            let imageDigest = wantedVersManifest.digest
+            );
+            let wantedVersHash = this.getImageHash(wantedVersManifest.layers);
+            let imageDigest = wantedVersManifest.digest;
 
             if (wantedVersHash == conImageHash) {
-                return
+                return;
             }
 
-            let conName = YamlCommands.getController(id)?.displayname
-            let autoupdate = YamlCommands.getControllerSettings(id).autoupdate
+            let conName = YamlCommands.getController(id)?.displayname;
+            let autoupdate = YamlCommands.getControllerSettings(id).autoupdate;
             if (autoupdate === 'off') {
                 await vscode.window
                     .showWarningMessage(
@@ -1624,28 +1628,31 @@ export class UploadFunctionality {
                         'No'
                     )
                     .then((value) => {
-                        if (value === 'No') return
-                    })
+                        if (value === 'No') return;
+                    });
             }
 
             // Stop current container
-            console.debug('Stopping Container...')
-            connectionManager.executeCommand(id, `docker stop ${containerName}`)
+            console.debug('Stopping Container...');
+            connectionManager.executeCommand(
+                id,
+                `docker stop ${containerName}`
+            );
 
             // remove all images and containers
-            console.debug('Removing Images and Containers...')
+            console.debug('Removing Images and Containers...');
             await connectionManager.executeCommand(
                 id,
                 `docker rm ${containerName}`
-            )
+            );
             await connectionManager.executeCommand(
                 id,
                 `docker rmi -f ${imageName}`
-            )
+            );
 
             // Download and Upload new Image
-            console.debug('Downloading new Image...')
-            const stream = fs.createWriteStream(`%tmp%/image.tar`)
+            console.debug('Downloading new Image...');
+            const stream = fs.createWriteStream(`%tmp%/image.tar`);
 
             //Download from GitHub packages through Manifest and digest hash
             const { body } = await fetch(
@@ -1656,36 +1663,36 @@ export class UploadFunctionality {
                         Accept: 'application/vnd.oci.image.layer.v1.tar+gzip',
                     },
                 }
-            )
+            );
             if (!body) {
-                vscode.window.showErrorMessage('Error downloading image.')
-                return
+                vscode.window.showErrorMessage('Error downloading image.');
+                return;
             }
-            await finished(Readable.fromWeb(body).pipe(stream))
+            await finished(Readable.fromWeb(body).pipe(stream));
 
             // Upload new Image
-            await connectionManager.upload(id, `%tmp%/image.tar`, '/home/')
+            await connectionManager.upload(id, `%tmp%/image.tar`, '/home/');
             fs.unlink(`%tmp%/image.tar`, (err) => {
                 if (err)
                     console.debug(
                         'Error removing image.tar from the temp folder.'
-                    )
-                console.debug('Removed image.tar from the temp folder.')
-            })
+                    );
+                console.debug('Removed image.tar from the temp folder.');
+            });
 
             // Load new Image
-            console.debug('Loading new Image...')
+            console.debug('Loading new Image...');
             await connectionManager.executeCommand(
                 id,
                 `docker load -i /home/image.tar`
-            )
-            await connectionManager.executeCommand(id, `rm /home/image.tar`)
+            );
+            await connectionManager.executeCommand(id, `rm /home/image.tar`);
             await connectionManager.executeScript(
                 id,
                 `../../../res/dockerCommand.sh ${imageName}`
-            )
+            );
         } catch (error) {
-            console.error(`Error Updating Container: ${error}`)
+            console.error(`Error Updating Container: ${error}`);
         }
     }
 
@@ -1698,9 +1705,9 @@ export class UploadFunctionality {
         let hash = crypto
             .createHash('md5')
             .update(layers.toString())
-            .digest('hex')
-        console.debug('Image Hash: ' + hash)
-        return hash
+            .digest('hex');
+        console.debug('Image Hash: ' + hash);
+        return hash;
     }
 
     /**
@@ -1712,14 +1719,14 @@ export class UploadFunctionality {
     public async getToken(): Promise<string> {
         let tokenResponse = await fetch(
             `https://ghcr.io/token?service=ghcr.io&scope=repository:${UploadFunctionality.repo}:pull`
-        )
+        );
         if (!tokenResponse.ok)
             throw new Error(
                 `Failed to fetch token: ${tokenResponse.statusText}`
-            )
-        let tokenObj: any = await tokenResponse.json()
-        console.debug(`Token: ${tokenObj.token}`)
-        return tokenObj.token
+            );
+        let tokenObj: any = await tokenResponse.json();
+        console.debug(`Token: ${tokenObj.token}`);
+        return tokenObj.token;
     }
 
     /**
@@ -1736,13 +1743,13 @@ export class UploadFunctionality {
                     Authorization: `Bearer ${token}`,
                 },
             }
-        )
+        );
         if (!tagListResponse.ok)
             throw new Error(
                 `Failed to fetch tag list: ${tagListResponse.statusText}`
-            )
-        let tagList: any = await tagListResponse.json()
-        return tagList.tags
+            );
+        let tagList: any = await tagListResponse.json();
+        return tagList.tags;
     }
 
     /**
@@ -1763,19 +1770,19 @@ export class UploadFunctionality {
                     Accept: 'application/vnd.oci.image.index.v1+json',
                 },
             }
-        )
+        );
         if (!manifestResponse.ok)
             throw new Error(
                 `Failed to fetch manifest: ${manifestResponse.statusText}`
-            )
-        let manifest: any = await manifestResponse.json()
+            );
+        let manifest: any = await manifestResponse.json();
 
         // Shrinks the Manifest to the size needed later on
         let shrinkedManifest = {
             digest: manifest.config.digest,
             layers: manifest.layers.map((layer: any) => layer.digest),
-        }
+        };
 
-        return Promise.resolve(shrinkedManifest)
+        return Promise.resolve(shrinkedManifest);
     }
 }

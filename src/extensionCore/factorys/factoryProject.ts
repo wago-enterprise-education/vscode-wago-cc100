@@ -1,6 +1,6 @@
-import * as Interface from '../interfaces/projectInterface'
-import * as V1 from '../projectVersions/V01'
-import * as V2 from '../projectVersions/V02'
+import * as Interface from '../interfaces/projectInterface';
+import * as V1 from '../projectVersions/V01';
+import * as V2 from '../projectVersions/V02';
 
 /**
  * A factory class for creating various project-related commands and controllers
@@ -8,7 +8,7 @@ import * as V2 from '../projectVersions/V02'
  * to ensure only one instance of the factory exists.
  */
 export class ProjectFactory {
-    private static instance: ProjectFactory
+    private static instance: ProjectFactory;
 
     private constructor() {
         // Private constructor to prevent instantiation from outside
@@ -21,9 +21,9 @@ export class ProjectFactory {
      */
     public static getInstance(): ProjectFactory {
         if (!ProjectFactory.instance) {
-            ProjectFactory.instance = new ProjectFactory()
+            ProjectFactory.instance = new ProjectFactory();
         }
-        return ProjectFactory.instance!
+        return ProjectFactory.instance!;
     }
 
     /**
@@ -36,11 +36,11 @@ export class ProjectFactory {
     public createUploadCommand(versionNr: number): Interface.UploadInterface {
         switch (versionNr) {
             case 0.1:
-                return new V1.UploadController()
+                return new V1.UploadController();
             case 0.2:
-                return new V2.UploadController()
+                return new V2.UploadController();
             default:
-                throw new Error('Invalid version number')
+                throw new Error('Invalid version number');
         }
     }
 
@@ -49,9 +49,9 @@ export class ProjectFactory {
     ): Interface.UploadAllInterface {
         switch (versionNr) {
             case 0.2:
-                return new V2.UploadAllControllers()
+                return new V2.UploadAllControllers();
             default:
-                throw new Error('Invalid version number')
+                throw new Error('Invalid version number');
         }
     }
     /**
@@ -66,11 +66,11 @@ export class ProjectFactory {
     ): Interface.ResetControllerInterface {
         switch (versionNr) {
             case 0.1:
-                return new V1.ResetController()
+                return new V1.ResetController();
             case 0.2:
-                return new V2.ResetController()
+                return new V2.ResetController();
             default:
-                throw new Error('Invalid version number')
+                throw new Error('Invalid version number');
         }
     }
 
@@ -86,9 +86,9 @@ export class ProjectFactory {
     ): Interface.AddControllerInterface {
         switch (versionNr) {
             case 0.2:
-                return new V2.AddController()
+                return new V2.AddController();
             default:
-                throw new Error('Invalid version number')
+                throw new Error('Invalid version number');
         }
     }
 
@@ -104,9 +104,9 @@ export class ProjectFactory {
     ): Interface.RemoveControllerInterface {
         switch (versionNr) {
             case 0.2:
-                return new V2.RemoveController()
+                return new V2.RemoveController();
             default:
-                throw new Error('Invalid version number')
+                throw new Error('Invalid version number');
         }
     }
 
@@ -122,11 +122,11 @@ export class ProjectFactory {
     ): Interface.ConfigureControllerInterface {
         switch (versionNr) {
             case 0.1:
-                return new V1.ConfigureController()
+                return new V1.ConfigureController();
             case 0.2:
-                return new V2.ConfigureController()
+                return new V2.ConfigureController();
             default:
-                throw new Error('Invalid version number')
+                throw new Error('Invalid version number');
         }
     }
 
@@ -142,11 +142,11 @@ export class ProjectFactory {
     ): Interface.EditSettingsInterface {
         switch (versionNr) {
             case 0.1:
-                return new V1.EditSettings()
+                return new V1.EditSettings();
             case 0.2:
-                return new V2.EditSettings()
+                return new V2.EditSettings();
             default:
-                throw new Error('Invalid version number')
+                throw new Error('Invalid version number');
         }
     }
 
@@ -162,11 +162,11 @@ export class ProjectFactory {
     ): Interface.ViewChildrenInterface {
         switch (versionNr) {
             case 0.1:
-                return new V1.ViewChildren()
+                return new V1.ViewChildren();
             case 0.2:
-                return new V2.ViewChildren()
+                return new V2.ViewChildren();
             default:
-                throw new Error('Invalid version number')
+                throw new Error('Invalid version number');
         }
     }
 
@@ -182,9 +182,9 @@ export class ProjectFactory {
     ): Interface.RenameControllerInterface {
         switch (versionNr) {
             case 0.2:
-                return new V2.RenameController()
+                return new V2.RenameController();
             default:
-                throw new Error('Invalid version number')
+                throw new Error('Invalid version number');
         }
     }
 
@@ -200,9 +200,9 @@ export class ProjectFactory {
     ): Interface.CreateProjectInterface {
         switch (versionNr) {
             case 0:
-                return new V2.CreateProject()
+                return new V2.CreateProject();
             default:
-                throw new Error('Invalid version number')
+                throw new Error('Invalid version number');
         }
     }
 
@@ -218,9 +218,9 @@ export class ProjectFactory {
     ): Interface.RemoveResetControllerInterface {
         switch (versionNr) {
             case 0.2:
-                return new V2.RemoveResetController()
+                return new V2.RemoveResetController();
             default:
-                throw new Error('Invalid version number')
+                throw new Error('Invalid version number');
         }
     }
 
@@ -236,11 +236,11 @@ export class ProjectFactory {
     ): Interface.EstablishConnectionsInterface {
         switch (versionNr) {
             case 0.2:
-                return new V2.EstablishConnections()
+                return new V2.EstablishConnections();
             case 0.1:
-                return new V1.EstablishConnections()
+                return new V1.EstablishConnections();
             default:
-                throw new Error('Invalid version number')
+                throw new Error('Invalid version number');
         }
     }
 }

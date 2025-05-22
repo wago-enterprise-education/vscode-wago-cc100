@@ -1,22 +1,22 @@
-import * as vscode from 'vscode'
-import * as path from 'path'
-import * as fs from 'fs'
-import sanitizeHtml from 'sanitize-html'
-import { ConnectionManager } from './connectionManager'
-import { Controller } from './view'
-import { ProjectVersion } from './versionDetection'
-import YAML from 'yaml'
-import { extensionContext } from '../extension'
+import * as vscode from 'vscode';
+import * as path from 'path';
+import * as fs from 'fs';
+import sanitizeHtml from 'sanitize-html';
+import { ConnectionManager } from './connectionManager';
+import { Controller } from './view';
+import { ProjectVersion } from './versionDetection';
+import YAML from 'yaml';
+import { extensionContext } from '../extension';
 
 export class webviewIoCheck {
-    private windowClosed: boolean = false
-    private test: boolean = false
+    private windowClosed: boolean = false;
+    private test: boolean = false;
 
-    public canLoadPanel: boolean = true
-    public ioCheckPanel: vscode.WebviewPanel | undefined = undefined
-    private readonly pathToLibFile: string = 'src/lib/CC100IO.py'
-    private wsPath: string = ''
-    private connectionLost: boolean = false
+    public canLoadPanel: boolean = true;
+    public ioCheckPanel: vscode.WebviewPanel | undefined = undefined;
+    private readonly pathToLibFile: string = 'src/lib/CC100IO.py';
+    private wsPath: string = '';
+    private connectionLost: boolean = false;
     calibData: any[][] = [
         ['PT1', 'PT2', 'AI1', 'AI2', 'AO1', 'AO2'],
         ['9663', '1000', '40753', '3000'],
@@ -25,14 +25,14 @@ export class webviewIoCheck {
         ['14106', '2494', '41873', '7492'],
         ['1050', '350', '8978', '3000'],
         ['1044', '350', '8970', '3000'],
-    ]
-    private switchStatus: string
-    private serialConnection: any
+    ];
+    private switchStatus: string;
+    private serialConnection: any;
 
     constructor() {
-        this.calibData = []
-        this.switchStatus = ''
-        this.createNewWebview()
+        this.calibData = [];
+        this.switchStatus = '';
+        this.createNewWebview();
     }
 
     private createNewWebview() {
@@ -43,10 +43,10 @@ export class webviewIoCheck {
                     // Check if an activeTextEditor is there, either it exists or it is undefined
                     const columnToShowIn = vscode.window.activeTextEditor
                         ? vscode.window.activeTextEditor.viewColumn
-                        : undefined
+                        : undefined;
 
                     if (this.ioCheckPanel) {
-                        this.ioCheckPanel.reveal(columnToShowIn)
+                        this.ioCheckPanel.reveal(columnToShowIn);
                     } else {
                         this.ioCheckPanel = vscode.window.createWebviewPanel(
                             'iocheck',
@@ -70,43 +70,43 @@ export class webviewIoCheck {
                                     ),
                                 ],
                             }
-                        )
+                        );
 
                         this.ioCheckPanel.webview.html =
-                            this.getIOCheckWebviewContent()
+                            this.getIOCheckWebviewContent();
 
                         this.ioCheckPanel.webview.onDidReceiveMessage(
                             async (message) => {
                                 switch (message.command) {
                                     case 'windowLoaded': {
-                                        this.canLoadPanel = true
-                                        break
+                                        this.canLoadPanel = true;
+                                        break;
                                     }
                                 }
                             }
-                        )
+                        );
 
                         // Webview Tab Icon
                         this.ioCheckPanel.iconPath = vscode.Uri.joinPath(
                             extensionContext.extensionUri,
                             'res/images/WAGOW.png'
-                        )
+                        );
 
                         // Reset when the current panel is closed
                         this.ioCheckPanel.onDidDispose(
                             () => {
                                 // this.test = false;
-                                this.ioCheckPanel = undefined
-                                this.windowClosed = true
+                                this.ioCheckPanel = undefined;
+                                this.windowClosed = true;
                             },
                             null,
                             extensionContext.subscriptions
-                        )
+                        );
 
                         if (this.ioCheckPanel) {
                             try {
                                 if (element) {
-                                    this.updateIoCheck(element.controllerId)
+                                    this.updateIoCheck(element.controllerId);
                                 } else if (ProjectVersion >= 0.2) {
                                     let controller =
                                         await vscode.window.showQuickPick(
@@ -117,30 +117,30 @@ export class webviewIoCheck {
                                                         controllerId:
                                                             controller.id,
                                                         online: false,
-                                                    }
+                                                    };
                                                 }
                                             ),
                                             {
                                                 placeHolder:
                                                     'Select a controller',
                                             }
-                                        )
+                                        );
                                     if (controller) {
                                         this.updateIoCheck(
                                             controller.controllerId
-                                        )
+                                        );
                                     }
                                 } else {
-                                    this.updateIoCheck(0)
+                                    this.updateIoCheck(0);
                                 }
                             } catch (error: any) {
-                                this.ioCheckPanel.dispose()
+                                this.ioCheckPanel.dispose();
                             }
                         }
                     }
                 }
             )
-        )
+        );
     }
 
     /**
@@ -153,13 +153,13 @@ export class webviewIoCheck {
         const onDiskPath = vscode.Uri.joinPath(
             extensionContext.extensionUri,
             path
-        )
-        var webviewPath = vscode.Uri.joinPath(extensionContext.extensionUri)
+        );
+        var webviewPath = vscode.Uri.joinPath(extensionContext.extensionUri);
         if (this.ioCheckPanel) {
-            webviewPath = this.ioCheckPanel.webview.asWebviewUri(onDiskPath)
+            webviewPath = this.ioCheckPanel.webview.asWebviewUri(onDiskPath);
         }
         // Get the special URI to use with the webview
-        return webviewPath
+        return webviewPath;
     }
 
     /**
@@ -170,100 +170,100 @@ export class webviewIoCheck {
         var pathHTML = path.join(
             extensionContext.extensionPath,
             'res/webviews/ioCheck.html'
-        )
-        var html = fs.readFileSync(pathHTML).toString()
+        );
+        var html = fs.readFileSync(pathHTML).toString();
 
-        const pathCC100 = this.getPath('res/images/cc100Neu11.png').toString()
+        const pathCC100 = this.getPath('res/images/cc100Neu11.png').toString();
         const pathCC100Schalter = this.getPath(
             'res/images/cc100Schalter.png'
-        ).toString()
-        const pathStyle1 = this.getPath('res/webviews/ioCheck.css').toString()
-        const pathScript = this.getPath('out/ioCheck.js').toString()
+        ).toString();
+        const pathStyle1 = this.getPath('res/webviews/ioCheck.css').toString();
+        const pathScript = this.getPath('out/ioCheck.js').toString();
         const pathWagoimg = this.getPath(
             'res/images/wago-iconsRgbTemperatureOutlineGreen.svg'
-        ).toString()
+        ).toString();
         const pathSerialSVG = this.getPath(
             'res/images/wago-iconsRgbConnectorsOutlineGreen.svg'
-        ).toString()
-        const pathWagoimg3 = this.getPath('res/images/WagoW.png').toString()
+        ).toString();
+        const pathWagoimg3 = this.getPath('res/images/WagoW.png').toString();
         const pathWagoimg4 = this.getPath(
             'res/images/wago-iconsRgbExportOutlineGreen.svg'
-        ).toString()
+        ).toString();
         const pathWagoimg5 = this.getPath(
             'res/images/wago-iconsRgbImportOutlineGreen.svg'
-        ).toString()
+        ).toString();
         const pathChevron = this.getPath(
             'res/images/wago-iconsRgbChevronRightOutlineGreen.svg'
-        ).toString()
+        ).toString();
         const pathCycleTime = this.getPath(
             'res/images/wago-iconsRgbFutureOutlineGreen.svg'
-        ).toString()
+        ).toString();
 
-        html = html.replace('../images/cc100Neu11.png', pathCC100.toString())
+        html = html.replace('../images/cc100Neu11.png', pathCC100.toString());
         html = html.replace(
             '../images/cc100Schalter.png',
             pathCC100Schalter.toString()
-        )
-        html = html.replace('./ioCheck.css', pathStyle1.toString())
-        html = html.replace('../ioCheck.js', pathScript.toString())
+        );
+        html = html.replace('./ioCheck.css', pathStyle1.toString());
+        html = html.replace('../ioCheck.js', pathScript.toString());
         html = html.replace(
             'res/images/wago-iconsRgbTemperatureOutlineGreen.svg',
             pathWagoimg.toString()
-        )
+        );
         html = html.replace(
             'res/images/wago-iconsRgbConnectorsOutlineGreen.svg',
             pathSerialSVG.toString()
-        )
-        html = html.replace('../images/WagoW.png', pathWagoimg3.toString())
+        );
+        html = html.replace('../images/WagoW.png', pathWagoimg3.toString());
         html = html.replace(
             'res/images/wago-iconsRgbExportOutlineGreen.svg',
             pathWagoimg4.toString()
-        )
+        );
         html = html.replace(
             'res/images/wago-iconsRgbImportOutlineGreen.svg',
             pathWagoimg5.toString()
-        )
+        );
         html = html.replaceAll(
             'res/images/wago-iconsRgbChevronRightOutlineGreen.svg',
             pathChevron.toString()
-        )
+        );
         html = html.replace(
             'res/images/wago-iconsRgbFutureOutlineGreen.svg',
             pathCycleTime.toString()
-        )
-        return html
+        );
+        return html;
     }
 
     /**
      * This method updates the UI via POST-Messages and the CC100 via SSH
      */
     async updateIoCheck(id: number) {
-        let result: string
+        let result: string;
 
         if (this.ioCheckPanel) {
             await ConnectionManager.instance
                 .executeCommand(id, 'cat /etc/calib')
                 .then((tmp: string) => {
-                    this.convertAnalogData(tmp)
-                })
-            await this.startEventForSerialCommunication(id)
-            await this.startEventForSwitch(id)
+                    this.convertAnalogData(tmp);
+                });
+            await this.startEventForSerialCommunication(id);
+            await this.startEventForSwitch(id);
 
             // serieller Zugriff fehlt
 
             await ConnectionManager.instance.executeCommand(
                 id,
                 'stty -F /dev/ttySTM1 cstopb brkint -icrnl -ixon -opost -isig icanon -iexten -echo'
-            )
+            );
             this.ioCheckPanel.webview.postMessage({
                 command: 'start',
-            })
+            });
             this.ioCheckPanel.webview.onDidReceiveMessage(
                 async (message) => {
                     switch (message.command) {
                         case 'alert': {
-                            vscode.window.showErrorMessage(message.text)
-                            return
+                            vscode.window.showErrorMessage(message.text);
+                            return;
                         }
                         case 'readData': {
                             await ConnectionManager.instance
@@ -307,77 +307,77 @@ export class webviewIoCheck {
                                      * `[15]` => LNK ACT1 LED
                                      * `[16]` => LNK ACT2 LED
                                      */
-                                    result = data
+                                    result = data;
                                     let dataArray =
-                                        this.splitDataToStringArray(data)
+                                        this.splitDataToStringArray(data);
                                     dataArray[0] = this.convertDigital(
                                         Number(dataArray[0]),
                                         'IN'
-                                    ).toString() // DI
+                                    ).toString(); // DI
                                     dataArray[1] = this.convertDigital(
                                         Number(dataArray[1]),
                                         'OUT'
-                                    ).toString() // DO
+                                    ).toString(); // DO
                                     dataArray[2] = this.calcCalibratedValues(
                                         Number(dataArray[2]),
                                         this.calibData[3]
-                                    ).toString() // AI1
+                                    ).toString(); // AI1
                                     dataArray[3] = this.calcCalibratedValues(
                                         Number(dataArray[3]),
                                         this.calibData[4]
-                                    ).toString() // AI2
+                                    ).toString(); // AI2
                                     dataArray[4] = this.calcCalibratedAoValue(
                                         Number(dataArray[4]),
                                         this.calibData[5]
-                                    ).toString() // AO1
+                                    ).toString(); // AO1
                                     dataArray[5] = this.calcCalibratedAoValue(
                                         Number(dataArray[5]),
                                         this.calibData[6]
-                                    ).toString() // AO2
+                                    ).toString(); // AO2
                                     dataArray[6] = this.calcCelsius(
                                         this.calcCalibratedValues(
                                             Number(dataArray[6]),
                                             this.calibData[1]
                                         )
-                                    ) // PT1
+                                    ); // PT1
                                     dataArray[7] = this.calcCelsius(
                                         this.calcCalibratedValues(
                                             Number(dataArray[7]),
                                             this.calibData[2]
                                         )
-                                    ) // PT2
+                                    ); // PT2
                                     this.ioCheckPanel?.webview.postMessage({
                                         command: 'readData',
                                         values: dataArray,
-                                    })
-                                })
+                                    });
+                                });
                             if (result.includes('Error')) {
-                                this.connectionLost = true
+                                this.connectionLost = true;
                             }
-                            break
+                            break;
                         }
                         case 'readSwitch': {
                             this.ioCheckPanel?.webview.postMessage({
                                 command: 'readSwitch',
                                 value: this.switchStatus,
-                            })
-                            break
+                            });
+                            break;
                         }
                         case 'buttonClick': {
                             this.ioCheckPanel?.webview.postMessage({
                                 command: 'buttonClick',
-                            })
-                            break
+                            });
+                            break;
                         }
                         case 'digitalWrite': {
-                            var value = 0
+                            var value = 0;
                             for (
                                 let index = 0;
                                 index < message.value.length;
                                 index++
                             ) {
                                 if (message.value[index] == 1) {
-                                    value = value + Math.pow(2, index)
+                                    value = value + Math.pow(2, index);
                                 }
                             }
                             await ConnectionManager.instance
@@ -390,32 +390,32 @@ export class webviewIoCheck {
                                 .then(() => {
                                     this.ioCheckPanel?.webview.postMessage({
                                         command: 'buttonClick',
-                                    })
-                                })
-                            break
+                                    });
+                                });
+                            break;
                         }
                         case 'analogWrite': {
-                            console.log('AnalogWrite Value: ' + message.value)
-                            console.log('AnalogWrite Pin: ' + message.pin)
+                            console.log('AnalogWrite Value: ' + message.value);
+                            console.log('AnalogWrite Pin: ' + message.pin);
                             var value = this.calcCalibratedValues(
                                 message.value,
                                 this.calibData[message.pin + 4]
-                            )
+                            );
                             await ConnectionManager.instance
                                 .executeCommand(id, '')
                                 .then(() => {
                                     this.ioCheckPanel?.webview.postMessage({
                                         command: 'buttonClick',
                                         pin: message.pin,
-                                    })
-                                })
-                            break
+                                    });
+                                });
+                            break;
                         }
                         case 'serialWrite': {
                             let text = sanitizeHtml(message.text, {
                                 allowedTags: [],
                                 allowedAttributes: {},
-                            })
+                            });
                             await ConnectionManager.instance
                                 .executeCommand(
                                     id,
@@ -429,20 +429,20 @@ export class webviewIoCheck {
                                     this.ioCheckPanel?.webview.postMessage({
                                         command: 'serialWrite',
                                         text: text,
-                                    })
-                                })
-                            break
+                                    });
+                                });
+                            break;
                         }
                     }
                 },
                 undefined,
                 extensionContext.subscriptions
-            )
+            );
         }
     }
 
     splitDataToStringArray(data: string) {
-        return data.split('\n')
+        return data.split('\n');
     }
 
     /**
@@ -451,9 +451,9 @@ export class webviewIoCheck {
      */
     convertAnalogData(analogData: string) {
         if (!analogData.includes('*')) {
-            const einD1 = analogData.split('\n')
+            const einD1 = analogData.split('\n');
             for (let index = 0; index < einD1.length; index++) {
-                this.calibData[index] = einD1[index].split(' ')
+                this.calibData[index] = einD1[index].split(' ');
             }
         }
     }
@@ -465,18 +465,18 @@ export class webviewIoCheck {
      * @returns The calibrated values of AI, PT and AO
      */
     calcCalibratedValues(valUncal: number, calib: string[]) {
-        var x1 = parseInt(calib[0])
-        var y1 = parseInt(calib[1])
-        var x2 = parseInt(calib[2])
-        var y2 = parseInt(calib[3])
+        var x1 = parseInt(calib[0]);
+        var y1 = parseInt(calib[1]);
+        var x2 = parseInt(calib[2]);
+        var y2 = parseInt(calib[3]);
 
-        var valCal = (y2 - y1) * (valUncal - x1)
-        valCal = valCal / (x2 - x1)
-        valCal = valCal + y1
+        var valCal = (y2 - y1) * (valUncal - x1);
+        valCal = valCal / (x2 - x1);
+        valCal = valCal + y1;
 
-        let result = parseInt(valCal.toString())
+        let result = parseInt(valCal.toString());
 
-        return result < 0 ? 0 : result
+        return result < 0 ? 0 : result;
     }
 
     /**
@@ -486,17 +486,17 @@ export class webviewIoCheck {
      * @returns The calibrated value of AO
      */
     calcCalibratedAoValue(valUncal: number, calib: string[]) {
-        var x1 = parseInt(calib[0])
-        var y1 = parseInt(calib[1])
-        var x2 = parseInt(calib[2])
-        var y2 = parseInt(calib[3])
+        var x1 = parseInt(calib[0]);
+        var y1 = parseInt(calib[1]);
+        var x2 = parseInt(calib[2]);
+        var y2 = parseInt(calib[3]);
 
-        var valCal = (x2 - x1) * (valUncal - y1)
-        valCal = valCal / (y2 - y1)
-        valCal = valCal + x1
-        this.convertDigital(1.0, 'IN')
-        let result = parseInt(valCal.toString())
-        return result < 0 ? 0 : result
+        var valCal = (x2 - x1) * (valUncal - y1);
+        valCal = valCal / (y2 - y1);
+        valCal = valCal + x1;
+        this.convertDigital(1.0, 'IN');
+        let result = parseInt(valCal.toString());
+        return result < 0 ? 0 : result;
     }
     /**
      * Converts a number to a binary array
@@ -505,16 +505,16 @@ export class webviewIoCheck {
      * @returns the binary array describing the given number
      */
     convertDigital(value: number, port: string) {
-        var values
+        var values;
         if (port == 'IN') {
-            values = [0, 0, 0, 0, 0, 0, 0, 0]
+            values = [0, 0, 0, 0, 0, 0, 0, 0];
         } else {
-            values = [0, 0, 0, 0]
+            values = [0, 0, 0, 0];
         }
         for (let index = 0; index < values.length; index++) {
-            values[index] = (value >> index) % 2
+            values[index] = (value >> index) % 2;
         }
-        return values
+        return values;
     }
 
     /**
@@ -523,17 +523,17 @@ export class webviewIoCheck {
      */
     calcCelsius(resistance: number) {
         // resistance value at 0°C [Ohm]
-        const r0 = 1000
+        const r0 = 1000;
         // temperature coefficient [ppm/K]
-        const tk = 0.00358
+        const tk = 0.00358;
         // temperature value (rounded to 2 digits after comma) [°C]
-        var valTemperature = (resistance - r0) / (r0 * tk)
+        var valTemperature = (resistance - r0) / (r0 * tk);
 
         if (valTemperature > 850.0) {
-            valTemperature = 0.0
+            valTemperature = 0.0;
         }
 
-        return valTemperature.toFixed(2)
+        return valTemperature.toFixed(2);
     }
 
     /**
@@ -542,48 +542,48 @@ export class webviewIoCheck {
      * @returns the data from serial communication without any additional data
      */
     removeAdditionalData(data: string) {
-        const trash1 = '[00;32mWAGO Linux Terminal'
-        const trash2 = 'root@CC100-'
-        const trash21 = ':~'
-        const trash3 = 'cat /dev/ttySTM1'
-        const trash4 = ' '
+        const trash1 = '[00;32mWAGO Linux Terminal';
+        const trash2 = 'root@CC100-';
+        const trash21 = ':~';
+        const trash3 = 'cat /dev/ttySTM1';
+        const trash4 = ' ';
 
         if (data.includes(trash1)) {
-            return ''
+            return '';
         } else if (data.includes(trash2) && data.includes(trash21)) {
-            return ''
+            return '';
         } else if (data.includes(trash3)) {
-            return ''
+            return '';
         } else if (data == trash4) {
-            return ''
+            return '';
         } else {
-            return data
+            return data;
         }
     }
 
     private async startEventForSerialCommunication(id: number) {
-        let data
+        let data;
         this.serialConnection =
-            await ConnectionManager.instance.getConnection(id)
+            await ConnectionManager.instance.getConnection(id);
         await this.serialRead((rxData: Buffer) => {
-            data = this.removeAdditionalData(rxData.toString())
+            data = this.removeAdditionalData(rxData.toString());
             this.ioCheckPanel?.webview.postMessage({
                 command: 'serialRead',
                 text: data.replace(/(?:\r\n|\r|\n)/g, ''),
-            })
-        })
+            });
+        });
     }
 
     private async serialRead(callback: (dataBuffer: Buffer) => void) {
         this.serialConnection.streamCommand(
             'cat /dev/ttySTM1\n',
             (data: Buffer) => {
-                callback(data)
+                callback(data);
             },
             (error: any) => {
-                console.error(error)
+                console.error(error);
             }
-        )
+        );
     }
 
     private async startEventForSwitch(id: number) {
@@ -591,22 +591,22 @@ export class webviewIoCheck {
             .executeCommand(id, './etc/config-tools/get_run_stop_switch_value')
             .then((tmp: string) => {
                 if (tmp == 'run') {
-                    this.switchStatus = '1'
+                    this.switchStatus = '1';
                 } else {
-                    this.switchStatus = '2'
+                    this.switchStatus = '2';
                 }
-            })
+            });
     }
 }
 
 type ControllerType = {
-    id: number
-    displayname: string
-    description: string
-    engine: string
-    src: string
-    imageVersion: string
-}
+    id: number;
+    displayname: string;
+    description: string;
+    engine: string;
+    src: string;
+    imageVersion: string;
+};
 /**
  * Represents the settings for a controller.
  *
@@ -617,12 +617,12 @@ type ControllerType = {
  * @property autoupdate - The auto-update setting for the controller (e.g., "on", "off").
  */
 type ControllerSettingsType = {
-    connection: string
-    ip: string
-    port: number
-    user: string
-    autoupdate: string
-}
+    connection: string;
+    ip: string;
+    port: number;
+    user: string;
+    autoupdate: string;
+};
 export class YamlCommands {
     /**
      * Function to read the content of the wago.yaml file.
@@ -635,7 +635,7 @@ export class YamlCommands {
                 `${vscode.workspace.workspaceFolders![0].uri.fsPath}/wago.yaml`,
                 'utf8'
             )
-        )
+        );
     }
 
     /**
@@ -649,7 +649,7 @@ export class YamlCommands {
                 `${vscode.workspace.workspaceFolders![0].uri.fsPath}/controller/controller${id}.yaml`,
                 'utf8'
             )
-        )
+        );
     }
 
     /**
@@ -664,7 +664,7 @@ export class YamlCommands {
      * - `imageVersion`: The version of the controller's image.
      */
     public static getControllers(): Array<ControllerType> {
-        const nodes = this.getWagoYaml().nodes
+        const nodes = this.getWagoYaml().nodes;
         return Object.keys(nodes).map((key: string) => ({
             id: Number.parseInt(key),
             displayname: nodes[key].displayname,
@@ -672,7 +672,7 @@ export class YamlCommands {
             engine: nodes[key].engine,
             src: nodes[key].src,
             imageVersion: nodes[key].imageVersion,
-        }))
+        }));
     }
 
     /**
@@ -682,7 +682,7 @@ export class YamlCommands {
      * @returns The controller matching the given ID, or `undefined` if no match is found.
      */
     public static getController(id: number): ControllerType | undefined {
-        return this.getControllers().find((controller) => controller.id === id)
+        return this.getControllers().find((controller) => controller.id === id);
     }
 
     /**
@@ -697,14 +697,14 @@ export class YamlCommands {
      * - `autoupdate`: A flag indicating whether auto-update is enabled.
      */
     public static getControllerSettings(id: number): ControllerSettingsType {
-        const settings = this.getControllerYaml(id)
+        const settings = this.getControllerYaml(id);
         return {
             connection: settings.connection,
             ip: settings.ip,
             port: settings.port,
             user: settings.user,
             autoupdate: settings.autoupdate,
-        }
+        };
     }
 
     /**
@@ -719,12 +719,12 @@ export class YamlCommands {
         attribute: wagoSettings,
         value: string
     ) {
-        let yaml = this.getWagoYaml()
-        yaml.nodes[id][attribute] = value
+        let yaml = this.getWagoYaml();
+        yaml.nodes[id][attribute] = value;
         fs.writeFileSync(
             `${vscode.workspace.workspaceFolders![0].uri.fsPath}/wago.yaml`,
             YAML.stringify(yaml, null, '\t')
-        )
+        );
     }
 
     /**
@@ -741,16 +741,16 @@ export class YamlCommands {
         attribute: controllerSettings,
         value: string
     ) {
-        let yaml = this.getControllerYaml(id)
+        let yaml = this.getControllerYaml(id);
         if (attribute === controllerSettings.port) {
-            yaml[attribute] = Number(value)
+            yaml[attribute] = Number(value);
         } else {
-            yaml[attribute] = value
+            yaml[attribute] = value;
         }
         fs.writeFileSync(
             `${vscode.workspace.workspaceFolders![0].uri.fsPath}/controller/controller${id}.yaml`,
             YAML.stringify(yaml, null, '\t')
-        )
+        );
     }
 
     /**
@@ -773,7 +773,7 @@ export class YamlCommands {
         imageVersion: string
     ) {
         //Addition of the Controller to wago.yaml
-        let id = this.findNextID()
+        let id = this.findNextID();
 
         let obj = {
             nodes: {
@@ -785,21 +785,21 @@ export class YamlCommands {
                     imageVersion: imageVersion,
                 },
             },
-        }
+        };
 
-        let yaml = this.getWagoYaml()
-        yaml.nodes[id] = obj.nodes[id]
+        let yaml = this.getWagoYaml();
+        yaml.nodes[id] = obj.nodes[id];
 
         fs.writeFileSync(
             `${vscode.workspace.workspaceFolders![0].uri.fsPath}/wago.yaml`,
             YAML.stringify(yaml, null, '\t')
-        )
+        );
 
         //Adding Controller to corresponding controllers/controller[id].yaml file
         fs.cpSync(
             `${context.extensionPath}/res/template/controller/controller1.yaml`,
             `${vscode.workspace.workspaceFolders![0].uri.fsPath}/controller/controller${id}.yaml`
-        )
+        );
     }
 
     /**
@@ -814,16 +814,16 @@ export class YamlCommands {
      */
     public static removeController(id: number) {
         //remove from wago.yaml
-        let yaml = this.getWagoYaml()
-        delete yaml.nodes[id]
+        let yaml = this.getWagoYaml();
+        delete yaml.nodes[id];
         fs.writeFileSync(
             `${vscode.workspace.workspaceFolders![0].uri.fsPath}/wago.yaml`,
             YAML.stringify(yaml, null, '\t')
-        )
+        );
 
         //remove Controller configuration file
-        let controllerPath = `${vscode.workspace.workspaceFolders![0].uri.fsPath}/controller/controller${id}.yaml`
-        if (fs.existsSync(controllerPath)) fs.unlinkSync(controllerPath)
+        let controllerPath = `${vscode.workspace.workspaceFolders![0].uri.fsPath}/controller/controller${id}.yaml`;
+        if (fs.existsSync(controllerPath)) fs.unlinkSync(controllerPath);
     }
 
     /**
@@ -835,12 +835,12 @@ export class YamlCommands {
      * @returns {number} The next available controller ID.
      */
     private static findNextID(): number {
-        let yaml = this.getWagoYaml()
-        let id = 1
+        let yaml = this.getWagoYaml();
+        let id = 1;
         while (yaml.nodes[id] != undefined) {
-            id++
+            id++;
         }
-        return id
+        return id;
     }
 }
 /**

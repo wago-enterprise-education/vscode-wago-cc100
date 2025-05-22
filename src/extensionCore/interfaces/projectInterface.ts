@@ -17,68 +17,68 @@
  *
  * @module projectInterface
  */
-import { Controller, ControllerItem } from '../../extension/view'
-import * as vscode from 'vscode'
+import { Controller, ControllerItem } from '../../extension/view';
+import * as vscode from 'vscode';
 
 export interface UploadInterface {
-    uploadController: (controller: Controller | undefined) => void
+    uploadController: (controller: Controller | undefined) => void;
 }
 
 export interface UploadAllInterface {
-    uploadAllControllers: () => void
+    uploadAllControllers: () => void;
 }
 
 export interface ResetControllerInterface {
     reset: (
         controller: Controller | undefined,
         showConfirmation: boolean
-    ) => Promise<string>
+    ) => Promise<string>;
 }
 
 export interface ConfigureControllerInterface {
-    configure: () => void
+    configure: () => void;
 }
 
 export interface EditSettingsInterface {
-    editSettings: (controller: ControllerItem | undefined) => void
+    editSettings: (controller: ControllerItem | undefined) => void;
 }
 
 export interface ViewChildrenInterface {
     getChildren: (
         element?: Controller | ControllerItem | undefined
-    ) => Promise<vscode.ProviderResult<Controller[] | ControllerItem[]>>
+    ) => Promise<vscode.ProviderResult<Controller[] | ControllerItem[]>>;
 }
 export interface ViewChildrenInterface {
     getChildren: (
         element?: Controller | ControllerItem | undefined
-    ) => Promise<vscode.ProviderResult<Controller[] | ControllerItem[]>>
+    ) => Promise<vscode.ProviderResult<Controller[] | ControllerItem[]>>;
 }
 
 export interface AddControllerInterface {
-    addController: () => void
+    addController: () => void;
 }
 
 export interface RemoveControllerInterface {
     removeController: (
         controller: Controller | undefined,
         showConfirmation: boolean
-    ) => void
+    ) => void;
 }
 
 export interface RenameControllerInterface {
-    renameController: (controller: Controller | undefined) => void
+    renameController: (controller: Controller | undefined) => void;
 }
 
 export interface CreateProjectInterface {
-    createController: () => void
+    createController: () => void;
 }
 
 export interface RemoveResetControllerInterface {
     removeResetController: (
         controller: Controller | undefined
-    ) => Promise<Controller | undefined>
+    ) => Promise<Controller | undefined>;
 }
 
 export interface EstablishConnectionsInterface {
-    establishConnections: () => void
+    establishConnections: () => void;
 }

@@ -1,6 +1,6 @@
-import * as vscode from 'vscode'
-import { Manager } from '../extensionCore/manager'
-import { setting } from '../extensionCore/projectVersions/V01'
+import * as vscode from 'vscode';
+import { Manager } from '../extensionCore/manager';
+import { setting } from '../extensionCore/projectVersions/V01';
 
 /**
  * Tree data provider for the controller view.
@@ -8,13 +8,13 @@ import { setting } from '../extensionCore/projectVersions/V01'
 export class ControllerProvider
     implements vscode.TreeDataProvider<Controller | ControllerItem>
 {
-    static readonly instance = new ControllerProvider()
+    static readonly instance = new ControllerProvider();
     private _onDidChangeTreeData: vscode.EventEmitter<
         Controller | undefined | null | void
-    > = new vscode.EventEmitter<Controller | undefined | null | void>()
+    > = new vscode.EventEmitter<Controller | undefined | null | void>();
     readonly onDidChangeTreeData: vscode.Event<
         Controller | ControllerItem | undefined | null | void
-    > = this._onDidChangeTreeData.event
+    > = this._onDidChangeTreeData.event;
 
     /**
      * Refreshes the tree data by firing the `_onDidChangeTreeData` event.
@@ -22,7 +22,7 @@ export class ControllerProvider
      * and re-render the data.
      */
     refresh(): void {
-        this._onDidChangeTreeData.fire()
+        this._onDidChangeTreeData.fire();
     }
 
     /**
@@ -32,7 +32,7 @@ export class ControllerProvider
      * @returns vscode.TreeItem
      */
     getTreeItem(element: Controller | ControllerItem): vscode.TreeItem {
-        return element
+        return element;
     }
 
     /**
@@ -44,7 +44,7 @@ export class ControllerProvider
     getChildren(
         element?: Controller | ControllerItem | undefined
     ): vscode.ProviderResult<Controller[] | ControllerItem[]> {
-        return Manager.getInstance().viewChildren(element)
+        return Manager.getInstance().viewChildren(element);
     }
 }
 
@@ -64,13 +64,13 @@ export class Controller extends vscode.TreeItem {
         public readonly label: string,
         public readonly online: boolean
     ) {
-        super(label, vscode.TreeItemCollapsibleState.Collapsed)
-        this.contextValue = 'controller'
-        this.tooltip = `ID: ${controllerId} \nOnline: ${online}`
+        super(label, vscode.TreeItemCollapsibleState.Collapsed);
+        this.contextValue = 'controller';
+        this.tooltip = `ID: ${controllerId} \nOnline: ${online}`;
         this.iconPath = new vscode.ThemeIcon(
             'circle-filled',
             new vscode.ThemeColor(online ? 'wagocc100.green' : 'wagocc100.red')
-        )
+        );
     }
 }
 
@@ -84,7 +84,7 @@ export class ControllerItem extends vscode.TreeItem {
         public readonly setting: setting,
         public readonly content: any
     ) {
-        super(`${setting}: ${content}`, vscode.TreeItemCollapsibleState.None)
-        this.contextValue = 'controllerItem'
+        super(`${setting}: ${content}`, vscode.TreeItemCollapsibleState.None);
+        this.contextValue = 'controllerItem';
     }
 }

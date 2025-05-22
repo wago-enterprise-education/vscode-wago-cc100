@@ -1,19 +1,19 @@
-import { Client, utils } from 'ssh2'
-import { homedir, userInfo } from 'os'
-import * as vscode from 'vscode'
-import * as Path from 'path'
-import * as fs from 'fs'
-import { ControllerProvider } from './view'
-import YAML from 'yaml'
-import * as net from 'net'
+import { Client, utils } from 'ssh2';
+import { homedir, userInfo } from 'os';
+import * as vscode from 'vscode';
+import * as Path from 'path';
+import * as fs from 'fs';
+import { ControllerProvider } from './view';
+import YAML from 'yaml';
+import * as net from 'net';
 
-const publicKeyPath = Path.join(homedir(), '.ssh', 'id_rsa_wago.pub')
-const privateKeyPath = Path.join(homedir(), '.ssh', 'id_rsa_wago')
-const scriptPath = `${vscode.extensions.getExtension('wago-education.vscode-wago-cc100')?.extensionPath}/scripts`
-const maxConnections = 3
-const garbageCollectorInterval = 300_000
-const timeout = 10_000
-const reconnectionTimeout = 10_000
+const publicKeyPath = Path.join(homedir(), '.ssh', 'id_rsa_wago.pub');
+const privateKeyPath = Path.join(homedir(), '.ssh', 'id_rsa_wago');
+const scriptPath = `${vscode.extensions.getExtension('wago-education.vscode-wago-cc100')?.extensionPath}/scripts`;
+const maxConnections = 3;
+const garbageCollectorInterval = 300_000;
+const timeout = 10_000;
+const reconnectionTimeout = 10_000;
 
 /**
  * The `ConnectionManager` class is a singleton that manages a pool of connections to controllers.
@@ -23,9 +23,9 @@ const reconnectionTimeout = 10_000
  * through a garbage collection mechanism.
  */
 export class ConnectionManager {
-    public static readonly instance = new ConnectionManager()
+    public static readonly instance = new ConnectionManager();
 
-    private connections: Connection[] = []
+    private connections: Connection[] = [];
 
     /**
      * Garbage collector that removes unused connections after garbageCollectorInterval, but keeps at least one connection per controller
@@ -34,12 +34,12 @@ export class ConnectionManager {
         setInterval(() => {
             this.connections.forEach((connection, index) => {
                 if (connection.lastUsed > Date.now() - garbageCollectorInterval)
-                    return
-                if (this.isLastConnection(connection.controllerId)) return
-                this.connections.splice(index, 1)
-                connection.disconnect()
-            })
-        }, garbageCollectorInterval)
+                    return;
+                if (this.isLastConnection(connection.controllerId)) return;
+                this.connections.splice(index, 1);
+                connection.disconnect();
+            });
+        }, garbageCollectorInterval);
     }
 
     /**
@@ -62,12 +62,12 @@ export class ConnectionManager {
                 (connection) => connection.controllerId === controllerId
             )
         )
-            throw new Error('Controller already exists')
-        const connection = new Connection(controllerId, urn, username)
-        this.connections.push(connection)
+            throw new Error('Controller already exists');
+        const connection = new Connection(controllerId, urn, username);
+        this.connections.push(connection);
         connection.init(password).catch((error) => {
-            throw error
-        })
+            throw error;
+        });
     }
 
     /**
@@ -83,17 +83,17 @@ export class ConnectionManager {
         urn: string,
         username: string
     ) {
-        let controllerConnections = this.getControllerConnections(controllerId)
+        let controllerConnections = this.getControllerConnections(controllerId);
         if (controllerConnections) {
             if (
                 controllerConnections[0]?.urn === urn &&
                 controllerConnections[0]?.username === username
             )
-                return
+                return;
 
-            this.removeConnection(controllerId)
+            this.removeConnection(controllerId);
         }
-        await this.addController(controllerId, urn, username)
+        await this.addController(controllerId, urn, username);
     }
 
     /**
@@ -107,7 +107,7 @@ export class ConnectionManager {
             this.connections.filter(
                 (connection) => connection.controllerId === controllerId
             ).length === 1
-        )
+        );
     }
 
     /**
@@ -119,7 +119,7 @@ export class ConnectionManager {
     private getControllerConnections(controllerId: number): Connection[] {
         return this.connections.filter(
             (connection) => connection.controllerId === controllerId
-        )
+        );
     }
 
     /**
@@ -132,17 +132,18 @@ export class ConnectionManager {
      * @throws Error if the controller does not exist
      */
     private getFreeConnection(controllerId: number): Promise<Connection> {
-        let controllerConnections = this.getControllerConnections(controllerId)
-        if (!controllerConnections) throw new Error('Controller does not exist')
+        let controllerConnections = this.getControllerConnections(controllerId);
+        if (!controllerConnections)
+            throw new Error('Controller does not exist');
 
         if (!controllerConnections.find((connection) => connection.connected))
-            return Promise.reject(new Error('Connection failed'))
+            return Promise.reject(new Error('Connection failed'));
 
         let freeConnection = controllerConnections.find(
             (connection) => !connection.busy
-        )
-        if (freeConnection) return Promise.resolve(freeConnection)
-        return this.newConnection(controllerId)
+        );
+        if (freeConnection) return Promise.resolve(freeConnection);
+        return this.newConnection(controllerId);
     }
 
     /**
@@ -155,28 +156,28 @@ export class ConnectionManager {
      */
     private newConnection(controllerId: number): Promise<Connection> {
         const controllerConnections =
-            this.getControllerConnections(controllerId)
+            this.getControllerConnections(controllerId);
         if (controllerConnections.length < maxConnections) {
-            return this.getConnection(controllerId)
+            return this.getConnection(controllerId);
         }
 
         return new Promise<Connection>((resolve, reject) => {
-            const startTime = Date.now()
+            const startTime = Date.now();
             let interval = setInterval(() => {
                 let connection = controllerConnections.find(
                     (connection) => !connection.busy
-                )
+                );
                 if (connection) {
-                    clearInterval(interval)
-                    resolve(connection)
+                    clearInterval(interval);
+                    resolve(connection);
                 } else if (Date.now() - startTime > timeout) {
-                    clearInterval(interval)
+                    clearInterval(interval);
                     reject(
                         new Error('Timeout while waiting for a free connection')
-                    )
+                    );
                 }
-            }, 10)
-        })
+            }, 10);
+        });
     }
 
     /**
@@ -191,14 +192,14 @@ export class ConnectionManager {
         controllerId: number,
         cmd: string
     ): Promise<string> {
-        let connection: Connection
+        let connection: Connection;
         try {
-            connection = await this.getFreeConnection(controllerId)
+            connection = await this.getFreeConnection(controllerId);
         } catch (error) {
-            throw error + cmd
+            throw error + cmd;
         }
 
-        return connection.executeCommand(cmd)
+        return connection.executeCommand(cmd);
     }
 
     /**
@@ -213,22 +214,22 @@ export class ConnectionManager {
         controllerId: number,
         file: string
     ): Promise<string> {
-        let script = fs.readFileSync(`${scriptPath}/${file}`)
+        let script = fs.readFileSync(`${scriptPath}/${file}`);
 
-        let connection: Connection
+        let connection: Connection;
         try {
-            connection = await this.getFreeConnection(controllerId)
+            connection = await this.getFreeConnection(controllerId);
         } catch (error) {
-            throw error
+            throw error;
         }
 
-        let output = ''
+        let output = '';
 
         this.splitScript(script.toString()).forEach(async (cmd) => {
-            output += await connection.executeCommand(cmd)
-        })
+            output += await connection.executeCommand(cmd);
+        });
 
-        return Promise.resolve(output)
+        return Promise.resolve(output);
     }
 
     /**
@@ -238,32 +239,32 @@ export class ConnectionManager {
      * @returns string[] Array of commands
      */
     private splitScript(script: string): string[] {
-        let cmds: string[] = []
-        let currentCmd = ''
-        let indentation = 0
+        let cmds: string[] = [];
+        let currentCmd = '';
+        let indentation = 0;
 
         for (let line of script.toString().split('\n')) {
-            line = line.trim()
-            if (line.startsWith('#') || line === '') continue
+            line = line.trim();
+            if (line.startsWith('#') || line === '') continue;
 
             if (line.match('{')?.length) {
-                indentation += line.match('{')?.length || 0
+                indentation += line.match('{')?.length || 0;
             }
 
             if (line.match('}')?.length) {
-                indentation -= line.match('}')?.length || 0
+                indentation -= line.match('}')?.length || 0;
             }
 
             if (line.endsWith('\\') || indentation > 0) {
-                currentCmd += line.slice(0, -1) + '\n'
+                currentCmd += line.slice(0, -1) + '\n';
             } else {
-                currentCmd += line
-                cmds.push(currentCmd)
-                currentCmd = ''
+                currentCmd += line;
+                cmds.push(currentCmd);
+                currentCmd = '';
             }
         }
 
-        return cmds
+        return cmds;
     }
 
     /**
@@ -280,27 +281,27 @@ export class ConnectionManager {
         localPath: string,
         remotePath: string
     ): Promise<string> {
-        let connection: Connection
+        let connection: Connection;
         try {
-            connection = this.getControllerConnections(controllerId)[0]
+            connection = this.getControllerConnections(controllerId)[0];
         } catch (error) {
-            throw error
+            throw error;
         }
 
         return new Promise(async (resolve, reject) => {
             await connection
                 .executeCommand(`rm -rf ${remotePath}`)
                 .catch((err) => {
-                    reject(err)
-                })
+                    reject(err);
+                });
             for await (const directory of this.getAllRemoteDirectories(
                 remotePath
             )) {
                 await connection
                     .executeCommand(`mkdir -p ${directory}`)
                     .catch((err) => {
-                        reject(err)
-                    })
+                        reject(err);
+                    });
             }
             for await (const directory of this.getAllLocalDirectories(
                 localPath
@@ -310,38 +311,38 @@ export class ConnectionManager {
                         `mkdir -p ${remotePath.concat(directory.replace(localPath + '\\', '').replaceAll('\\', '/'))}`
                     )
                     .catch((err) => {
-                        reject(err)
-                    })
+                        reject(err);
+                    });
             }
             await connection
                 .upload(localPath, remotePath)
                 .then(() => {
-                    resolve('Upload successful')
+                    resolve('Upload successful');
                 })
                 .catch((err) => {
-                    reject(err)
-                })
-        })
+                    reject(err);
+                });
+        });
     }
 
     private getAllRemoteDirectories(path: string): string[] {
-        let directories: string[] = []
-        let currentPath = ''
+        let directories: string[] = [];
+        let currentPath = '';
         for (let directory of path.split('/')) {
-            if (directory === '') continue
-            currentPath += '/' + directory
-            directories.push(currentPath + '/')
+            if (directory === '') continue;
+            currentPath += '/' + directory;
+            directories.push(currentPath + '/');
         }
-        return directories
+        return directories;
     }
 
     private *getAllLocalDirectories(path: string): Generator<string> {
-        const files = fs.readdirSync(path)
+        const files = fs.readdirSync(path);
 
         for (const file of files) {
             if (fs.lstatSync(Path.join(path, file)).isDirectory()) {
-                yield Path.join(path, file)
-                yield* this.getAllLocalDirectories(Path.join(path, file))
+                yield Path.join(path, file);
+                yield* this.getAllLocalDirectories(Path.join(path, file));
             }
         }
     }
@@ -353,10 +354,10 @@ export class ConnectionManager {
      */
     public removeConnection(controllerId: number) {
         this.connections.forEach((connection, index) => {
-            if (connection.controllerId !== controllerId) return
-            connection.disconnect()
-            this.connections.splice(index, 1)
-        })
+            if (connection.controllerId !== controllerId) return;
+            connection.disconnect();
+            this.connections.splice(index, 1);
+        });
     }
 
     /**
@@ -367,7 +368,7 @@ export class ConnectionManager {
      * @returns Connection A connection of the controller
      */
     public async getConnection(controllerId: number): Promise<Connection> {
-        return this.getControllerConnections(controllerId)[0].duplicate()
+        return this.getControllerConnections(controllerId)[0].duplicate();
     }
 
     /**
@@ -377,19 +378,19 @@ export class ConnectionManager {
      * @returns Promise<number> Time in milliseconds to ping the controller
      */
     public async ping(controllerId: number): Promise<number> {
-        let connection: Connection
+        let connection: Connection;
         try {
-            connection = await this.getFreeConnection(controllerId)
+            connection = await this.getFreeConnection(controllerId);
         } catch (error) {
-            throw error
+            throw error;
         }
 
         try {
-            let before = Date.now()
-            await connection.executeCommand('echo "ping"')
-            return Date.now() - before
+            let before = Date.now();
+            await connection.executeCommand('echo "ping"');
+            return Date.now() - before;
         } catch (error) {
-            throw error
+            throw error;
         }
     }
 }
@@ -401,15 +402,15 @@ export class ConnectionManager {
  * commands on the remote controller.
  */
 class Connection {
-    public readonly controllerId: number
-    public readonly urn: string
-    public readonly username: string
-    public lastUsed: number = Date.now()
-    public busy: boolean = false
-    public connected: boolean = false
-    public client: Client
-    private askForPassword: boolean = true
-    private server: net.Server | null = null
+    public readonly controllerId: number;
+    public readonly urn: string;
+    public readonly username: string;
+    public lastUsed: number = Date.now();
+    public busy: boolean = false;
+    public connected: boolean = false;
+    public client: Client;
+    private askForPassword: boolean = true;
+    private server: net.Server | null = null;
 
     /**
      * Creates a new `Connection` instance.
@@ -424,12 +425,12 @@ class Connection {
         username: string,
         askPassword = false
     ) {
-        this.controllerId = controllerId
-        this.urn = urn
-        this.username = username
-        this.askForPassword = askPassword
+        this.controllerId = controllerId;
+        this.urn = urn;
+        this.username = username;
+        this.askForPassword = askPassword;
 
-        this.client = new Client()
+        this.client = new Client();
     }
 
     /**
@@ -440,63 +441,63 @@ class Connection {
      */
     public init(password?: string | undefined): Promise<void> {
         const attemptConnection = () => {
-            this.generateSSHKey()
+            this.generateSSHKey();
             if (password) {
                 this.client.connect({
                     host: this.urn.split(':')[0],
                     port: parseInt(this.urn.split(':')[1]),
                     username: this.username,
                     password: password,
-                })
+                });
             } else {
                 this.client.connect({
                     host: this.urn.split(':')[0],
                     port: parseInt(this.urn.split(':')[1]),
                     username: this.username,
                     privateKey: fs.readFileSync(privateKeyPath),
-                })
+                });
             }
-        }
+        };
 
         return new Promise((resolve, reject) => {
             this.client
                 .on('ready', () => {
-                    console.debug(`Connected to ${this.urn}`)
+                    console.debug(`Connected to ${this.urn}`);
                     if (password) {
-                        this.sendSSHKey()
-                        password = undefined
+                        this.sendSSHKey();
+                        password = undefined;
                     }
-                    this.connected = true
-                    ControllerProvider.instance.refresh()
-                    resolve()
+                    this.connected = true;
+                    ControllerProvider.instance.refresh();
+                    resolve();
                 })
                 .on('close', async () => {
-                    console.debug(`Connection to ${this.urn} closed`)
-                    ControllerProvider.instance.refresh()
-                    setTimeout(attemptConnection, reconnectionTimeout)
+                    console.debug(`Connection to ${this.urn} closed`);
+                    ControllerProvider.instance.refresh();
+                    setTimeout(attemptConnection, reconnectionTimeout);
                 })
                 .on('error', async (error) => {
                     if (this.connected) {
                         vscode.window.showErrorMessage(
                             `Connection to ${YamlCommands.getController(this.controllerId)?.displayname} lost: ${error.message}`
-                        )
+                        );
                     }
-                    this.connected = false
+                    this.connected = false;
 
                     if (error.level === 'client-authentication') {
                         if (!this.askForPassword) {
-                            password = await this.requestPassword()
+                            password = await this.requestPassword();
                             if (password) {
-                                setTimeout(attemptConnection, 0)
-                                return reject(error)
+                                setTimeout(attemptConnection, 0);
+                                return reject(error);
                             }
                         }
                     }
-                    reject(error)
-                })
+                    reject(error);
+                });
 
-            setTimeout(attemptConnection, 0)
-        })
+            setTimeout(attemptConnection, 0);
+        });
     }
 
     private async requestPassword(): Promise<string> {
@@ -504,7 +505,7 @@ class Connection {
             `Authentication failed for ${YamlCommands.getController(this.controllerId)?.displayname}. Want to reenter the password?`,
             'Yes',
             "Don't ask again"
-        )
+        );
         if (selection === 'Yes') {
             return (
                 (await vscode.window.showInputBox({
@@ -512,10 +513,10 @@ class Connection {
                     ignoreFocusOut: true,
                     password: true,
                 })) || ''
-            )
+            );
         } else {
-            this.askForPassword = false
-            return ''
+            this.askForPassword = false;
+            return '';
         }
     }
 
@@ -530,26 +531,26 @@ class Connection {
             this.urn,
             this.username,
             this.askForPassword
-        )
+        );
         return new Promise<Connection>((resolve, reject) => {
             connection
                 .init()
                 .then(() => {
-                    resolve(connection)
+                    resolve(connection);
                 })
                 .catch((error) => {
-                    reject(error)
-                })
-        })
+                    reject(error);
+                });
+        });
     }
 
     public forwardPort(localPort: number, remotePort: number): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             this.server = net.createServer((socket) => {
                 if (socket.remoteAddress === undefined)
-                    throw new Error('No remote address')
+                    throw new Error('No remote address');
                 if (socket.remotePort === undefined)
-                    throw new Error('No remote port')
+                    throw new Error('No remote port');
                 this.client.forwardOut(
                     socket.remoteAddress,
                     socket.remotePort,
@@ -557,31 +558,31 @@ class Connection {
                     remotePort,
                     (err, stream) => {
                         if (err) {
-                            socket.destroy()
-                            return
+                            socket.destroy();
+                            return;
                         }
                         console.debug(
                             `Forwarding port ${localPort} to ${this.urn.split(':')[0]}:${remotePort}`
-                        )
+                        );
 
                         stream.on('end', () => {
-                            socket.end()
-                        })
-                        socket.pipe(stream).pipe(socket)
+                            socket.end();
+                        });
+                        socket.pipe(stream).pipe(socket);
                     }
-                )
-            })
+                );
+            });
             this.client.on('close', () => {
-                if (this.server) this.server.close()
-            })
+                if (this.server) this.server.close();
+            });
             this.server.on('error', (err: Error) => {
-                if (this.server) this.server.close()
-                reject(err)
-            })
+                if (this.server) this.server.close();
+                reject(err);
+            });
             this.server.listen(localPort, () => {
-                resolve()
-            })
-        })
+                resolve();
+            });
+        });
     }
 
     /**
@@ -590,18 +591,18 @@ class Connection {
      */
     private generateSSHKey() {
         if (fs.existsSync(publicKeyPath) && fs.existsSync(privateKeyPath))
-            return
+            return;
 
         utils.generateKeyPair(
             'rsa',
             { bits: 2048, comment: `cc100-extension-${userInfo().username}` },
             (err: Error | null, keys: { public: string; private: string }) => {
-                if (err) throw err
+                if (err) throw err;
 
-                fs.writeFileSync(publicKeyPath, keys.public)
-                fs.writeFileSync(privateKeyPath, keys.private)
+                fs.writeFileSync(publicKeyPath, keys.public);
+                fs.writeFileSync(privateKeyPath, keys.private);
             }
-        )
+        );
     }
 
     /**
@@ -610,14 +611,14 @@ class Connection {
      * The key is stored on the user's home directory in the `.ssh` folder.
      */
     private async sendSSHKey() {
-        this.generateSSHKey()
-        const publicKey = fs.readFileSync(publicKeyPath).toString()
+        this.generateSSHKey();
+        const publicKey = fs.readFileSync(publicKeyPath).toString();
         this.client.exec(
             `mkdir -p ~/.ssh && echo "${publicKey}" >> ~/.ssh/authorized_keys`,
             (err) => {
-                if (err) throw err
+                if (err) throw err;
             }
-        )
+        );
     }
 
     /**
@@ -629,22 +630,22 @@ class Connection {
     public executeCommand(cmd: string): Promise<string> {
         return new Promise<string>((resolve, reject) => {
             this.client.exec(cmd, (err, stream) => {
-                if (err) return reject(err)
-                this.busy = true
+                if (err) return reject(err);
+                this.busy = true;
 
-                let output = ''
+                let output = '';
 
                 stream.on('data', (data: Buffer) => {
-                    output += data.toString()
-                })
+                    output += data.toString();
+                });
 
                 stream.on('close', () => {
-                    this.busy = false
-                    this.lastUsed = Date.now()
-                    resolve(output.replaceAll('\n', ''))
-                })
-            })
-        })
+                    this.busy = false;
+                    this.lastUsed = Date.now();
+                    resolve(output.replaceAll('\n', ''));
+                });
+            });
+        });
     }
 
     public streamCommand(
@@ -653,14 +654,14 @@ class Connection {
         onError: (err: Error) => void
     ) {
         this.client.exec(cmd, (err, stream) => {
-            if (err) onError(err)
+            if (err) onError(err);
 
-            stream.on('data', onData)
-            stream.on('error', onError)
+            stream.on('data', onData);
+            stream.on('error', onError);
             stream.on('close', () => {
-                stream.close()
-            })
-        })
+                stream.close();
+            });
+        });
     }
 
     /**
@@ -674,15 +675,15 @@ class Connection {
         return new Promise<string>((resolve, reject) => {
             this.client.sftp(async (err, sftp) => {
                 if (err) {
-                    console.error('SFTP connection error:', err)
-                    return reject(err)
+                    console.error('SFTP connection error:', err);
+                    return reject(err);
                 }
-                this.busy = true
+                this.busy = true;
 
-                let requested = 0
-                let answered = 0
+                let requested = 0;
+                let answered = 0;
                 for await (const file of this.getAllLocalFiles(localPath)) {
-                    requested++
+                    requested++;
                     sftp.fastPut(
                         file,
                         remotePath.concat(
@@ -691,34 +692,34 @@ class Connection {
                                 .replaceAll('\\', '/')
                         ),
                         async (err) => {
-                            answered++
+                            answered++;
                             if (err) {
-                                console.error('Upload error:', err)
-                                return reject(err)
+                                console.error('Upload error:', err);
+                                return reject(err);
                             }
                             if (requested === answered) {
-                                sftp.destroy()
-                                resolve('Upload successful')
+                                sftp.destroy();
+                                resolve('Upload successful');
                                 await new Promise((resolve) =>
                                     setTimeout(resolve, 200)
-                                )
-                                this.busy = false
+                                );
+                                this.busy = false;
                             }
                         }
-                    )
+                    );
                 }
-            })
-        })
+            });
+        });
     }
 
     private *getAllLocalFiles(path: string): Generator<string> {
-        const files = fs.readdirSync(path)
+        const files = fs.readdirSync(path);
 
         for (const file of files) {
             if (fs.lstatSync(Path.join(path, file)).isDirectory()) {
-                yield* this.getAllLocalFiles(Path.join(path, file))
+                yield* this.getAllLocalFiles(Path.join(path, file));
             } else {
-                yield Path.join(path, file)
+                yield Path.join(path, file);
             }
         }
     }
@@ -727,20 +728,20 @@ class Connection {
      * Disconnects the client from the remote controller
      */
     public disconnect() {
-        this.client.removeAllListeners()
-        if (this.server) this.server.close()
-        this.client.end()
+        this.client.removeAllListeners();
+        if (this.server) this.server.close();
+        this.client.end();
     }
 }
 
 type ControllerType = {
-    id: number
-    displayname: string
-    description: string
-    engine: string
-    src: string
-    imageVersion: string
-}
+    id: number;
+    displayname: string;
+    description: string;
+    engine: string;
+    src: string;
+    imageVersion: string;
+};
 /**
  * Represents the settings for a controller.
  *
@@ -751,12 +752,12 @@ type ControllerType = {
  * @property autoupdate - The auto-update setting for the controller (e.g., "on", "off").
  */
 type ControllerSettingsType = {
-    connection: string
-    ip: string
-    port: number
-    user: string
-    autoupdate: string
-}
+    connection: string;
+    ip: string;
+    port: number;
+    user: string;
+    autoupdate: string;
+};
 export class YamlCommands {
     /**
      * Function to read the content of the wago.yaml file.
@@ -769,7 +770,7 @@ export class YamlCommands {
                 `${vscode.workspace.workspaceFolders![0].uri.fsPath}/wago.yaml`,
                 'utf8'
             )
-        )
+        );
     }
 
     /**
@@ -783,7 +784,7 @@ export class YamlCommands {
                 `${vscode.workspace.workspaceFolders![0].uri.fsPath}/controller/controller${id}.yaml`,
                 'utf8'
             )
-        )
+        );
     }
 
     /**
@@ -798,7 +799,7 @@ export class YamlCommands {
      * - `imageVersion`: The version of the controller's image.
      */
     public static getControllers(): Array<ControllerType> {
-        const nodes = this.getWagoYaml().nodes
+        const nodes = this.getWagoYaml().nodes;
         return Object.keys(nodes).map((key: string) => ({
             id: Number.parseInt(key),
             displayname: nodes[key].displayname,
@@ -806,7 +807,7 @@ export class YamlCommands {
             engine: nodes[key].engine,
             src: nodes[key].src,
             imageVersion: nodes[key].imageVersion,
-        }))
+        }));
     }
 
     /**
@@ -816,7 +817,7 @@ export class YamlCommands {
      * @returns The controller matching the given ID, or `undefined` if no match is found.
      */
     public static getController(id: number): ControllerType | undefined {
-        return this.getControllers().find((controller) => controller.id === id)
+        return this.getControllers().find((controller) => controller.id === id);
     }
 
     /**
@@ -831,14 +832,14 @@ export class YamlCommands {
      * - `autoupdate`: A flag indicating whether auto-update is enabled.
      */
     public static getControllerSettings(id: number): ControllerSettingsType {
-        const settings = this.getControllerYaml(id)
+        const settings = this.getControllerYaml(id);
         return {
             connection: settings.connection,
             ip: settings.ip,
             port: settings.port,
             user: settings.user,
             autoupdate: settings.autoupdate,
-        }
+        };
     }
 
     /**
@@ -853,12 +854,12 @@ export class YamlCommands {
         attribute: wagoSettings,
         value: string
     ) {
-        let yaml = this.getWagoYaml()
-        yaml.nodes[id][attribute] = value
+        let yaml = this.getWagoYaml();
+        yaml.nodes[id][attribute] = value;
         fs.writeFileSync(
             `${vscode.workspace.workspaceFolders![0].uri.fsPath}/wago.yaml`,
             YAML.stringify(yaml, null, '\t')
-        )
+        );
     }
 
     /**
@@ -875,16 +876,16 @@ export class YamlCommands {
         attribute: controllerSettings,
         value: string
     ) {
-        let yaml = this.getControllerYaml(id)
+        let yaml = this.getControllerYaml(id);
         if (attribute === controllerSettings.port) {
-            yaml[attribute] = Number(value)
+            yaml[attribute] = Number(value);
         } else {
-            yaml[attribute] = value
+            yaml[attribute] = value;
         }
         fs.writeFileSync(
             `${vscode.workspace.workspaceFolders![0].uri.fsPath}/controller/controller${id}.yaml`,
             YAML.stringify(yaml, null, '\t')
-        )
+        );
     }
 
     /**
@@ -907,7 +908,7 @@ export class YamlCommands {
         imageVersion: string
     ) {
         //Addition of the Controller to wago.yaml
-        let id = this.findNextID()
+        let id = this.findNextID();
 
         let obj = {
             nodes: {
@@ -919,21 +920,21 @@ export class YamlCommands {
                     imageVersion: imageVersion,
                 },
             },
-        }
+        };
 
-        let yaml = this.getWagoYaml()
-        yaml.nodes[id] = obj.nodes[id]
+        let yaml = this.getWagoYaml();
+        yaml.nodes[id] = obj.nodes[id];
 
         fs.writeFileSync(
             `${vscode.workspace.workspaceFolders![0].uri.fsPath}/wago.yaml`,
             YAML.stringify(yaml, null, '\t')
-        )
+        );
 
         //Adding Controller to corresponding controllers/controller[id].yaml file
         fs.cpSync(
             `${context.extensionPath}/res/template/controller/controller1.yaml`,
             `${vscode.workspace.workspaceFolders![0].uri.fsPath}/controller/controller${id}.yaml`
-        )
+        );
     }
 
     /**
@@ -948,16 +949,16 @@ export class YamlCommands {
      */
     public static removeController(id: number) {
         //remove from wago.yaml
-        let yaml = this.getWagoYaml()
-        delete yaml.nodes[id]
+        let yaml = this.getWagoYaml();
+        delete yaml.nodes[id];
         fs.writeFileSync(
             `${vscode.workspace.workspaceFolders![0].uri.fsPath}/wago.yaml`,
             YAML.stringify(yaml, null, '\t')
-        )
+        );
 
         //remove Controller configuration file
-        let controllerPath = `${vscode.workspace.workspaceFolders![0].uri.fsPath}/controller/controller${id}.yaml`
-        if (fs.existsSync(controllerPath)) fs.unlinkSync(controllerPath)
+        let controllerPath = `${vscode.workspace.workspaceFolders![0].uri.fsPath}/controller/controller${id}.yaml`;
+        if (fs.existsSync(controllerPath)) fs.unlinkSync(controllerPath);
     }
 
     /**
@@ -969,12 +970,12 @@ export class YamlCommands {
      * @returns {number} The next available controller ID.
      */
     private static findNextID(): number {
-        let yaml = this.getWagoYaml()
-        let id = 1
+        let yaml = this.getWagoYaml();
+        let id = 1;
         while (yaml.nodes[id] != undefined) {
-            id++
+            id++;
         }
-        return id
+        return id;
     }
 }
 /**

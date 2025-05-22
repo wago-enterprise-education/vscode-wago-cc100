@@ -1,28 +1,32 @@
-import { ConnectionManager } from '../../extension/connectionManager'
+import { ConnectionManager } from '../../extension/connectionManager';
 import {
     Controller,
     ControllerItem,
     ControllerProvider,
-} from '../../extension/view'
-import * as Interface from '../interfaces/projectInterface'
-import * as vscode from 'vscode'
-import * as fs from 'fs'
-import crypto from 'crypto'
-import path from 'path'
+} from '../../extension/view';
+import * as Interface from '../interfaces/projectInterface';
+import * as vscode from 'vscode';
+import * as fs from 'fs';
+import crypto from 'crypto';
+import path from 'path';
 
 export class UploadController implements Interface.UploadInterface {
     async uploadController(controller: Controller | undefined) {
         if (!vscode.workspace.workspaceFolders) {
-            vscode.window.showErrorMessage('No workspace is open')
-            return
+            vscode.window.showErrorMessage('No workspace is open');
+            return;
         }
 
         if (!controller) {
-            controller = { controllerId: 0, label: 'Controller', online: false }
+            controller = {
+                controllerId: 0,
+                label: 'Controller',
+                online: false,
+            };
         }
 
-        await new UploadFunctionality().uploadFile(controller.controllerId)
-        return
+        await new UploadFunctionality().uploadFile(controller.controllerId);
+        return;
     }
 }
 /**
@@ -48,25 +52,29 @@ export class ResetController implements Interface.ResetControllerInterface {
      */
     async reset(controller: Controller | undefined, showConfirmation: boolean) {
         if (!vscode.workspace.workspaceFolders) {
-            vscode.window.showErrorMessage('No workspace is open')
-            return ''
+            vscode.window.showErrorMessage('No workspace is open');
+            return '';
         }
         if (!controller) {
-            controller = { controllerId: 0, label: 'Controller', online: false }
+            controller = {
+                controllerId: 0,
+                label: 'Controller',
+                online: false,
+            };
         }
-        let controllerId: number
+        let controllerId: number;
         if (showConfirmation) {
             await vscode.window
                 .showWarningMessage(`Reset ${controller.label}?`, 'Yes', 'No')
                 .then((value) => {
                     if (value === 'Yes') {
-                        controllerId = controller.controllerId
+                        controllerId = controller.controllerId;
                     } else {
-                        return ''
+                        return '';
                     }
-                })
+                });
         } else {
-            controllerId = controller.controllerId
+            controllerId = controller.controllerId;
         }
         await vscode.window.withProgress(
             {
@@ -76,56 +84,56 @@ export class ResetController implements Interface.ResetControllerInterface {
             },
             async (progress, token) => {
                 try {
-                    progress.report({ message: 'Killing Python...' })
+                    progress.report({ message: 'Killing Python...' });
                     await ConnectionManager.instance.executeCommand(
                         controllerId,
                         'killall python3'
-                    )
+                    );
                     progress.report({
                         increment: 10,
                         message: 'Removing Files...',
-                    })
+                    });
                     await ConnectionManager.instance.executeCommand(
                         controllerId,
                         'rm -rf /home/user/python_bootapplication/*'
-                    )
+                    );
                     progress.report({
                         increment: 10,
                         message: 'Removing Python Autostart...',
-                    })
+                    });
                     await ConnectionManager.instance.executeCommand(
                         controllerId,
                         'rm -rf /etc/init.d/S99_python_runtime'
-                    )
-                    progress.report({ increment: 10 })
+                    );
+                    progress.report({ increment: 10 });
                     await ConnectionManager.instance.executeCommand(
                         controllerId,
                         'rm -rf /etc/rc.d/S99_python_runtime'
-                    )
+                    );
                     progress.report({
                         increment: 10,
                         message: 'Killing all tails...',
-                    })
+                    });
                     await ConnectionManager.instance.executeCommand(
                         controllerId,
                         'killall tail'
-                    )
-                    progress.report({ increment: 10 })
+                    );
+                    progress.report({ increment: 10 });
                 } catch (error: any) {
                     vscode.window.showErrorMessage(
                         `Error resetting controller: ${error}`
-                    )
+                    );
                 }
             }
-        )
-        return 'CC100'
+        );
+        return 'CC100';
     }
 }
 export class ConfigureController
     implements Interface.ConfigureControllerInterface
 {
     configure() {
-        console.log('Configure command executed')
+        console.log('Configure command executed');
     }
 }
 /**
@@ -147,32 +155,32 @@ export class EditSettings implements Interface.EditSettingsInterface {
      */
     async editSettings(controller: ControllerItem | undefined) {
         if (!vscode.workspace.workspaceFolders) {
-            vscode.window.showErrorMessage('No workspace is open')
-            return
+            vscode.window.showErrorMessage('No workspace is open');
+            return;
         }
-        let settingToEdit: string
+        let settingToEdit: string;
         if (controller === undefined) {
             settingToEdit =
                 (await vscode.window.showQuickPick(Object.values(setting), {
                     title: 'Choose Setting',
                     canPickMany: false,
-                })) || ''
-            if (!settingToEdit) return
+                })) || '';
+            if (!settingToEdit) return;
 
             await EditSettingsFunctionality.editSetting(
                 0,
                 settingAdapter[settingToEdit as keyof typeof settingAdapter]
-            )
+            );
         } else {
             await EditSettingsFunctionality.editSetting(
                 0,
                 settingAdapter[
                     controller.setting as keyof typeof settingAdapter
                 ]
-            )
+            );
         }
 
-        ControllerProvider.instance.refresh()
+        ControllerProvider.instance.refresh();
     }
 }
 /**
@@ -189,12 +197,12 @@ export class EstablishConnections
      * @returns A promise that resolves when the connection is successfully established.
      */
     async establishConnections() {
-        const controller = JsonCommands.getController()
+        const controller = JsonCommands.getController();
         await ConnectionManager.instance.addController(
             0,
             `${controller.ip}:${controller.port}`,
             controller.user
-        )
+        );
     }
 }
 /**
@@ -224,28 +232,28 @@ export class ViewChildren implements Interface.ViewChildrenInterface {
     async getChildren(
         element?: Controller | ControllerItem | undefined
     ): Promise<vscode.ProviderResult<Controller[] | ControllerItem[]>> {
-        let controller = JsonCommands.getController()
-        if (!controller) return Promise.resolve([])
+        let controller = JsonCommands.getController();
+        if (!controller) return Promise.resolve([]);
 
         if (!element) {
-            let online = false
+            let online = false;
 
             try {
                 await ConnectionManager.instance.updateController(
                     0,
                     `${controller.ip}:${controller.port}`,
                     controller.user
-                )
-                await ConnectionManager.instance.ping(0)
-                online = true
+                );
+                await ConnectionManager.instance.ping(0);
+                online = true;
             } catch (error) {
-                console.debug(`Controller is offline. ${error}`)
+                console.debug(`Controller is offline. ${error}`);
             }
 
-            return Promise.all([new Controller(0, 'Controller', online)])
+            return Promise.all([new Controller(0, 'Controller', online)]);
         } else {
             if (element instanceof Controller) {
-                const settingArray = []
+                const settingArray = [];
 
                 settingArray.push(
                     new ControllerItem(
@@ -253,7 +261,7 @@ export class ViewChildren implements Interface.ViewChildrenInterface {
                         setting.connection,
                         controller.connection
                     )
-                )
+                );
                 if (controller.connection === 'ethernet') {
                     settingArray.push(
                         new ControllerItem(
@@ -261,7 +269,7 @@ export class ViewChildren implements Interface.ViewChildrenInterface {
                             setting.ip,
                             controller.ip
                         )
-                    )
+                    );
                 }
                 settingArray.push(
                     new ControllerItem(
@@ -269,26 +277,26 @@ export class ViewChildren implements Interface.ViewChildrenInterface {
                         setting.port,
                         controller.port
                     )
-                )
+                );
                 settingArray.push(
                     new ControllerItem(
                         element.controllerId,
                         setting.user,
                         controller.user
                     )
-                )
+                );
                 settingArray.push(
                     new ControllerItem(
                         element.controllerId,
                         setting.autoupdate,
                         controller.autoupdate
                     )
-                )
+                );
 
-                return Promise.resolve(settingArray)
+                return Promise.resolve(settingArray);
             }
         }
-        return Promise.resolve([])
+        return Promise.resolve([]);
     }
 }
 export class JsonCommands {
@@ -305,7 +313,7 @@ export class JsonCommands {
                 `${vscode.workspace.workspaceFolders![0].uri.fsPath}/settings.json`,
                 'utf8'
             )
-        )
+        );
     }
     /**
      * Updates a specific attribute in the `settings.json` file with the provided value.
@@ -315,13 +323,13 @@ export class JsonCommands {
      * @throws {Error} If the file cannot be written.
      */
     public static writeJson(attribute: settingsJson, value: string) {
-        let json = this.getSettingsJson()
-        json[attribute] = value
-        console.log(JSON.stringify(json))
+        let json = this.getSettingsJson();
+        json[attribute] = value;
+        console.log(JSON.stringify(json));
         fs.writeFileSync(
             `${vscode.workspace.workspaceFolders![0].uri.fsPath}/settings.json`,
             JSON.stringify(json, null, '\t')
-        )
+        );
     }
     /**
      * Retrieves the controller configuration from the `settings.json` file.
@@ -330,10 +338,10 @@ export class JsonCommands {
      * @throws {Error} If the `settings.json` file cannot be read or parsed.
      */
     public static getController() {
-        const settings = this.getSettingsJson()
-        let connectionType = ''
-        if (settings.ethernet === 'true') connectionType = 'ethernet'
-        if (settings.usb_c === 'true') connectionType = 'usb-c'
+        const settings = this.getSettingsJson();
+        let connectionType = '';
+        if (settings.ethernet === 'true') connectionType = 'ethernet';
+        if (settings.usb_c === 'true') connectionType = 'usb-c';
 
         return {
             connection: connectionType,
@@ -341,7 +349,7 @@ export class JsonCommands {
             port: settings.port,
             user: settings.user,
             autoupdate: settings.autoupdate,
-        }
+        };
     }
 }
 /**
@@ -414,62 +422,62 @@ export class EditSettingsFunctionality {
      */
     public static async editSetting(id: number, settingToEdit: string) {
         if (!vscode.workspace.workspaceFolders) {
-            vscode.window.showErrorMessage('No workspace is open')
-            return
+            vscode.window.showErrorMessage('No workspace is open');
+            return;
         }
-        let content
+        let content;
         switch (settingToEdit) {
             case 'connection':
                 let conType =
                     (await vscode.window.showQuickPick(['usb-c', 'ethernet'], {
                         title: 'Connection Type',
                         canPickMany: false,
-                    })) || ''
-                if (!conType) return
+                    })) || '';
+                if (!conType) return;
                 switch (conType) {
                     case 'usb-c':
-                        JsonCommands.writeJson(settingsJson.usb_c, 'true')
-                        JsonCommands.writeJson(settingsJson.simulator, 'false')
-                        JsonCommands.writeJson(settingsJson.ethernet, 'false')
+                        JsonCommands.writeJson(settingsJson.usb_c, 'true');
+                        JsonCommands.writeJson(settingsJson.simulator, 'false');
+                        JsonCommands.writeJson(settingsJson.ethernet, 'false');
                         JsonCommands.writeJson(
                             settingsJson.ip_adress,
                             '192.168.42.42'
-                        )
-                        break
+                        );
+                        break;
                     case 'ethernet':
-                        JsonCommands.writeJson(settingsJson.usb_c, 'false')
-                        JsonCommands.writeJson(settingsJson.simulator, 'false')
-                        JsonCommands.writeJson(settingsJson.ethernet, 'true')
-                        break
+                        JsonCommands.writeJson(settingsJson.usb_c, 'false');
+                        JsonCommands.writeJson(settingsJson.simulator, 'false');
+                        JsonCommands.writeJson(settingsJson.ethernet, 'true');
+                        break;
                     default:
-                        break
+                        break;
                 }
-                break
+                break;
 
             case 'ip':
-                content = await this.getInput()
-                if (!content) return
-                JsonCommands.writeJson(settingsJson.ip_adress, content)
-                break
+                content = await this.getInput();
+                if (!content) return;
+                JsonCommands.writeJson(settingsJson.ip_adress, content);
+                break;
             case 'port':
             case 'user':
-                content = await this.getInput()
-                if (!content) return
-                JsonCommands.writeJson(settingsJson[settingToEdit], content)
-                break
+                content = await this.getInput();
+                if (!content) return;
+                JsonCommands.writeJson(settingsJson[settingToEdit], content);
+                break;
             case 'autoupdate':
                 let status =
                     (await vscode.window.showQuickPick(['on', 'off'], {
                         title: 'Autoupdate',
                         canPickMany: false,
-                    })) || ''
-                if (!status) return
+                    })) || '';
+                if (!status) return;
 
-                JsonCommands.writeJson(settingsJson[settingToEdit], status)
-                break
+                JsonCommands.writeJson(settingsJson[settingToEdit], status);
+                break;
             default:
-                vscode.window.showErrorMessage('Invalid Attribute Type')
-                break
+                vscode.window.showErrorMessage('Invalid Attribute Type');
+                break;
         }
     }
 
@@ -484,16 +492,16 @@ export class EditSettingsFunctionality {
             (await vscode.window.showInputBox({
                 prompt: 'Enter the value the Setting should be set to',
                 title: 'Set Setting Value',
-            })) || ''
-        return input
+            })) || '';
+        return input;
     }
 }
 //===================================================================================
 // Upload Functionality
 //===================================================================================
 
-const uploadPath = '/home/user/python_bootapplication/'
-let connectionManager = ConnectionManager.instance
+const uploadPath = '/home/user/python_bootapplication/';
+let connectionManager = ConnectionManager.instance;
 
 export class UploadFunctionality {
     /**
@@ -512,13 +520,13 @@ export class UploadFunctionality {
      * @returns A Promise that resolves when the upload is complete or when an early return occurs
      */
     public async uploadFile(id: number) {
-        let path = `${vscode.workspace.workspaceFolders![0].uri.fsPath}\\src`
+        let path = `${vscode.workspace.workspaceFolders![0].uri.fsPath}\\src`;
 
         if (!fs.existsSync(`${path}/main.py`)) {
             vscode.window.showErrorMessage(
                 'The selected Folder does not exist or does not contain a main.py.'
-            )
-            return
+            );
+            return;
         }
 
         await vscode.window.withProgress(
@@ -528,65 +536,65 @@ export class UploadFunctionality {
                 cancellable: false,
             },
             async (progress, token) => {
-                progress.report({ message: 'Deactivating CodeSys3...' })
-                await this.deactivateCodeSys3(id)
+                progress.report({ message: 'Deactivating CodeSys3...' });
+                await this.deactivateCodeSys3(id);
                 progress.report({
                     increment: 20,
                     message: 'Comparing Folders...',
-                })
+                });
                 if (await this.compareFolders(id, path)) {
                     vscode.window.showInformationMessage(
                         `The files on your Controller are already up to date.`
-                    )
-                    return
+                    );
+                    return;
                 }
                 progress.report({
                     increment: 20,
                     message: 'Killing all Python Scripts...',
-                })
+                });
                 try {
                     //kill all python processes
                     await connectionManager.executeCommand(
                         id,
                         'killall python3'
-                    )
+                    );
                     progress.report({
                         increment: 10,
                         message: 'Creating Bootapplication...',
-                    })
+                    });
                     //Create bootapplication
                     connectionManager.executeCommand(
                         id,
                         "echo '#!/bin/sh\npython3 /home/user/python_bootapplication/lib/runtimeCC.py &\nstty -F /dev/ttySTM1 cstopb brkint -icrnl -ixon -opost -isig icanon -iexten -echo' > /etc/init.d/S99_python_runtime"
-                    )
-                    progress.report({ increment: 20, message: 'Uploading...' })
+                    );
+                    progress.report({ increment: 20, message: 'Uploading...' });
                     //Upload Files
-                    await connectionManager.upload(id, path, uploadPath)
-                    progress.report({ increment: 20, message: 'Executing...' })
+                    await connectionManager.upload(id, path, uploadPath);
+                    progress.report({ increment: 20, message: 'Executing...' });
                     //Execute File
                     await connectionManager.executeCommand(
                         id,
                         `nohup python3 /home/user/python_bootapplication/lib/runtimeCC.py > /dev/null 2>&1 &`
-                    )
+                    );
                     progress.report({
                         increment: 10,
                         message:
                             'The files on your Controller have been updated.',
-                    })
+                    });
 
                     return new Promise<void>((resolve) => {
                         setTimeout(() => {
-                            resolve()
-                        }, 2000)
-                    })
+                            resolve();
+                        }, 2000);
+                    });
                 } catch (err) {
-                    console.error(`Error uploading files: ${err}`)
+                    console.error(`Error uploading files: ${err}`);
                     vscode.window.showErrorMessage(
                         'An error occurred while uploading the files.'
-                    )
+                    );
                 }
             }
-        )
+        );
     }
 
     /**
@@ -607,19 +615,19 @@ export class UploadFunctionality {
             let remoteHashes = await connectionManager.executeCommand(
                 id,
                 `find ${uploadPath} -type f -exec md5sum {} +`
-            )
-            let remoteHash = this.createFolderHash(remoteHashes)
-            console.debug('Remote Hash: ' + remoteHash)
+            );
+            let remoteHash = this.createFolderHash(remoteHashes);
+            console.debug('Remote Hash: ' + remoteHash);
 
             //Get Array of local Hashes
-            let localHashes = await this.getLocalHashes(localPath)
-            let localHash = this.createFolderHash(localHashes)
-            console.debug('Local Hash: ' + localHash)
+            let localHashes = await this.getLocalHashes(localPath);
+            let localHash = this.createFolderHash(localHashes);
+            console.debug('Local Hash: ' + localHash);
 
-            return Promise.resolve(localHash === remoteHash)
+            return Promise.resolve(localHash === remoteHash);
         } catch (error) {
-            console.error('Error comparing folders:', error)
-            return Promise.reject(error)
+            console.error('Error comparing folders:', error);
+            return Promise.reject(error);
         }
     }
 
@@ -644,15 +652,15 @@ export class UploadFunctionality {
             .replaceAll('\n', '  ')
             .split('  ')
             .filter((val, index) => {
-                return index % 2 === 0
+                return index % 2 === 0;
             })
             .sort((a, b) => a.localeCompare(b))
             .toString()
-            .replaceAll(',', '')
+            .replaceAll(',', '');
 
-        let hash = crypto.createHash('md5').update(hashes).digest('hex')
+        let hash = crypto.createHash('md5').update(hashes).digest('hex');
 
-        return hash
+        return hash;
     }
 
     /**
@@ -666,27 +674,27 @@ export class UploadFunctionality {
 
     private async getLocalHashes(path: string): Promise<string> {
         try {
-            let localFiles = await this.getFilesInDirectory(path)
-            let localHashes = ''
+            let localFiles = await this.getFilesInDirectory(path);
+            let localHashes = '';
 
             //For Each File from Path in localFiles Array create Hash and add to localHashes
             for (let file of localFiles) {
-                let fileContent = fs.readFileSync(file, 'utf8')
+                let fileContent = fs.readFileSync(file, 'utf8');
                 let hash = crypto
                     .createHash('md5')
                     .update(fileContent)
-                    .digest('hex')
+                    .digest('hex');
                 if (localHashes.length == 0) {
-                    localHashes = `${localHashes}${hash}  ${file}`
+                    localHashes = `${localHashes}${hash}  ${file}`;
                 } else {
-                    localHashes = `${localHashes}\n${hash}  ${file}`
+                    localHashes = `${localHashes}\n${hash}  ${file}`;
                 }
             }
 
-            return Promise.resolve(localHashes)
+            return Promise.resolve(localHashes);
         } catch (error) {
-            console.error('Error getting local hashes:', error)
-            return Promise.reject(error)
+            console.error('Error getting local hashes:', error);
+            return Promise.reject(error);
         }
     }
 
@@ -699,40 +707,40 @@ export class UploadFunctionality {
 
     private async getFilesInDirectory(dirPath: string): Promise<string[]> {
         try {
-            let files: string[] = []
-            let read = fs.readdirSync(dirPath, { recursive: true })
-            let dirFiles = read.map(String)
+            let files: string[] = [];
+            let read = fs.readdirSync(dirPath, { recursive: true });
+            let dirFiles = read.map(String);
 
             for (const file of dirFiles) {
-                const fullPath = path.join(dirPath, file)
-                let stat = fs.statSync(fullPath)
+                const fullPath = path.join(dirPath, file);
+                let stat = fs.statSync(fullPath);
                 fs.stat(fullPath, (err, stats) => {
-                    stat = stats
-                })
+                    stat = stats;
+                });
                 if (stat.isFile()) {
-                    files.push(fullPath)
+                    files.push(fullPath);
                 }
             }
 
-            return files
+            return files;
         } catch (error) {
-            console.error('Error getting files in directory:', error)
-            return Promise.reject(error)
+            console.error('Error getting files in directory:', error);
+            return Promise.reject(error);
         }
     }
 
     private async deactivateCodeSys3(id: number) {
-        await connectionManager.executeCommand(id, 'kill $(pidof codesys3)')
+        await connectionManager.executeCommand(id, 'kill $(pidof codesys3)');
         await connectionManager
             .executeCommand(
                 id,
                 '/etc/config-tools/config_runtime runtime-version=0'
             )
             .then(() => {
-                console.log('CodeSys3 deactivated.')
+                console.log('CodeSys3 deactivated.');
             })
             .catch((err) => {
-                console.error(`Error deactivating CodeSys3: ${err}`)
-            })
+                console.error(`Error deactivating CodeSys3: ${err}`);
+            });
     }
 }

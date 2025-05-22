@@ -1,8 +1,8 @@
-import { ProjectVersion } from '../extension/versionDetection'
-import { Controller, ControllerItem } from '../extension/view'
-import * as vscode from 'vscode'
-import { ProjectFactory } from './factorys/factoryProject'
-import { ControllerFactory } from './factorys/factoryController'
+import { ProjectVersion } from '../extension/versionDetection';
+import { Controller, ControllerItem } from '../extension/view';
+import * as vscode from 'vscode';
+import { ProjectFactory } from './factorys/factoryProject';
+import { ControllerFactory } from './factorys/factoryController';
 
 /**
  * Manager class for WAGO Controllerproject operations.
@@ -16,11 +16,11 @@ import { ControllerFactory } from './factorys/factoryController'
  * @singleton
  */
 export class Manager {
-    private static instance: Manager
-    private versionNr: number
+    private static instance: Manager;
+    private versionNr: number;
 
     private constructor() {
-        this.versionNr = ProjectVersion
+        this.versionNr = ProjectVersion;
     }
 
     /**
@@ -31,9 +31,9 @@ export class Manager {
      */
     public static getInstance(): Manager {
         if (!Manager.instance) {
-            Manager.instance = new Manager()
+            Manager.instance = new Manager();
         }
-        return Manager.instance!
+        return Manager.instance!;
     }
     /**
      * Uploads the project with the specified version number to the target identified by the given ID.
@@ -43,12 +43,12 @@ export class Manager {
     public upload(controller: Controller | undefined) {
         ProjectFactory.getInstance()
             .createUploadCommand(this.versionNr)
-            .uploadController(controller)
+            .uploadController(controller);
     }
     public uploadAll() {
         ProjectFactory.getInstance()
             .createUploadAllCommand(this.versionNr)
-            .uploadAllControllers()
+            .uploadAllControllers();
     }
     /**
      * Edits the settings of a controller by creating and executing an edit settings command.
@@ -58,7 +58,7 @@ export class Manager {
     public editSettings(controller: ControllerItem | undefined) {
         ProjectFactory.getInstance()
             .createEditSettingsCommand(this.versionNr)
-            .editSettings(controller)
+            .editSettings(controller);
     }
     /**
      * Resets the specified controller to its default state.
@@ -73,10 +73,10 @@ export class Manager {
     public async resetController(controller: Controller | undefined) {
         let engine = await ProjectFactory.getInstance()
             .createResetCommand(this.versionNr)
-            .reset(controller, true)
+            .reset(controller, true);
         ControllerFactory.getInstance()
             .createResetCommand(engine)
-            .reset(controller)
+            .reset(controller);
     }
     /**
      * Adds a controller to the extension context using the project factory.
@@ -85,7 +85,7 @@ export class Manager {
     public addController() {
         ProjectFactory.getInstance()
             .createAddCommand(this.versionNr)
-            .addController()
+            .addController();
     }
     /**
      * Removes a controller from the current project.
@@ -99,7 +99,7 @@ export class Manager {
     ) {
         ProjectFactory.getInstance()
             .createRemoveCommand(this.versionNr)
-            .removeController(controller, showConfirmation)
+            .removeController(controller, showConfirmation);
     }
     /**
      * Initiates a renaming operation for the specified controller.
@@ -111,7 +111,7 @@ export class Manager {
     public renameController(controller: Controller | undefined) {
         ProjectFactory.getInstance()
             .createRenameCommand(this.versionNr)
-            .renameController(controller)
+            .renameController(controller);
     }
     /**
      * Creates a new project by initializing a project creation command and its controller.
@@ -121,7 +121,7 @@ export class Manager {
     public createProject() {
         ProjectFactory.getInstance()
             .createCreateProjectCommand(this.versionNr)
-            .createController()
+            .createController();
     }
     /**
      * Resets and then removes a controller from the project.
@@ -138,12 +138,12 @@ export class Manager {
             .then(() => {
                 ProjectFactory.getInstance()
                     .createRemoveCommand(this.versionNr)
-                    .removeController(controller, false)
+                    .removeController(controller, false);
             })
             .catch((error: any) => {
-                console.error(error)
-                vscode.window.showErrorMessage(`Error: Resetting Controller`)
-            })
+                console.error(error);
+                vscode.window.showErrorMessage(`Error: Resetting Controller`);
+            });
     }
     /**
      * Retrieves child elements for display in the view.
@@ -158,7 +158,7 @@ export class Manager {
     ): any {
         return ProjectFactory.getInstance()
             .createViewChildrenCommand(this.versionNr)
-            .getChildren(element)
+            .getChildren(element);
     }
     /**
      * Establishes connections through the ProjectFactory.
@@ -170,6 +170,6 @@ export class Manager {
     public establishConnections() {
         ProjectFactory.getInstance()
             .createEstablishConnections(this.versionNr)
-            .establishConnections()
+            .establishConnections();
     }
 }
