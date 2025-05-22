@@ -1,3 +1,3 @@
-export interface ResetControllerInterface{
-    reset: (controller: any) => void;
+export interface ResetControllerInterface {
+  reset: (controller: any) => void;
 }
