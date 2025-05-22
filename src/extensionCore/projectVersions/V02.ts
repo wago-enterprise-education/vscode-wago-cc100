@@ -923,7 +923,7 @@ export class EditSettingsFunctionality {
                         YamlCommands.writeControllerYaml(
                             id,
                             controllerSettings.connection,
-                            'usb-c'
+                            'ethernet'
                         );
                     const content = await this.getInput(settingToEdit);
                     if (!content) return;
