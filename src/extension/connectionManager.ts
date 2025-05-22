@@ -10,7 +10,7 @@ import { extensionContext } from '../extension';
 
 const publicKeyPath = Path.join(homedir(), '.ssh', 'id_rsa_wago.pub');
 const privateKeyPath = Path.join(homedir(), '.ssh', 'id_rsa_wago');
-const scriptPath = `${extensionContext.extensionPath}/res/scripts`;
+const scriptPath = `res/scripts`; // Path to scripts folder in extensionPath
 const maxConnections = 3;
 const garbageCollectorInterval = 300_000;
 const timeout = 10_000;
@@ -218,7 +218,7 @@ export class ConnectionManager {
         file: string,
         ...args: string[]
     ): Promise<string> {
-        let script = fs.readFileSync(`${scriptPath}/${file}`);
+        let script = fs.readFileSync(`${extensionContext?.extensionPath}/${scriptPath}/${file}`);
 
         let connection: Connection;
         try {
