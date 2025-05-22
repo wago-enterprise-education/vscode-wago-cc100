@@ -1380,7 +1380,7 @@ export class UploadFunctionality {
                     progress.report({ increment: 15 });
 
                     progress.report({ message: 'Updating Container...' });
-                    this.updateContainer(id);
+                    await this.updateContainer(id);
                     progress.report({ increment: 20 });
 
                     progress.report({ message: 'Uploading...' });
@@ -1580,7 +1580,18 @@ export class UploadFunctionality {
     private async updateContainer(id: number) {
         const imageName = 'cc100_python';
         const containerName = 'pythonRuntime';
-        const downloadPath = `${extensionContext.storageUri}/image.tar`;
+        const downloadPathFolder = `${extensionContext.storageUri?.fsPath}`;
+        const downloadPathFile = path.join(`${extensionContext.storageUri?.fsPath}`, `image.tar`);
+
+        if (!fs.existsSync(downloadPathFolder)) {
+            fs.mkdir(downloadPathFolder, (err) => {
+                if (err) vscode.window.showErrorMessage("Error while creating vscode storage path for the image.");
+            });
+        }
+
+        fs.open(downloadPathFile, 'w', (err) => {
+            if (err) vscode.window.showErrorMessage("Error while creating temporary file for the image.");
+        });
 
         // Cancel if Image Version is specifically chosen
         let wantedVers = YamlCommands.getController(id)?.imageVersion;
@@ -1665,7 +1676,7 @@ export class UploadFunctionality {
 
             // Download and Upload new Image
             console.debug('Downloading new Image...');
-            const stream = fs.createWriteStream(downloadPath)
+            const stream = fs.createWriteStream(downloadPathFile)
 
             //Download from GitHub packages through Manifest and digest hash
             const { body } = await fetch(
@@ -1684,14 +1695,8 @@ export class UploadFunctionality {
             await finished(Readable.fromWeb(body).pipe(stream));
 
             // Upload new Image
-            await connectionManager.upload(id, downloadPath, '/home/');
-            fs.unlink(downloadPath, (err) => {
-                if (err)
-                    console.debug(
-                        'Error removing image.tar from the temp folder.'
-                    );
-                console.debug('Removed image.tar from the temp folder.');
-            });
+            await connectionManager.upload(id, downloadPathFolder, '/home/');
+            fs.unlinkSync(downloadPathFile);
 
             // Load new Image
             console.debug('Loading new Image...');
@@ -1702,7 +1707,8 @@ export class UploadFunctionality {
             await connectionManager.executeCommand(id, `rm /home/image.tar`);
             await connectionManager.executeScript(
                 id,
-                `../../../res/dockerCommand.sh ${imageName}`
+                "dockerCommand.sh",
+                imageName
             );
         } catch (error) {
             console.error(`Error Updating Container: ${error}`);

@@ -22,4 +22,4 @@ docker run \
 -v '/dev/ttySTM1:/dev/ttySTM1' \
 -v '/home/user/python_bootapplication:/home/user/python_bootapplication' \
 -p 5678:5678 \
-cc100_python:${1}
+docker-engine-cc100:${1}
