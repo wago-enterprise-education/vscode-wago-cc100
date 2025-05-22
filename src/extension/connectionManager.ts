@@ -6,10 +6,11 @@ import * as fs from 'fs';
 import { ControllerProvider } from './view';
 import YAML from 'yaml';
 import * as net from 'net';
+import { extensionContext } from '../extension';
 
 const publicKeyPath = Path.join(homedir(), '.ssh', 'id_rsa_wago.pub');
 const privateKeyPath = Path.join(homedir(), '.ssh', 'id_rsa_wago');
-const scriptPath = `${vscode.extensions.getExtension('wago-education.vscode-wago-cc100')?.extensionPath}/scripts`;
+const scriptPath = `${extensionContext.extensionPath}/res/scripts`;
 const maxConnections = 3;
 const garbageCollectorInterval = 300_000;
 const timeout = 10_000;
@@ -214,7 +215,8 @@ export class ConnectionManager {
      */
     public async executeScript(
         controllerId: number,
-        file: string
+        file: string,
+        ...args: string[]
     ): Promise<string> {
         let script = fs.readFileSync(`${scriptPath}/${file}`);
 
@@ -228,6 +230,10 @@ export class ConnectionManager {
         let output = '';
 
         this.splitScript(script.toString()).forEach(async (cmd) => {
+            args.forEach((arg, index) => {
+                cmd = cmd.replace(`$${index + 1}`, arg);
+            })
+
             output += await connection.executeCommand(cmd);
         });
 
