@@ -25,8 +25,8 @@ export class webviewIoCheck {
     private switchStatus: string;
     private serialConnection: any;
 
-    constructor(con: vscode.ExtensionContext) {
-        this.context = con;
+    constructor() {
+        this.context = extensionContext;
         this.calibData = [];
         this.switchStatus = '';
         this.createNewWebview();
