@@ -704,132 +704,176 @@ export class EstablishConnections
 // EditSettings Functionality
 //===================================================================================
 export class EditSettingsFunctionality {
-    
-    /**
-     * Edits a specified setting in either the `wago.yaml` or `controller.yaml` configuration file.
-     * The method determines the type of setting to edit and provides appropriate input or selection
-     * mechanisms to update the configuration.
-     *
-     * @param id - The unique identifier for the setting to be edited.
-     * @param settingToEdit - The name of the setting to be edited. This can belong to either `wagoSettings` or `controllerSettings`.
-     *
-     * @remarks
-     * - For `wago.yaml` settings:
-     *   - `displayname` and `description` prompt the user for input.
-     *   - `engine` and `imageVersion` are placeholders for future implementation.
-     *   - `src` allows the user to select an existing folder or create a new one.
-     * - For `controller.yaml` settings:
-     *   - `connection` provides a quick pick for connection types (`usb-c` or `ethernet`).
-     *   - `ip`, `port`, and `user` prompt the user for input.
-     *   - `autoupdate` provides a quick pick for enabling or disabling the feature.
-     *
-     * @throws Will show an error message if no workspace is open or if an invalid attribute type is provided.
-     * @returns A promise that resolves when the setting is successfully edited or exits early if the user cancels the operation.
-     */
-    public static async editSetting(id: number, settingToEdit: string) {
-        if(!vscode.workspace.workspaceFolders) {
-            vscode.window.showErrorMessage('No workspace is open');
-            return;
-        }
-        
-        if (settingToEdit in wagoSettings) {
-            switch (settingToEdit) {
-                // wago.yaml Setting
-                case wagoSettings.displayname: 
-                case wagoSettings.description:
-                    const content = await this.getInput(settingToEdit);
-                    if (!content) return;
-                    YamlCommands.writeWagoYaml(id, wagoSettings[settingToEdit], content);
-                    break;
+  /**
+   * Edits a specified setting in either the `wago.yaml` or `controller.yaml` configuration file.
+   * The method determines the type of setting to edit and provides appropriate input or selection
+   * mechanisms to update the configuration.
+   *
+   * @param id - The unique identifier for the setting to be edited.
+   * @param settingToEdit - The name of the setting to be edited. This can belong to either `wagoSettings` or `controllerSettings`.
+   *
+   * @remarks
+   * - For `wago.yaml` settings:
+   *   - `displayname` and `description` prompt the user for input.
+   *   - `engine` and `imageVersion` are placeholders for future implementation.
+   *   - `src` allows the user to select an existing folder or create a new one.
+   * - For `controller.yaml` settings:
+   *   - `connection` provides a quick pick for connection types (`usb-c` or `ethernet`).
+   *   - `ip`, `port`, and `user` prompt the user for input.
+   *   - `autoupdate` provides a quick pick for enabling or disabling the feature.
+   *
+   * @throws Will show an error message if no workspace is open or if an invalid attribute type is provided.
+   * @returns A promise that resolves when the setting is successfully edited or exits early if the user cancels the operation.
+   */
+  public static async editSetting(id: number, settingToEdit: string) {
+    if (!vscode.workspace.workspaceFolders) {
+      vscode.window.showErrorMessage("No workspace is open");
+      return;
+    }
 
-                // wago.yaml QuickPick
-                case wagoSettings.engine:
-                    const pickedEngine = await vscode.window.showQuickPick(Object.values(engine) , {
-                        title: 'Engine',
-                        canPickMany: false
-                    }) || '';
-                    if (!pickedEngine) return;
-                    YamlCommands.writeWagoYaml(id, wagoSettings[settingToEdit], pickedEngine);
-                    break;
+    if (settingToEdit in wagoSettings) {
+      switch (settingToEdit) {
+        // wago.yaml Setting
+        case wagoSettings.displayname:
+        case wagoSettings.description:
+          const content = await this.getInput(settingToEdit);
+          if (!content) return;
+          YamlCommands.writeWagoYaml(id, wagoSettings[settingToEdit], content);
+          break;
 
-                case wagoSettings.src:
-                    const workspacePath = vscode.workspace.workspaceFolders![0].uri.fsPath;
-                    const controllerSrc = await vscode.window.showQuickPick(
-                        fs.readdirSync(workspacePath)
-                            .map((folder) => {
-                                if (fs.existsSync(`${workspacePath}/${folder}/main.py`)) {
-                                    return {
-                                        label: `${folder}`,
-                                        description: `${folder}/main.py`
-                                    };
-                                }
-                                return { label: "" };
-                            })
-                            .filter((path) => path.label.length > 0 ? true : false)
-                            .concat({ label: "New", description: 'Create a new folder' })
-                    );
-                    if (!controllerSrc) return;
-                    let newFolder;
-                    if (controllerSrc.label === "New"){
-                        newFolder = await this.getInput(settingToEdit)
-                        fs.mkdirSync(`${path.resolve(workspacePath)}/${newFolder}`);
-                        fs.writeFile(`${path.resolve(workspacePath)}/${newFolder}/main.py`, "", (err) => {
-                            if (err) {
-                                console.error('Error writing file:', err);
-                            }
-                        });
-                    }
-                    if(!newFolder){
-                        YamlCommands.writeWagoYaml(id, wagoSettings[settingToEdit], controllerSrc.label);
-                    } else {
-                        YamlCommands.writeWagoYaml(id, wagoSettings[settingToEdit], newFolder);
-                    }
-                    break;
-                case wagoSettings.imageVersion: 
-                    const imageToken = await new UploadFunctionality().getToken();
-                    
-                    const dockerImage = await vscode.window.showQuickPick(
-                        await new UploadFunctionality().getTagList(imageToken), {
-                            title: 'Image Version',
-                            canPickMany: false
-                        }) || '';
-                    if (!dockerImage) return;
+        // wago.yaml QuickPick
+        case wagoSettings.engine:
+          const pickedEngine =
+            (await vscode.window.showQuickPick(Object.values(engine), {
+              title: "Engine",
+              canPickMany: false,
+            })) || "";
+          if (!pickedEngine) return;
+          YamlCommands.writeWagoYaml(
+            id,
+            wagoSettings[settingToEdit],
+            pickedEngine,
+          );
+          break;
 
-                    YamlCommands.writeWagoYaml(id, wagoSettings[settingToEdit], dockerImage);
-                    
-                    break;
-            }
-            return;
+        case wagoSettings.src:
+          const workspacePath =
+            vscode.workspace.workspaceFolders![0].uri.fsPath;
+          const controllerSrc = await vscode.window.showQuickPick(
+            fs
+              .readdirSync(workspacePath)
+              .map((folder) => {
+                if (fs.existsSync(`${workspacePath}/${folder}/main.py`)) {
+                  return {
+                    label: `${folder}`,
+                    description: `${folder}/main.py`,
+                  };
+                }
+                return { label: "" };
+              })
+              .filter((path) => (path.label.length > 0 ? true : false))
+              .concat({ label: "New", description: "Create a new folder" }),
+          );
+          if (!controllerSrc) return;
+          let newFolder;
+          if (controllerSrc.label === "New") {
+            newFolder = await this.getInput(settingToEdit);
+            fs.mkdirSync(`${path.resolve(workspacePath)}/${newFolder}`);
+            fs.writeFile(
+              `${path.resolve(workspacePath)}/${newFolder}/main.py`,
+              "",
+              (err) => {
+                if (err) {
+                  console.error("Error writing file:", err);
+                }
+              },
+            );
+          }
+          if (!newFolder) {
+            YamlCommands.writeWagoYaml(
+              id,
+              wagoSettings[settingToEdit],
+              controllerSrc.label,
+            );
+          } else {
+            YamlCommands.writeWagoYaml(
+              id,
+              wagoSettings[settingToEdit],
+              newFolder,
+            );
+          }
+          break;
+        case wagoSettings.imageVersion:
+          const imageToken = await new UploadFunctionality().getToken();
 
-        } else if (settingToEdit in controllerSettings) {
-            switch (settingToEdit) {
-                // controller.yaml Setting
-                case controllerSettings.connection:
-                    const conType = await vscode.window.showQuickPick(['usb-c', 'ethernet'], {
-                        title: 'Connection Type',
-                        canPickMany: false
-                    }) || '';
-                    if (!conType) return;
-                    if (conType === 'usb-c') YamlCommands.writeControllerYaml(id, controllerSettings.ip, '192.168.42.42');
-                    YamlCommands.writeControllerYaml(id, controllerSettings[settingToEdit], conType);
-                    break;
+          const dockerImage =
+            (await vscode.window.showQuickPick(
+              await new UploadFunctionality().getTagList(imageToken),
+              {
+                title: "Image Version",
+                canPickMany: false,
+              },
+            )) || "";
+          if (!dockerImage) return;
 
-                case controllerSettings.ip: 
-                case controllerSettings.port:
-                case controllerSettings.user:
-                    if (settingToEdit === controllerSettings.ip) YamlCommands.writeControllerYaml(id, controllerSettings.connection, 'usb-c');
-                    const content = await this.getInput(settingToEdit);
-                    if (!content) return;
-                    YamlCommands.writeControllerYaml(id, controllerSettings[settingToEdit], content);
-                    break;
-    
-                // controller.yaml QuickPick
-                case controllerSettings.autoupdate: 
-                    const status = await vscode.window.showQuickPick(['on', 'off'], {
-                        title: 'Autoupdate',
-                        canPickMany: false
-                    }) || '';
-                    if (!status) return;
+          YamlCommands.writeWagoYaml(
+            id,
+            wagoSettings[settingToEdit],
+            dockerImage,
+          );
+
+          break;
+      }
+      return;
+    } else if (settingToEdit in controllerSettings) {
+      switch (settingToEdit) {
+        // controller.yaml Setting
+        case controllerSettings.connection:
+          const conType =
+            (await vscode.window.showQuickPick(["usb-c", "ethernet"], {
+              title: "Connection Type",
+              canPickMany: false,
+            })) || "";
+          if (!conType) return;
+          if (conType === "usb-c")
+            YamlCommands.writeControllerYaml(
+              id,
+              controllerSettings.ip,
+              "192.168.42.42",
+            );
+          YamlCommands.writeControllerYaml(
+            id,
+            controllerSettings[settingToEdit],
+            conType,
+          );
+          break;
+
+        case controllerSettings.ip:
+        case controllerSettings.port:
+        case controllerSettings.user:
+          if (settingToEdit === controllerSettings.ip)
+            YamlCommands.writeControllerYaml(
+              id,
+              controllerSettings.connection,
+              "usb-c",
+            );
+          const content = await this.getInput(settingToEdit);
+          if (!content) return;
+          YamlCommands.writeControllerYaml(
+            id,
+            controllerSettings[settingToEdit],
+            content,
+          );
+          break;
+
+        // controller.yaml QuickPick
+        case controllerSettings.autoupdate:
+          const status =
+            (await vscode.window.showQuickPick(["on", "off"], {
+              title: "Autoupdate",
+              canPickMany: false,
+            })) || "";
+          if (!status) return;
 
           YamlCommands.writeControllerYaml(
             id,
