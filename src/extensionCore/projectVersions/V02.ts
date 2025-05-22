@@ -485,7 +485,7 @@ export class ViewChildren implements Interface.ViewChildrenInterface {
                         online = true;
                     } catch (error) {
                         console.debug(
-                            `Controller ${controller.id} is offline. ${error}`
+                            `View: Controller ${controller.id} is offline. ${error}`
                         );
                     }
                     return new Controller(

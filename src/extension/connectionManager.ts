@@ -66,7 +66,7 @@ export class ConnectionManager {
         const connection = new Connection(controllerId, urn, username);
         this.connections.push(connection);
         connection.init(password).catch((error) => {
-            throw error;
+            console.log(`Failed to connect to ${urn}: ${error}`);
         });
     }
 
@@ -154,11 +154,13 @@ export class ConnectionManager {
      * @returns Promise<Connection> A free connection of the controller
      * @throws Error if timeout is reached
      */
-    private newConnection(controllerId: number): Promise<Connection> {
+    private async newConnection(controllerId: number): Promise<Connection> {
         const controllerConnections =
             this.getControllerConnections(controllerId);
         if (controllerConnections.length < maxConnections) {
-            return this.getConnection(controllerId);
+            const newConnection = await this.getConnection(controllerId);
+            this.connections.push(newConnection);
+            return Promise.resolve(newConnection);
         }
 
         return new Promise<Connection>((resolve, reject) => {
@@ -411,6 +413,7 @@ class Connection {
     public client: Client;
     private askForPassword: boolean = true;
     private server: net.Server | null = null;
+    private initResponse: boolean = false;
 
     /**
      * Creates a new `Connection` instance.
@@ -440,7 +443,63 @@ class Connection {
      * @returns - Promise that resolves when the connection is established.
      */
     public init(password?: string | undefined): Promise<void> {
-        const attemptConnection = () => {
+        return new Promise((resolve, reject) => {
+            this.client
+                .once('ready', () => {
+                    console.info(`Connected to ${this.urn}`);
+                    if (password) {
+                        this.sendSSHKey();
+                        password = undefined;
+                    }
+                    this.connected = true;
+                    ControllerProvider.instance.refresh();
+
+                    if (this.initResponse) return;
+                    this.initResponse = true;
+                    resolve();
+                })
+                .once('error', async (error) => {
+                    if (this.connected || !this.initResponse) {
+                        vscode.window.showErrorMessage(
+                            `Error connection to ${YamlCommands.getController(this.controllerId)?.displayname}: ${error.message}`
+                        );
+                    }
+                    this.connected = false;
+
+                    if (error.level === 'client-authentication') {
+                        if (!this.askForPassword) {
+                            password = await this.requestPassword();
+                            if (password) {
+                                this.client.removeAllListeners();
+                                setTimeout(
+                                    async () =>
+                                        await this.init(password).catch(),
+                                    0
+                                );
+                                if (this.initResponse) return;
+                                this.initResponse = true;
+                                return reject(error);
+                            }
+                        }
+                    }
+                    if (this.initResponse) return;
+                    this.initResponse = true;
+                    reject(error.message);
+                })
+                .once('close', async () => {
+                    this.client.removeAllListeners();
+                    console.debug(`Connection to ${this.urn} closed`);
+                    ControllerProvider.instance.refresh();
+                    this.client.end();
+                    setTimeout(
+                        async () => await this.init(),
+                        reconnectionTimeout
+                    );
+                    if (this.initResponse) return;
+                    this.initResponse = true;
+                    reject();
+                });
+
             this.generateSSHKey();
             if (password) {
                 this.client.connect({
@@ -457,46 +516,6 @@ class Connection {
                     privateKey: fs.readFileSync(privateKeyPath),
                 });
             }
-        };
-
-        return new Promise((resolve, reject) => {
-            this.client
-                .on('ready', () => {
-                    console.debug(`Connected to ${this.urn}`);
-                    if (password) {
-                        this.sendSSHKey();
-                        password = undefined;
-                    }
-                    this.connected = true;
-                    ControllerProvider.instance.refresh();
-                    resolve();
-                })
-                .on('close', async () => {
-                    console.debug(`Connection to ${this.urn} closed`);
-                    ControllerProvider.instance.refresh();
-                    setTimeout(attemptConnection, reconnectionTimeout);
-                })
-                .on('error', async (error) => {
-                    if (this.connected) {
-                        vscode.window.showErrorMessage(
-                            `Connection to ${YamlCommands.getController(this.controllerId)?.displayname} lost: ${error.message}`
-                        );
-                    }
-                    this.connected = false;
-
-                    if (error.level === 'client-authentication') {
-                        if (!this.askForPassword) {
-                            password = await this.requestPassword();
-                            if (password) {
-                                setTimeout(attemptConnection, 0);
-                                return reject(error);
-                            }
-                        }
-                    }
-                    reject(error);
-                });
-
-            setTimeout(attemptConnection, 0);
         });
     }
 
@@ -630,7 +649,8 @@ class Connection {
     public executeCommand(cmd: string): Promise<string> {
         return new Promise<string>((resolve, reject) => {
             this.client.exec(cmd, (err, stream) => {
-                if (err) return reject(err);
+                if (err)
+                    return reject(`Error executing command "${cmd}": ${err}`);
                 this.busy = true;
 
                 let output = '';
@@ -642,7 +662,7 @@ class Connection {
                 stream.on('close', () => {
                     this.busy = false;
                     this.lastUsed = Date.now();
-                    if(output.endsWith('\n')) {
+                    if (output.endsWith('\n')) {
                         output = output.slice(0, -1);
                     }
                     resolve(output);
@@ -731,9 +751,15 @@ class Connection {
      * Disconnects the client from the remote controller
      */
     public disconnect() {
+        console.info(`Disconnecting from ${this.urn}`);
         this.client.removeAllListeners();
-        if (this.server) this.server.close();
+        if (this.server) {
+            this.server.close();
+            this.server = null;
+        }
         this.client.end();
+        this.client.destroy();
+        this.connected = false;
     }
 }
 
