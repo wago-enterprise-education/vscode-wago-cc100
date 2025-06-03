@@ -6,6 +6,13 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+## [0.1.5] - 2025-06-03
+
+### Fixed
+  
+- CVE-2025-47279 undici Denial of Service attack via bad certificate data
+- CVE-2025-48387 tar-fs can extract outside the specified dir with a specific tarball
+
 ## [0.1.4] - 2025-01-21
 
 ### Fixed
