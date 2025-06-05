@@ -11,6 +11,7 @@ import { extensionContext } from '../extension';
 const publicKeyPath = Path.join(homedir(), '.ssh', 'id_rsa_wago.pub');
 const privateKeyPath = Path.join(homedir(), '.ssh', 'id_rsa_wago');
 const scriptPath = `res/scripts`; // Path to scripts folder in extensionPath
+const remoteTmpPath = '/tmp/cc100-extension'; // Remote path for temporary files
 const maxConnections = 3;
 const garbageCollectorInterval = 300_000;
 const timeout = 10_000;
@@ -276,15 +277,15 @@ export class ConnectionManager {
     }
 
     /**
-     * Upload a file or directory to the controller
+     * Upload a directory to the controller
      *
      * @param controllerId Unique identifier of the controller
-     * @param localPath Path to the local file or directory
-     * @param remotePath Path to the remote file or directory
+     * @param localPath Path to the local directory
+     * @param remotePath Path to the remote directory
      * @returns Promise<string> Output of the upload
      * @throws Error if the controller does not exist
      */
-    public async upload(
+    public async uploadDirectory(
         controllerId: number,
         localPath: string,
         remotePath: string
@@ -296,14 +297,22 @@ export class ConnectionManager {
             throw error;
         }
 
+        if(localPath.endsWith('/')) {
+            localPath = localPath.slice(0, -1);
+        }
+
+        if (remotePath.endsWith('/')) {
+            remotePath = remotePath.slice(0, -1);
+        }
+
         return new Promise(async (resolve, reject) => {
             await connection
-                .executeCommand(`rm -rf ${remotePath}`)
+                .executeCommand(`rm -rf ${remoteTmpPath}`)
                 .catch((err) => {
                     reject(err);
                 });
             for await (const directory of this.getAllRemoteDirectories(
-                remotePath
+                remoteTmpPath
             )) {
                 await connection
                     .executeCommand(`mkdir -p ${directory}`)
@@ -316,14 +325,85 @@ export class ConnectionManager {
             )) {
                 await connection
                     .executeCommand(
-                        `mkdir -p ${remotePath.concat(directory.replace(localPath + '\\', '').replaceAll('\\', '/'))}`
+                        `mkdir -p ${remoteTmpPath.concat(directory.replace(localPath + '\\', '').replaceAll('\\', '/'))}`
                     )
                     .catch((err) => {
                         reject(err);
                     });
             }
             await connection
-                .upload(localPath, remotePath)
+                .upload(localPath, remoteTmpPath)
+                .catch(async (err) => {
+                    await connection.executeCommand(`rm -rf ${remoteTmpPath}`);
+                    reject(err);
+                });
+            await connection
+                .executeCommand(
+                    `rm -rf ${remotePath}/* && mv ${remoteTmpPath}/* ${remotePath} && rm -rf ${remoteTmpPath}`
+                )
+                .then(() => {
+                    resolve('Upload successful');
+                })
+                .catch((err) => {
+                    reject(err);
+                });
+        });
+    }
+
+    /**
+     * Upload a file to the controller
+     *
+     * @param controllerId Unique identifier of the controller
+     * @param localPath Path to the local file
+     * @param remotePath Path to the remote file
+     * @returns Promise<string> Output of the upload
+     * @throws Error if the controller does not exist
+     */
+    public async uploadFile(
+        controllerId: number,
+        localPath: string,
+        remotePath: string
+    ): Promise<string> {
+        let connection: Connection;
+        try {
+            connection = this.getControllerConnections(controllerId)[0];
+        } catch (error) {
+            throw error;
+        }
+
+        if(localPath.endsWith('/')) {
+            localPath = localPath.slice(0, -1);
+        }
+
+        if (remotePath.endsWith('/')) {
+            remotePath = remotePath.slice(0, -1);
+        }
+        
+        return new Promise(async (resolve, reject) => {
+            await connection
+                .executeCommand(`rm -rf ${remoteTmpPath}`)
+                .catch((err) => {
+                    reject(err);
+                });
+            for await (const directory of this.getAllRemoteDirectories(
+                remoteTmpPath
+            )) {
+                await connection
+                    .executeCommand(`mkdir -p ${directory}`)
+                    .catch((err) => {
+                        reject(err);
+                    });
+            }
+            await connection
+                .upload(localPath, remoteTmpPath)
+                .catch(async (err) => {
+                    await connection.executeCommand(`rm -rf ${remoteTmpPath}`);
+                    reject(err);
+                });
+            await connection
+                .executeCommand(
+                    `rm -rf ${remotePath}/${Path.basename(localPath)} && mv ${remoteTmpPath}/${Path.basename(localPath)} ${remotePath} && rm -rf ${remoteTmpPath}`
+                )
                 .then(() => {
                     resolve('Upload successful');
                 })
@@ -519,7 +599,7 @@ class Connection {
                     host: this.urn.split(':')[0],
                     port: parseInt(this.urn.split(':')[1]),
                     username: this.username,
-                    privateKey: fs.readFileSync(privateKeyPath),
+                    privateKey: fs.readFileSync(privateKeyPath)
                 });
             }
         });
@@ -655,8 +735,8 @@ class Connection {
     public executeCommand(cmd: string): Promise<string> {
         return new Promise<string>((resolve, reject) => {
             this.client.exec(cmd, (err, stream) => {
-                if (err)
-                    return reject(`Error executing command "${cmd}": ${err}`);
+                if (err) return resolve("")
+                //return reject(`Error executing command "${cmd}": ${err}`);
                 this.busy = true;
 
                 let output = '';
@@ -687,9 +767,6 @@ class Connection {
 
             stream.on('data', onData);
             stream.on('error', onError);
-            stream.on('close', () => {
-                stream.close();
-            });
         });
     }
 
@@ -712,12 +789,15 @@ class Connection {
                 let requested = 0;
                 let answered = 0;
                 for await (const file of this.getAllLocalFiles(localPath)) {
+                    if (file === localPath) {
+                        localPath = localPath.slice(0, localPath.lastIndexOf('\\'));
+                    }
                     requested++;
                     sftp.fastPut(
                         file,
                         remotePath.concat(
                             file
-                                .replace(localPath + '\\', '')
+                                .replace(localPath, '')
                                 .replaceAll('\\', '/')
                         ),
                         async (err) => {
@@ -742,6 +822,11 @@ class Connection {
     }
 
     private *getAllLocalFiles(path: string): Generator<string> {
+        if(fs.lstatSync(path).isFile()) {
+            yield path;
+            return;
+        }
+
         const files = fs.readdirSync(path);
 
         for (const file of files) {

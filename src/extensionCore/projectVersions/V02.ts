@@ -1385,7 +1385,7 @@ export class UploadFunctionality {
 
                     progress.report({ message: 'Uploading...' });
                     await connectionManager
-                        .upload(id, path, uploadPath)
+                        .uploadDirectory(id, path, uploadPath)
                         .then(() => {})
                         .catch((err) => {
                             console.error(`Error uploading files: ${err}`);
@@ -1695,7 +1695,7 @@ export class UploadFunctionality {
             await finished(Readable.fromWeb(body).pipe(stream));
 
             // Upload new Image
-            await connectionManager.upload(id, downloadPathFolder, '/home/');
+            await connectionManager.uploadFile(id, downloadPathFile, '/home/');
             fs.unlinkSync(downloadPathFile);
 
             // Load new Image

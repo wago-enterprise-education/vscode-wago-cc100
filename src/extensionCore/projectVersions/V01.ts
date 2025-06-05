@@ -569,7 +569,7 @@ export class UploadFunctionality {
                     );
                     progress.report({ increment: 20, message: 'Uploading...' });
                     //Upload Files
-                    await connectionManager.upload(id, path, uploadPath);
+                    await connectionManager.uploadDirectory(id, path, uploadPath);
                     progress.report({ increment: 20, message: 'Executing...' });
                     //Execute File
                     await connectionManager.executeCommand(
