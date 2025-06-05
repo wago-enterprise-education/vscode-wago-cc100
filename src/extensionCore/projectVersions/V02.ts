@@ -13,6 +13,7 @@ import * as path from 'path';
 import { Readable } from 'stream';
 import { finished } from 'stream/promises';
 import { extensionContext } from '../../extension';
+import { create } from 'tar';
 
 const FOLDER_REGEX =
     '^(?!(?:CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\.[^.]*)?$)[^<>:"/\\|?*\x00-\x1F]*[^<>:"/\\|?*\x00-\x1F\ .]$';
@@ -1581,17 +1582,6 @@ export class UploadFunctionality {
         const imageName = 'cc100_python';
         const containerName = 'pythonRuntime';
         const downloadPathFolder = `${extensionContext.storageUri?.fsPath}`;
-        const downloadPathFile = path.join(`${extensionContext.storageUri?.fsPath}`, `image.tar`);
-
-        if (!fs.existsSync(downloadPathFolder)) {
-            fs.mkdir(downloadPathFolder, (err) => {
-                if (err) vscode.window.showErrorMessage("Error while creating vscode storage path for the image.");
-            });
-        }
-
-        fs.open(downloadPathFile, 'w', (err) => {
-            if (err) vscode.window.showErrorMessage("Error while creating temporary file for the image.");
-        });
 
         // Cancel if Image Version is specifically chosen
         let wantedVers = YamlCommands.getController(id)?.imageVersion;
@@ -1636,7 +1626,8 @@ export class UploadFunctionality {
                 token
             );
             let wantedVersHash = this.getImageHash(wantedVersManifest.layers);
-            let imageDigest = wantedVersManifest.digest;
+            let imageManifest = wantedVersManifest.manifest;
+            let imageLayers = wantedVersManifest.layers;
 
             if (wantedVersHash == conImageHash) {
                 return;
@@ -1676,27 +1667,61 @@ export class UploadFunctionality {
 
             // Download and Upload new Image
             console.debug('Downloading new Image...');
-            const stream = fs.createWriteStream(downloadPathFile)
 
-            //Download from GitHub packages through Manifest and digest hash
-            const { body } = await fetch(
-                `https://ghcr.io/v2/${UploadFunctionality.repo}/blobs/${imageDigest}`,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        Accept: 'application/vnd.oci.image.layer.v1.tar+gzip',
-                    },
-                }
-            );
-            if (!body) {
-                vscode.window.showErrorMessage('Error downloading image.');
-                return;
+            // Check if folders exist
+            if (!fs.existsSync(path.join(downloadPathFolder, `blobs/sha256`))) {
+                fs.mkdirSync(path.join(downloadPathFolder, `blobs/sha256`), {recursive: true});
             }
-            await finished(Readable.fromWeb(body).pipe(stream));
+
+            // Download all Image Layers
+            for (const layer of imageLayers) {
+                let layerWithoutSha = layer.substring(7, layer.length); // Remove sha256: from beginning of the string
+                let layerPath = path.join(downloadPathFolder, `blobs/sha256/${layerWithoutSha}`);
+
+                fs.open(layerPath, 'w', (err) => {
+                    if (err) vscode.window.showErrorMessage("Error while creating temporary file for the image layer.");
+                });
+
+                const stream = fs.createWriteStream(layerPath)
+                console.debug(`Request send: https://ghcr.io/v2/${UploadFunctionality.repo}/blobs/${layer}`);
+                const { body } = await fetch(
+                    `https://ghcr.io/v2/${UploadFunctionality.repo}/blobs/${layer}`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                            Accept: 'application/vnd.oci.image.layer.v1.tar+gzip',
+                        },
+                    }
+                );
+                if (!body) {
+                    vscode.window.showErrorMessage('Error downloading image.');
+                    return;
+                }
+                await finished(Readable.fromWeb(body).pipe(stream));
+            }
+
+            // Create manifest.json file
+            let manifestJsonPath = path.join(downloadPathFolder, "manifest.json");
+            fs.open(manifestJsonPath, 'w', (err) => {
+                if (err) vscode.window.showErrorMessage("Error while creating temporary file for the image manifest.json.");
+            });
+
+            fs.writeFileSync(manifestJsonPath, JSON.stringify(imageManifest));
+
+            // Put the Manifest and Layers together to an image 
+            create(
+                {
+                    file: `${downloadPathFolder}/image.tar`
+                }, [
+                    manifestJsonPath, `${downloadPathFolder}/blobs`
+                ]
+            );
 
             // Upload new Image
-            await connectionManager.uploadFile(id, downloadPathFile, '/home/');
-            fs.unlinkSync(downloadPathFile);
+            await connectionManager.uploadFile(id, downloadPathFolder, '/home/');
+            
+            // Delete local Image
+            //fs.unlinkSync(path.join(downloadPathFolder, `image.tar`));-----------------------------------------------
 
             // Load new Image
             console.debug('Loading new Image...');
@@ -1704,7 +1729,7 @@ export class UploadFunctionality {
                 id,
                 `docker load -i /home/image.tar`
             );
-            await connectionManager.executeCommand(id, `rm /home/image.tar`);
+            //await connectionManager.executeCommand(id, `rm /home/image.tar`);-----------------------------------------------
             await connectionManager.executeScript(
                 id,
                 "dockerCommand.sh",
@@ -1780,7 +1805,7 @@ export class UploadFunctionality {
     private async getImageManifest(
         tag: string,
         token: string
-    ): Promise<{ digest: string; layers: string[] }> {
+    ): Promise<{ manifest: string; layers: string[] }> {
         let manifestResponse = await fetch(
             `https://ghcr.io/v2/${UploadFunctionality.repo}/manifests/${tag}`,
             {
@@ -1797,11 +1822,11 @@ export class UploadFunctionality {
         let manifest: any = await manifestResponse.json();
 
         // Shrinks the Manifest to the size needed later on
-        let shrinkedManifest = {
-            digest: manifest.config.digest,
-            layers: manifest.layers.map((layer: any) => layer.digest),
+        let returnObj = {
+            manifest: manifest,
+            layers: manifest.layers.map((layer: any) => layer.digest)
         };
 
-        return Promise.resolve(shrinkedManifest);
+        return Promise.resolve(returnObj);
     }
 }

@@ -81,30 +81,29 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
-
     "debuggers": [
       {
         "type": "python",
         "label": "Remote cc100 debugger"
       }
     ],
-  "initialConfigurations": [
-    {
+    "initialConfigurations": [
+      {
         "name": "Python: An laufenden Prozess anhängen",
         "type": "python",
         "request": "attach",
         "connect": {
-            "host": "192.168.42.42",
-            "port": 8765
+          "host": "192.168.42.42",
+          "port": 8765
         },
-          "pathMappings": [
-              {
-                  "localRoot": "${workspaceFolder}",
-                  "remoteRoot": "/home/user/python_bootaplication"
-              }
-          ]
+        "pathMappings": [
+          {
+            "localRoot": "${workspaceFolder}",
+            "remoteRoot": "/home/user/python_bootaplication"
+          }
+        ]
       }
-  ],
+    ],
     "colors": [
       {
         "id": "wagocc100.green",
@@ -344,6 +343,7 @@
     "@microsoft/vscode-file-downloader-api": "^1.0.1",
     "sanitize-html": "^2.14.0",
     "ssh2": "^1.16.0",
+    "tar": "^7.4.3",
     "typescript": "^5.3.3",
     "yaml": "^2.7.0"
   },
@@ -365,21 +365,20 @@
     "@vscode/vsce": "^3.2.1"
   },
   "debugSettings": {
-      "pythonAttach": {
-        "name": "Python Debugger: Attach",
-        "type": "debugpy",
-        "request": "attach",
-        "connect": {
-          "host": "192.168.42.42",
-          "port": 8765
-        },
-        "pathMappings": [
-          {
-            "localRoot": "${workspaceFolder}/src/debugger",
-            "remoteRoot": "/app"
-          }
-        ]
-      }
+    "pythonAttach": {
+      "name": "Python Debugger: Attach",
+      "type": "debugpy",
+      "request": "attach",
+      "connect": {
+        "host": "192.168.42.42",
+        "port": 8765
+      },
+      "pathMappings": [
+        {
+          "localRoot": "${workspaceFolder}/src/debugger",
+          "remoteRoot": "/app"
+        }
+      ]
     }
- 
+  }
 }
