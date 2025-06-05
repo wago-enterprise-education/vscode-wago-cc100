@@ -265,7 +265,7 @@ export class ConnectionManager {
             }
 
             if (line.endsWith('\\') || indentation > 0) {
-                currentCmd += line.slice(0, -1) + '\n';
+                currentCmd += line.slice(0, -1) + ' ';
             } else {
                 currentCmd += line;
                 cmds.push(currentCmd);

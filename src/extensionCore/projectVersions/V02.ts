@@ -1589,8 +1589,8 @@ export class UploadFunctionality {
 
         try {
             console.debug('Comparing Versions...');
+            
             // Check if there is a new version
-
             let token = await this.getToken();
 
             let tagList: string[] = await this.getTagList(token);
@@ -1626,7 +1626,7 @@ export class UploadFunctionality {
                 token
             );
             let wantedVersHash = this.getImageHash(wantedVersManifest.layers);
-            let imageManifest = wantedVersManifest.manifest;
+            let imageConfig = wantedVersManifest.configDigest;
             let imageLayers = wantedVersManifest.layers;
 
             if (wantedVersHash == conImageHash) {
@@ -1649,7 +1649,7 @@ export class UploadFunctionality {
 
             // Stop current container
             console.debug('Stopping Container...');
-            connectionManager.executeCommand(
+            await connectionManager.executeCommand(
                 id,
                 `docker stop ${containerName}`
             );
@@ -1668,12 +1668,14 @@ export class UploadFunctionality {
             // Download and Upload new Image
             console.debug('Downloading new Image...');
 
-            // Check if folders exist
+            // Download all Image Layers
             if (!fs.existsSync(path.join(downloadPathFolder, `blobs/sha256`))) {
                 fs.mkdirSync(path.join(downloadPathFolder, `blobs/sha256`), {recursive: true});
             }
 
-            // Download all Image Layers
+            let layerArray: String[] = [];
+            let i = 0;
+
             for (const layer of imageLayers) {
                 let layerWithoutSha = layer.substring(7, layer.length); // Remove sha256: from beginning of the string
                 let layerPath = path.join(downloadPathFolder, `blobs/sha256/${layerWithoutSha}`);
@@ -1682,7 +1684,7 @@ export class UploadFunctionality {
                     if (err) vscode.window.showErrorMessage("Error while creating temporary file for the image layer.");
                 });
 
-                const stream = fs.createWriteStream(layerPath)
+                const stream = fs.createWriteStream(layerPath);
                 console.debug(`Request send: https://ghcr.io/v2/${UploadFunctionality.repo}/blobs/${layer}`);
                 const { body } = await fetch(
                     `https://ghcr.io/v2/${UploadFunctionality.repo}/blobs/${layer}`,
@@ -1694,11 +1696,37 @@ export class UploadFunctionality {
                     }
                 );
                 if (!body) {
-                    vscode.window.showErrorMessage('Error downloading image.');
+                    vscode.window.showErrorMessage('Error downloading image Layer.');
                     return;
                 }
                 await finished(Readable.fromWeb(body).pipe(stream));
+
+                // Add Layer Path to Array
+                layerArray[i] = `blobs/sha256/${layerWithoutSha}`;
+                i++;
             }
+
+            // Create config.json file
+            let configJsonPath = path.join(downloadPathFolder, "config.json");
+            fs.open(configJsonPath, 'w', (err) => {
+                if (err) vscode.window.showErrorMessage("Error while creating temporary file for the image config.json.");
+            });
+            const stream = fs.createWriteStream(configJsonPath);
+            console.debug(`Request send: https://ghcr.io/v2/${UploadFunctionality.repo}/blobs/${imageConfig}`);
+            const { body } = await fetch(
+                `https://ghcr.io/v2/${UploadFunctionality.repo}/blobs/${imageConfig}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        Accept: 'application/vnd.oci.image.layer.v1.tar+gzip',
+                    },
+                }
+            );
+            if (!body) {
+                vscode.window.showErrorMessage('Error downloading image.');
+                return;
+            }
+            await finished(Readable.fromWeb(body).pipe(stream));
 
             // Create manifest.json file
             let manifestJsonPath = path.join(downloadPathFolder, "manifest.json");
@@ -1706,22 +1734,37 @@ export class UploadFunctionality {
                 if (err) vscode.window.showErrorMessage("Error while creating temporary file for the image manifest.json.");
             });
 
-            fs.writeFileSync(manifestJsonPath, JSON.stringify(imageManifest));
+            const manifestJson = [
+                {
+                    Config: "config.json",
+                    RepoTags: [`ghcr.io/${UploadFunctionality.repo}:${wantedVers}`],
+                    Layers: layerArray
+                }
+            ]
+
+            fs.writeFileSync(manifestJsonPath, JSON.stringify(manifestJson));
 
             // Put the Manifest and Layers together to an image 
+            let tarPath = path.join(downloadPathFolder, "image.tar");
+            fs.open(tarPath, 'w', (err) => {
+                if (err) vscode.window.showErrorMessage("Error while creating temporary file for the image image.tar.");
+            });
+
             create(
                 {
-                    file: `${downloadPathFolder}/image.tar`
+                    file: `${downloadPathFolder}/image.tar`,
+                    sync: true,
+                    cwd: `${downloadPathFolder}`
                 }, [
-                    manifestJsonPath, `${downloadPathFolder}/blobs`
+                    "config.json", "manifest.json", "blobs"
                 ]
             );
 
             // Upload new Image
-            await connectionManager.uploadFile(id, downloadPathFolder, '/home/');
+            await connectionManager.uploadFile(id, path.join(downloadPathFolder, '/image.tar'), '/home/');
             
-            // Delete local Image
-            //fs.unlinkSync(path.join(downloadPathFolder, `image.tar`));-----------------------------------------------
+            // Delete local Image files
+            fs.unlinkSync(path.join(downloadPathFolder, `image.tar`));
 
             // Load new Image
             console.debug('Loading new Image...');
@@ -1729,11 +1772,11 @@ export class UploadFunctionality {
                 id,
                 `docker load -i /home/image.tar`
             );
-            //await connectionManager.executeCommand(id, `rm /home/image.tar`);-----------------------------------------------
+            await connectionManager.executeCommand(id, `rm /home/image.tar`);
             await connectionManager.executeScript(
                 id,
                 "dockerCommand.sh",
-                imageName
+                wantedVers
             );
         } catch (error) {
             console.error(`Error Updating Container: ${error}`);
@@ -1805,7 +1848,7 @@ export class UploadFunctionality {
     private async getImageManifest(
         tag: string,
         token: string
-    ): Promise<{ manifest: string; layers: string[] }> {
+    ): Promise<{ configDigest: string; layers: string[] }> {
         let manifestResponse = await fetch(
             `https://ghcr.io/v2/${UploadFunctionality.repo}/manifests/${tag}`,
             {
@@ -1823,7 +1866,7 @@ export class UploadFunctionality {
 
         // Shrinks the Manifest to the size needed later on
         let returnObj = {
-            manifest: manifest,
+            configDigest: manifest.config.digest,
             layers: manifest.layers.map((layer: any) => layer.digest)
         };
 
