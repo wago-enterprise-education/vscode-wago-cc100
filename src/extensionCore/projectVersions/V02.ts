@@ -1633,9 +1633,12 @@ export class UploadFunctionality {
                 return;
             }
 
+            // Autoupdate check
             let conName = YamlCommands.getController(id)?.displayname;
             let autoupdate = YamlCommands.getControllerSettings(id).autoupdate;
             if (autoupdate === 'off') {
+
+                let checkReturn = false;
                 await vscode.window
                     .showWarningMessage(
                         `Update Container on ${conName}?`,
@@ -1643,8 +1646,9 @@ export class UploadFunctionality {
                         'No'
                     )
                     .then((value) => {
-                        if (value === 'No') return;
+                        if (value === 'No') checkReturn = true;
                     });
+                if (checkReturn) return;
             }
 
             // Stop current container
