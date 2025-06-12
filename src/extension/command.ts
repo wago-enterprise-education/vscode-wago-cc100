@@ -26,13 +26,9 @@ export class Command {
                 'vscode-wago-cc100.init-project',
                 async () => {
                     fs.cpSync(
-                        `${extensionContext.extensionPath}/res/template/controller`,
-                        `${vscode.workspace.workspaceFolders![0].uri.fsPath}/controller`,
-                        { recursive: true }
-                    );
-                    fs.cpSync(
-                        `${extensionContext.extensionPath}/res/template/wago.yaml`,
-                        `${vscode.workspace.workspaceFolders![0].uri.fsPath}/wago.yaml`
+                        `${extensionContext.extensionPath}/res/template`,
+                        `${vscode.workspace.workspaceFolders![0].uri.fsPath}`,
+                        { recursive: true, force: false }
                     );
                     vscode.window.showInformationMessage('Project initialized');
                 }
