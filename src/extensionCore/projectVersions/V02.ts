@@ -1579,7 +1579,7 @@ export class UploadFunctionality {
      * @param id The id of the used controller
      */
     private async updateContainer(id: number) {
-        const imageName = 'cc100_python';
+        const imageName = `ghcr.io/${UploadFunctionality.repo}`;
         const containerName = 'pythonRuntime';
         const downloadPathFolder = `${extensionContext.storageUri?.fsPath}`;
 
@@ -1605,31 +1605,30 @@ export class UploadFunctionality {
             console.debug('Getting controller Image Hash...');
             let currTag = await connectionManager.executeCommand(
                 id,
-                "docker images | grep 'cc100_python' | awk '{print $2}' | head -n 1"
+                `docker images | grep '${imageName}' | awk '{print $2}' | head -n 1`
             );
 
-            let conImageHash = '';
+            let imageConfigController = '';
             if (currTag != '') {
                 let conManifest = await connectionManager.executeCommand(
                     id,
                     `docker inspect ${imageName}:${currTag}`
                 );
                 let json = JSON.parse(conManifest);
-                let layers = json[0].RootFS.Layers;
-                conImageHash = this.getImageHash(layers);
+                imageConfigController = json[0].Id;
             }
-
+            
             // Get new Image Hash from GitHub Packages
-            console.debug('Getting newest Image Hash...');
+            console.debug('Getting newest Image Manifest...');
             let wantedVersManifest = await this.getImageManifest(
                 wantedVers,
                 token
             );
-            let wantedVersHash = this.getImageHash(wantedVersManifest.layers);
             let imageConfig = wantedVersManifest.configDigest;
             let imageLayers = wantedVersManifest.layers;
 
-            if (wantedVersHash == conImageHash) {
+            if (imageConfigController == imageConfig) {
+                console.debug('Image up to date');
                 return;
             }
 
