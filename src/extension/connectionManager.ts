@@ -498,6 +498,7 @@ class Connection {
     public connected: boolean = false;
     public client: Client;
     private askForPassword: boolean = true;
+    private passwordNotification: boolean = false;
     private server: net.Server | null = null;
     private initResponse: boolean = false;
 
@@ -606,21 +607,24 @@ class Connection {
     }
 
     private async requestPassword(): Promise<string> {
+        if(this.passwordNotification) return '';
+        this.passwordNotification = true;
         const selection = await vscode.window.showErrorMessage(
             `Authentication failed for ${YamlCommands.getController(this.controllerId)?.displayname}. Want to reenter the password?`,
             'Yes',
             "Don't ask again"
         );
         if (selection === 'Yes') {
-            return (
-                (await vscode.window.showInputBox({
+            const response = await vscode.window.showInputBox({
                     prompt: `Enter the password for ${YamlCommands.getController(this.controllerId)?.displayname}`,
                     ignoreFocusOut: true,
                     password: true,
-                })) || ''
-            );
+                }) || ''
+            this.passwordNotification = false;
+            return response;
         } else {
             this.askForPassword = false;
+            this.passwordNotification = false;
             return '';
         }
     }
