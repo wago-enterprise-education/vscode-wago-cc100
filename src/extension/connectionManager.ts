@@ -325,7 +325,7 @@ export class ConnectionManager {
             )) {
                 await connection
                     .executeCommand(
-                        `mkdir -p ${remoteTmpPath.concat(directory.replace(localPath + '\\', '').replaceAll('\\', '/'))}`
+                        `mkdir -p ${remoteTmpPath.concat(directory.replace(localPath, '').replaceAll('\\', '/'))}`
                     )
                     .catch((err) => {
                         reject(err);
@@ -797,6 +797,11 @@ class Connection {
                         localPath = localPath.slice(0, localPath.lastIndexOf('\\'));
                     }
                     requested++;
+                    console.log(file+" "+remotePath.concat(
+                            file
+                                .replace(localPath, '')
+                                .replaceAll('\\', '/')
+                        ));
                     sftp.fastPut(
                         file,
                         remotePath.concat(
