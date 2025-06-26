@@ -83,3 +83,7 @@ Dieses Shell Skript dient dem korrekten Starten eines Docker-Containers. Beim St
 ### Hinzufügen von neuen Extension - Versionen
 
 ### Hinzufügen neuer VSCode - Commands
+
+### Debugger Konfigurationen hinzufügen
+Um eine Debuggerkonfiguration hinzuzufügen wird in commands.ts eine neue Konfiguration hinzugefügt (siehe vorhandene Konfiguration). Die Strucktur ist die gleiche wie in einer normalen launch.json. [Hier](https://code.visualstudio.com/docs/debugtest/debugging-configuration) nachlesen
+Dabei kann die logik zum verbinden quasi erhalten bleiben.
