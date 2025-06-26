@@ -73,7 +73,7 @@ export class ConnectionManager {
             throw new Error('Controller already exists');
         const connection = new Connection(controllerId, urn, username);
         this.connections.push(connection);
-        connection.init(password).catch((error) => {
+        await connection.init(password).catch((error) => {
             console.log(`Failed to connect to ${urn}: ${error}`);
         });
     }
