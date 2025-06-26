@@ -21,5 +21,6 @@ docker run \
 -v '/etc/os-release:/etc/os-release' \
 -v '/dev/ttySTM1:/dev/ttySTM1' \
 -v '/home/user/python_bootapplication:/home/user/python_bootapplication' \
+-v '/var/log/wago:/var/log/wago' \
 -p 5678:5678 \
 ghcr.io/wago-enterprise-education/docker-engine-cc100:$1
