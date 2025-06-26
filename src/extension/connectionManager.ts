@@ -513,6 +513,7 @@ class Connection {
     private passwordNotification: boolean = false;
     private server: net.Server | null = null;
     private initResponse: boolean = false;
+    private disconnected: boolean = false;
 
     /**
      * Creates a new `Connection` instance.
@@ -542,6 +543,7 @@ class Connection {
      * @returns - Promise that resolves when the connection is established.
      */
     public init(password?: string | undefined): Promise<void> {
+        if (this.disconnected) return Promise.reject(new Error("Connection is disconnected"));
         return new Promise((resolve, reject) => {
             this.client
                 .once('ready', () => {
@@ -596,7 +598,7 @@ class Connection {
                     );
                     if (this.initResponse) return;
                     this.initResponse = true;
-                    reject();
+                    reject(new Error(`Connection to ${this.urn} closed`));
                 });
 
             this.generateSSHKey();
@@ -635,7 +637,7 @@ class Connection {
             this.passwordNotification = false;
             return response;
         } else {
-            this.askForPassword = false;
+            this.askForPassword = true;
             this.passwordNotification = false;
             return '';
         }
@@ -872,6 +874,7 @@ class Connection {
         this.client.end();
         this.client.destroy();
         this.connected = false;
+        this.disconnected = true;
     }
 }
 
