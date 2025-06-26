@@ -65,6 +65,7 @@ export class Command {
                         name: 'Python: attach to cc100',
                         type: 'python', //Python debug type
                         request: 'attach', //Attach Mode
+                        justMyCode: false, //Debuggen von exterenen libraries
                         connect: {
                             host: 'localhost', //remote host (local for the ssh tunnel)
                             port: 8765, //Port for the connection
@@ -194,7 +195,7 @@ export class Command {
                                 message: 'Creating port forwarding...',
                             });
 
-                            await connection.forwardPort(8765, 8765);
+                            await connection.forwardPort(8765, 5678);
 
                             progress.report({
                                 increment: 20,
@@ -217,7 +218,7 @@ export class Command {
                                 }
                             );
 
-                            let success = false;
+                            let success = false; 
                             for (let i = 1; i <= MAX_RETRIES; i++) {
                                 success = await vscode.debug.startDebugging(
                                     undefined,
