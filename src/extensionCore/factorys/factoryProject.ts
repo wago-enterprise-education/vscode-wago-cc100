@@ -121,8 +121,6 @@ export class ProjectFactory {
         versionNr: number
     ): Interface.ConfigureControllerInterface {
         switch (versionNr) {
-            case 0.1:
-                return new V1.ConfigureController();
             case 0.2:
                 return new V2.ConfigureController();
             default:

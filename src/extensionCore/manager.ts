@@ -145,6 +145,12 @@ export class Manager {
                 vscode.window.showErrorMessage(`Error: Resetting Controller`);
             });
     }
+
+    public configureController(){
+        ProjectFactory.getInstance()
+            .createConfigureCommand(this.versionNr)
+            .configure();  
+    }
     /**
      * Retrieves child elements for display in the view.
      * This method delegates to a project-specific view children command

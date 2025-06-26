@@ -126,57 +126,65 @@
       {
         "command": "vscode-wago-cc100.iocheck",
         "title": "IO-Check",
-        "icon": "$(eye)"
+        "icon": "$(eye)",
+        "category": "Wago"
       },
       {
         "command": "vscode-wago-cc100.add-controller",
         "title": "Add Controller",
-        "category": "Controller",
+        "category": "Wago",
         "icon": "$(add)"
       },
       {
         "command": "vscode-wago-cc100.upload",
         "title": "Upload",
-        "icon": "$(play)"
+        "icon": "$(play)",
+        "category": "Wago"
       },
       {
         "command": "vscode-wago-cc100.upload-all",
         "title": "Upload All",
-        "icon": "$(run-all)"
+        "icon": "$(run-all)",
+        "category": "Wago"
       },
       {
         "command": "vscode-wago-cc100.debug",
         "title": "Debug",
-        "icon": "$(debug-alt-small)"
+        "icon": "$(debug-alt-small)",
+        "category": "Wago"
       },
       {
         "command": "vscode-wago-cc100.edit-setting",
         "title": "Edit Setting",
-        "icon": "$(pencil)"
+        "icon": "$(pencil)",
+        "category": "Wago"
       },
       {
         "command": "vscode-wago-cc100.rename-controller",
-        "title": "Rename",
-        "category": "Controller"
+        "title": "Rename Controller",
+        "category": "Wago"
       },
       {
         "command": "vscode-wago-cc100.reset-controller",
-        "title": "Reset"
+        "title": "Reset Controller",
+        "category": "Wago"
       },
       {
         "command": "vscode-wago-cc100.remove-controller",
-        "title": "Remove",
-        "category": "Controller",
+        "title": "Remove Controller",
+        "category": "Wago",
         "icon": "$(remove)"
       },
       {
         "command": "vscode-wago-cc100.remove-reset-controller",
-        "title": "Remove & Reset"
+        "title": "Remove & Reset",
+        "category": "Wago"
       },
       {
         "command": "vscode-wago-cc100.refresh-view",
         "title": "Refresh",
-        "icon": "$(sync)"
+        "icon": "$(sync)",
+        "category": "Wago"
       },
       {
         "command": "vscode-wago-cc100.init-project",
@@ -185,7 +193,13 @@
       },
       {
         "command": "vscode-wago-cc100.create-project",
-        "title": "Create Project"
+        "title": "Create Project",
+        "category": "Wago"
+      },
+      {
+        "command": "vscode-wago-cc100.configure-controller",
+        "title": "Configure Controller",
+        "category": "Wago"
       }
     ],
     "viewsWelcome": [
@@ -272,6 +286,10 @@
         {
           "command": "vscode-wago-cc100.remove-reset-controller",
           "when": "controllerCount > 0 && projectVersion >= 0.2"
+        },
+        {
+          "command": "vscode-wago-cc100.configure-controller",
+          "when": "projectVersion >= 0.2"
         }
       ],
       "view/title": [

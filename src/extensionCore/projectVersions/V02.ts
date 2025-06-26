@@ -372,16 +372,39 @@ export class RemoveController implements Interface.RemoveControllerInterface {
         ControllerProvider.instance.refresh();
     }
 }
-export class ConfigureController
-    implements Interface.ConfigureControllerInterface
+export class ConfigureController implements Interface.ConfigureControllerInterface
 {
     /**
      * Configures the necessary settings or parameters for the implementation.
      * This method is intended to be implemented with specific logic.
      */
-    configure() {
+    async configure() {
+        if (!vscode.workspace.workspaceFolders) {
+            vscode.window.showErrorMessage('No workspace is open');
+            return;
+        }
+
+        let conIp = (await vscode.window.showInputBox({
+            prompt: 'Enter the Ip of the Controller',
+            title: 'Configure Controller / Ip',
+            ignoreFocusOut: true,
+        })) || '';
+
+        let conNetmask = (await vscode.window.showInputBox({
+            prompt: 'Enter the Netmask of the Controller',
+            title: 'Configure Controller / Netmask',
+            ignoreFocusOut: true,
+        })) || '';
+
+        if (!RegExp(IP_REGEX).test(conIp) || !RegExp(IP_REGEX).test(conNetmask)) {
+            vscode.window.showErrorMessage('Ip and Netmask cant be empty');
+            return;
+        }
+        await connectionManager.addController(-1, "192.168.42.42:22", "admin", "wago");
+        await new Promise((resolve)=>{setTimeout(resolve, 2000)})
+        await connectionManager.executeCommand(-1, `/etc/config-tools/network_config --ip-config --set='{"br0": {"source": "static", "ipaddr": "${conIp}", "netmask": "${conNetmask}"}}'`)
         // root@CC100-55DFB8:/etc/config-tools ./config_routing --change static index=0 dest=192.168.1.102 dest-mask=255.255.255.0 gw=0.0.0.0 state=disabled
-        // root@CC100-55DFB8:/etc/config-tools ./network_config --ip-config --write-last-error --set {"br0":{"source":"static","ipaddr":"192.168.1.100","netmask":"0.0.0.0"}}
+        // root@CC100-55DFB8:/etc/config-tools ./network_config --ip-config --set {"br0":{"source":"static","ipaddr":"192.168.1.100","netmask":"0.0.0.0"}}
     }
 }
 export class EditSettings implements Interface.EditSettingsInterface {
