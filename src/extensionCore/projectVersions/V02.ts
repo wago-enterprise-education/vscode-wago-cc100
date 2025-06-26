@@ -1008,6 +1008,17 @@ export class EditSettingsFunctionality {
                         );
                     }
 
+                    // Check input if Port is a valid Number 
+                    if (settingToEdit === controllerSettings.port) {
+                        const tempNumber = Number(content);
+                        if (Number.isNaN(tempNumber) || tempNumber < 0 || tempNumber > 65535) {
+                            vscode.window.showErrorMessage(
+                                'The given Port is not a valid Number'
+                            );
+                            return;
+                        }
+                    }
+
                     YamlCommands.writeControllerYaml(
                         id,
                         controllerSettings[settingToEdit],
