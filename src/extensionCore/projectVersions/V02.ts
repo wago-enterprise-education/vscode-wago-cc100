@@ -1768,19 +1768,18 @@ export class UploadFunctionality {
             }
 
             let layerArray: String[] = [];
-            let i = 0;
-
-            for (const layer of imageLayers) {
-                let layerWithoutSha = layer.substring(7, layer.length); // Remove sha256: from beginning of the string
-                let layerPath = path.join(downloadPathFolder, `blobs/sha256/${layerWithoutSha}`);
-
-                fs.open(layerPath, 'w', (err) => {
-                    if (err) vscode.window.showErrorMessage("Error while creating temporary file for the image layer.");
-                });
-
-                const stream = fs.createWriteStream(layerPath);
+            let layerResponseArray: Promise<Response>[] = [];
+            
+            // Get Layer Responses
+            vscode.window.withProgress(
+            {
+                location: vscode.ProgressLocation.Notification,
+                title: 'Downloading Image',
+                cancellable: false,
+            }, async (progress, token) => {
+                for (const layer of imageLayers) {
                 console.debug(`Request send: https://ghcr.io/v2/${UploadFunctionality.repo}/blobs/${layer}`);
-                const { body } = await fetch(
+                const response = fetch(
                     `https://ghcr.io/v2/${UploadFunctionality.repo}/blobs/${layer}`,
                     {
                         headers: {
@@ -1789,16 +1788,39 @@ export class UploadFunctionality {
                         },
                     }
                 );
-                if (!body) {
-                    vscode.window.showErrorMessage('Error downloading image Layer.');
-                    return;
+                // Add Layer Response Promise to Array
+                layerResponseArray.push(response);
                 }
-                await finished(Readable.fromWeb(body).pipe(stream));
+            });
 
-                // Add Layer Path to Array
-                layerArray[i] = `blobs/sha256/${layerWithoutSha}`;
-                i++;
-            }
+            // Resolve Layer Responses
+            vscode.window.withProgress(
+            {
+                location: vscode.ProgressLocation.Notification,
+                title: 'Downloading Image',
+                cancellable: false,
+            }, async (progress, token) => {
+                for (const layer of imageLayers) {
+                    console.debug(`Resolving Response: ${layer}`);
+                    let layerWithoutSha = layer.substring(7, layer.length); // Remove sha256: from beginning of the string
+                    let layerPath = path.join(downloadPathFolder, `blobs/sha256/${layerWithoutSha}`);
+    
+                    fs.open(layerPath, 'w', (err) => {
+                        if (err) vscode.window.showErrorMessage("Error while creating temporary file for the image layer.");
+                    });
+                    const stream = fs.createWriteStream(layerPath);
+                    const body = (await layerResponseArray.shift())!.body;
+                    if (!body) {
+                        vscode.window.showErrorMessage('Error downloading image Layer.');
+                        return;
+                    }
+    
+                    await finished(Readable.fromWeb(body).pipe(stream));
+    
+                    // Add Layer Path to Array
+                    layerArray.push(`blobs/sha256/${layerWithoutSha}`);
+                }
+            });
 
             // Create config.json file
             let configJsonPath = path.join(downloadPathFolder, "config.json");
