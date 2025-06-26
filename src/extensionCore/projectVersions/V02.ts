@@ -430,10 +430,9 @@ export class ConfigureController implements Interface.ConfigureControllerInterfa
             vscode.window.showErrorMessage('Netmask is undefined')
             return;
         }
-        await connectionManager.addController(-1, "192.168.42.42:22", "admin", "wago");
-        await connectionManager.executeCommand(-1, `./network_config --ip-config --set='{"br0": {"source": "static", "ipaddr": "${controllerSettings.ip}", "netmask": "${controllerSettings.netmask}"}}'`);
-        await connectionManager.executeCommand(-1,`./config_routing --change static index="0" gw="192.168.1.3" state="enabled"
-`);
+        await connectionManager.addController(-1, "192.168.42.42:22", "root", "wago");
+        await connectionManager.executeCommand(-1, `/etc/config-tools/network_config --ip-config --set='{"br0": {"source": "static", "ipaddr": "${controllerSettings.ip}", "netmask": "${controllerSettings.netmask}"}}'`);
+        let test = await connectionManager.executeCommand(-1, `cd /etc/config-tools && ./config_routing --change static index="0" gw="${controllerSettings.gateway}" state="enabled"`);
         vscode.window.showInformationMessage(
             `Controller ${controller.label} configured`
         );
