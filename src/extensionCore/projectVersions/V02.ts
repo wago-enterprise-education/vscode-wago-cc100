@@ -766,9 +766,9 @@ export class EstablishConnections
      */
     establishConnections() {
         const controllers = YamlCommands.getControllers();
-        controllers.forEach(async (controller) => {
+        controllers.forEach((controller) => {
             const settings = YamlCommands.getControllerSettings(controller.id);
-            await ConnectionManager.instance.addController(
+            ConnectionManager.instance.addController(
                 controller.id,
                 `${settings.ip}:${settings.port}`,
                 settings.user

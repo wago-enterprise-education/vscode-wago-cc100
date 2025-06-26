@@ -198,7 +198,7 @@ export class EstablishConnections
      */
     async establishConnections() {
         const controller = JsonCommands.getController();
-        await ConnectionManager.instance.addController(
+        ConnectionManager.instance.addController(
             0,
             `${controller.ip}:${controller.port}`,
             controller.user

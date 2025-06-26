@@ -101,7 +101,7 @@ export class ConnectionManager {
 
             this.removeConnection(controllerId);
         }
-        await this.addController(controllerId, urn, username);
+        this.addController(controllerId, urn, username);
     }
 
     /**
