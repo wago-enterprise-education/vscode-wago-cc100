@@ -34,13 +34,19 @@ export class ConnectionManager {
      */
     private constructor() {
         setInterval(() => {
+            const indicesToRemove: number[] = [];
             this.connections.forEach((connection, index) => {
                 if (connection.lastUsed > Date.now() - garbageCollectorInterval)
                     return;
                 if (this.isLastConnection(connection.controllerId)) return;
-                this.connections.splice(index, 1);
+                indicesToRemove.push(index);
                 connection.disconnect();
             });
+
+            // Remove connections in reverse order to avoid index shifting
+            for (const index of indicesToRemove.reverse()) {
+                this.connections.splice(index, 1);
+            }
         }, garbageCollectorInterval);
     }
 
@@ -441,11 +447,17 @@ export class ConnectionManager {
      * @param controllerId Unique identifier of the controller
      */
     public removeConnection(controllerId: number) {
+        const indicesToRemove: number[] = [];
         this.connections.forEach((connection, index) => {
             if (connection.controllerId !== controllerId) return;
             connection.disconnect();
-            this.connections.splice(index, 1);
+            indicesToRemove.push(index);
         });
+        
+        // Remove connections in reverse order to avoid index shifting
+        for (const index of indicesToRemove.reverse()) {
+            this.connections.splice(index, 1);
+        }
     }
 
     /**
