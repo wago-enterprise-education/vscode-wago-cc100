@@ -5,4 +5,4 @@ nodes:
     description: WAGO 0751-9301 Compact Controller 100
     engine: CC100
     src: src
-    imageVersion: latest
+    imageVersion: cc100-latest
