@@ -1881,6 +1881,11 @@ export class UploadFunctionality {
             
             // Delete local Image files
             fs.unlinkSync(path.join(downloadPathFolder, `image.tar`));
+            fs.unlinkSync(path.join(downloadPathFolder, `config.json`));
+            fs.unlinkSync(path.join(downloadPathFolder, `manifest.json`));
+            for (let layer in layerArray) {
+                fs.unlinkSync(path.join(downloadPathFolder, layer));
+            }
 
             // Load new Image
             console.debug('Loading new Image...');
