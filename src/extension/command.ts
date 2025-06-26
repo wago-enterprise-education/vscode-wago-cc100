@@ -4,6 +4,7 @@ import { ControllerProvider, Controller, ControllerItem } from './view';
 import { Manager } from '../extensionCore/manager';
 import { ConnectionManager } from './connectionManager';
 import { extensionContext } from '../extension';
+import { verifyProject } from './versionDetection';
 
 const MAX_RETRIES = 10; // Maximum number of retries for the debugger connection
 const RETRY_DELAY = 2000; // Delay between retries in milliseconds
@@ -30,6 +31,7 @@ export class Command {
                         `${vscode.workspace.workspaceFolders![0].uri.fsPath}`,
                         { recursive: true, force: false }
                     );
+                    await verifyProject();
                     vscode.window.showInformationMessage('Project initialized');
                 }
             )
