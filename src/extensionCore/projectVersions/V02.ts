@@ -1878,20 +1878,6 @@ export class UploadFunctionality {
     }
 
     /**
-     * This Method is used to get the Hash of an image manifest
-     *
-     * @param layers an Array of Hashes
-     */
-    private getImageHash(layers: string[]): string {
-        let hash = crypto
-            .createHash('md5')
-            .update(layers.toString())
-            .digest('hex');
-        console.debug('Image Hash: ' + hash);
-        return hash;
-    }
-
-    /**
      * This Method returns the token for all GitHub Packages Calls
      *
      * @param token
