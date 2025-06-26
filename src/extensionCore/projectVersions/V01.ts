@@ -129,13 +129,6 @@ export class ResetController implements Interface.ResetControllerInterface {
         return 'CC100';
     }
 }
-export class ConfigureController
-    implements Interface.ConfigureControllerInterface
-{
-    configure() {
-        console.log('Configure command executed');
-    }
-}
 /**
  * Represents the EditSettings class that implements the EditSettingsInterface.
  * This class provides functionality to edit settings in a VS Code workspace.

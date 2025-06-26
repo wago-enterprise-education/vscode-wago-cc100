@@ -36,7 +36,7 @@ export interface ResetControllerInterface {
 }
 
 export interface ConfigureControllerInterface {
-    configure: () => void;
+    configure: (controller: Controller | undefined) => void;
 }
 
 export interface EditSettingsInterface {

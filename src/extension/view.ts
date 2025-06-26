@@ -1,6 +1,5 @@
 import * as vscode from 'vscode';
 import { Manager } from '../extensionCore/manager';
-import { setting } from '../extensionCore/projectVersions/V01';
 
 /**
  * Tree data provider for the controller view.
@@ -81,7 +80,7 @@ export class Controller extends vscode.TreeItem {
 export class ControllerItem extends vscode.TreeItem {
     constructor(
         public readonly controllerId: number,
-        public readonly setting: setting,
+        public readonly setting: any,
         public readonly content: any
     ) {
         super(`${setting}: ${content}`, vscode.TreeItemCollapsibleState.None);

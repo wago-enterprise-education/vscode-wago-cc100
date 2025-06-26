@@ -386,31 +386,56 @@ export class ConfigureController implements Interface.ConfigureControllerInterfa
      * @returns A Promise that resolves when the configuration is complete or rejects if an error occurs
      * @throws Will display an error message if no workspace is open or if IP/netmask validation fails
      */
-    async configure() {
+    async configure(controller: Controller | undefined) {
         if (!vscode.workspace.workspaceFolders) {
             vscode.window.showErrorMessage('No workspace is open');
             return;
         }
 
-        let conIp = (await vscode.window.showInputBox({
-            prompt: 'Enter the Ip of the Controller',
-            title: 'Configure Controller / Ip',
-            ignoreFocusOut: true,
-        })) || '';
+        if (!controller) {
+            controller = await vscode.window.showQuickPick(
+                YamlCommands.getControllers().map((controller) => ({
+                    controllerId: controller.id,
+                    label: controller.displayname,
+                    description: controller.description,
+                    online: true,
+                })),
+                {
+                    title: 'Configure Controller',
+                    canPickMany: false,
+                }
+            );
+            if (!controller) return;
+        }
+        
+        let conId = controller.controllerId;
+        let controllerSettings = YamlCommands.getControllerSettings(conId);
+        // let conIp = (await vscode.window.showInputBox({
+        //     prompt: 'Enter the Ip of the Controller',
+        //     title: 'Configure Controller / Ip',
+        //     ignoreFocusOut: true,
+        // })) || '';
 
-        let conNetmask = (await vscode.window.showInputBox({
-            prompt: 'Enter the Netmask of the Controller',
-            title: 'Configure Controller / Netmask',
-            ignoreFocusOut: true,
-        })) || '';
+        // let conNetmask = (await vscode.window.showInputBox({
+        //     prompt: 'Enter the Netmask of the Controller',
+        //     title: 'Configure Controller / Netmask',
+        //     ignoreFocusOut: true,
+        // })) || '';
 
-        if (!RegExp(IP_REGEX).test(conIp) || !RegExp(IP_REGEX).test(conNetmask)) {
-            vscode.window.showErrorMessage('Ip and Netmask cant be empty');
+        if (controllerSettings.ip === undefined) {
+            vscode.window.showErrorMessage('IP is undefined');
+            return;
+        }
+        if (controllerSettings.netmask === undefined) {
+            vscode.window.showErrorMessage('Netmask is undefined')
             return;
         }
         await connectionManager.addController(-1, "192.168.42.42:22", "admin", "wago");
-        await new Promise((resolve)=>{setTimeout(resolve, 2000)})
-        await connectionManager.executeCommand(-1, `/etc/config-tools/network_config --ip-config --set='{"br0": {"source": "static", "ipaddr": "${conIp}", "netmask": "${conNetmask}"}}'`)
+        await connectionManager.executeCommand(-1, `/etc/config-tools/network_config --ip-config --set='{"br0": {"source": "static", "ipaddr": "${controllerSettings.ip}", "netmask": "${controllerSettings.netmask}"}}'`);
+        vscode.window.showInformationMessage(
+            `Controller ${controller.label} configured`
+        );
+        await connectionManager.removeConnection(-1);
     }
 }
 export class EditSettings implements Interface.EditSettingsInterface {
@@ -551,7 +576,18 @@ export class ViewChildren implements Interface.ViewChildrenInterface {
                             element.controllerId,
                             setting.ip,
                             settings.ip
+                        ),
+                        new ControllerItem(
+                            element.controllerId,
+                            setting.netmask,
+                            settings.netmask
+                        ),
+                        new ControllerItem(
+                            element.controllerId,
+                            setting.gateway,
+                            settings.gateway
                         )
+
                     );
                 }
                 settingArray.push(
@@ -949,6 +985,8 @@ export class EditSettingsFunctionality {
                     break;
 
                 case controllerSettings.ip:
+                case controllerSettings.netmask:
+                case controllerSettings.gateway:
                 case controllerSettings.port:
                 case controllerSettings.user:
                     const content = await this.getInput(settingToEdit);
@@ -1012,6 +1050,8 @@ export class EditSettingsFunctionality {
             | 'src'
             | 'description'
             | 'ip'
+            | 'netmask'
+            | 'gateway'
             | 'port'
             | 'user'
     ): Promise<string> {
@@ -1038,6 +1078,8 @@ export enum setting {
     imageVersion = 'Docker Image Version',
     connection = 'Connection',
     ip = 'IP',
+    netmask = 'Netmask',
+    gateway = 'Gateway',
     port = 'Port',
     user = 'User',
     autoupdate = 'Autoupdate',
@@ -1056,6 +1098,8 @@ export enum settingAdapter {
     'Docker Image Version' = 'imageVersion',
     Connection = 'connection',
     IP = 'ip',
+    Netmask = 'netmask',
+    Gateway = 'gateway',
     Port = 'port',
     User = 'user',
     Autoupdate = 'autoupdate',
@@ -1093,6 +1137,8 @@ type ControllerType = {
 type ControllerSettingsType = {
     connection: string;
     ip: string;
+    netmask: string;
+    gateway: string;
     port: number;
     user: string;
     autoupdate: string;
@@ -1183,6 +1229,8 @@ export class YamlCommands {
         return {
             connection: settings.connection,
             ip: settings.ip,
+            netmask: settings.netmask,
+            gateway: settings.gateway,
             port: settings.port,
             user: settings.user,
             autoupdate: settings.autoupdate,
@@ -1350,6 +1398,8 @@ export enum wagoSettings {
 export enum controllerSettings {
     connection = 'connection',
     ip = 'ip',
+    netmask = 'netmask',
+    gateway = 'gateway',
     port = 'port',
     user = 'user',
     autoupdate = 'autoupdate',

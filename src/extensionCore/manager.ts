@@ -146,10 +146,10 @@ export class Manager {
             });
     }
 
-    public configureController(){
+    public configureController(controller: Controller | undefined){
         ProjectFactory.getInstance()
             .createConfigureCommand(this.versionNr)
-            .configure();  
+            .configure(controller);  
     }
     /**
      * Retrieves child elements for display in the view.

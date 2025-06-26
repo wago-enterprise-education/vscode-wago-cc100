@@ -328,8 +328,8 @@ export class Command {
         commands.push(
             vscode.commands.registerCommand(
                 'vscode-wago-cc100.configure-controller',
-                async() => {
-                    Manager.getInstance().configureController();
+                async(controller: Controller | undefined) => {
+                    Manager.getInstance().configureController(controller);
                 }
             )
         )
