@@ -374,9 +374,17 @@ export class RemoveController implements Interface.RemoveControllerInterface {
 }
 export class ConfigureController implements Interface.ConfigureControllerInterface
 {
+    
     /**
-     * Configures the necessary settings or parameters for the implementation.
-     * This method is intended to be implemented with specific logic.
+     * Configures a controller's network settings through user input.
+     * 
+     * This method prompts the user for the controller's IP address and netmask,
+     * validates the inputs, and then configures the controller accordingly.
+     * It adds a temporary controller connection with default credentials,
+     * then executes a network configuration command with the provided settings.
+     * 
+     * @returns A Promise that resolves when the configuration is complete or rejects if an error occurs
+     * @throws Will display an error message if no workspace is open or if IP/netmask validation fails
      */
     async configure() {
         if (!vscode.workspace.workspaceFolders) {
@@ -403,8 +411,6 @@ export class ConfigureController implements Interface.ConfigureControllerInterfa
         await connectionManager.addController(-1, "192.168.42.42:22", "admin", "wago");
         await new Promise((resolve)=>{setTimeout(resolve, 2000)})
         await connectionManager.executeCommand(-1, `/etc/config-tools/network_config --ip-config --set='{"br0": {"source": "static", "ipaddr": "${conIp}", "netmask": "${conNetmask}"}}'`)
-        // root@CC100-55DFB8:/etc/config-tools ./config_routing --change static index=0 dest=192.168.1.102 dest-mask=255.255.255.0 gw=0.0.0.0 state=disabled
-        // root@CC100-55DFB8:/etc/config-tools ./network_config --ip-config --set {"br0":{"source":"static","ipaddr":"192.168.1.100","netmask":"0.0.0.0"}}
     }
 }
 export class EditSettings implements Interface.EditSettingsInterface {
