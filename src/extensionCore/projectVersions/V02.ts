@@ -16,9 +16,9 @@ import { extensionContext } from '../../extension';
 import { create } from 'tar';
 
 const FOLDER_REGEX =
-    '^(?!(?:CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\.[^.]*)?$)[^<>:"/\\|?*\x00-\x1F]*[^<>:"/\\|?*\x00-\x1F\ .]$';
+    '^(?!(?:CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:.[^.]*)?$)[^<>:"/\\|?*\x00-\x1F]*[^<>:"/\\|?*\x00-\x1F .]$';
 const IP_REGEX =
-    '^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$';
+    '^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$';
 
 export class UploadController implements Interface.UploadInterface {
     /**
@@ -372,17 +372,17 @@ export class RemoveController implements Interface.RemoveControllerInterface {
         ControllerProvider.instance.refresh();
     }
 }
-export class ConfigureController implements Interface.ConfigureControllerInterface
+export class ConfigureController
+    implements Interface.ConfigureControllerInterface
 {
-    
     /**
      * Configures a controller's network settings through user input.
-     * 
+     *
      * This method prompts the user for the controller's IP address and netmask,
      * validates the inputs, and then configures the controller accordingly.
      * It adds a temporary controller connection with default credentials,
      * then executes a network configuration command with the provided settings.
-     * 
+     *
      * @returns A Promise that resolves when the configuration is complete or rejects if an error occurs
      * @throws Will display an error message if no workspace is open or if IP/netmask validation fails
      */
@@ -911,7 +911,9 @@ export class EditSettingsFunctionality {
                             `${path.resolve(workspacePath)}/${newFolder}`
                         );
                         fs.writeFile(
-                            `${path.resolve(workspacePath)}/${newFolder}/main.py`,
+                            `${path.resolve(
+                                workspacePath
+                            )}/${newFolder}/main.py`,
                             '',
                             (err) => {
                                 if (err) {
@@ -1008,10 +1010,14 @@ export class EditSettingsFunctionality {
                         );
                     }
 
-                    // Check input if Port is a valid Number 
+                    // Check input if Port is a valid Number
                     if (settingToEdit === controllerSettings.port) {
                         const tempNumber = Number(content);
-                        if (Number.isNaN(tempNumber) || tempNumber < 0 || tempNumber > 65535) {
+                        if (
+                            Number.isNaN(tempNumber) ||
+                            tempNumber < 0 ||
+                            tempNumber > 65535
+                        ) {
                             vscode.window.showErrorMessage(
                                 'The given Port is not a valid Number'
                             );
@@ -1179,7 +1185,9 @@ export class YamlCommands {
         try {
             return YAML.parse(
                 fs.readFileSync(
-                    `${vscode.workspace.workspaceFolders![0].uri.fsPath}/controller/controller${id}.yaml`,
+                    `${
+                        vscode.workspace.workspaceFolders![0].uri.fsPath
+                    }/controller/controller${id}.yaml`,
                     'utf8'
                 )
             );
@@ -1187,7 +1195,9 @@ export class YamlCommands {
             console.log('getControllerYaml: No File Found! Creating new File');
             fs.cpSync(
                 `${extensionContext.extensionPath}/res/template/controller/controller1.yaml`,
-                `${vscode.workspace.workspaceFolders![0].uri.fsPath}/controller/controller${id}.yaml`
+                `${
+                    vscode.workspace.workspaceFolders![0].uri.fsPath
+                }/controller/controller${id}.yaml`
             );
         }
     }
@@ -1290,7 +1300,9 @@ export class YamlCommands {
             yaml[attribute] = value;
         }
         fs.writeFileSync(
-            `${vscode.workspace.workspaceFolders![0].uri.fsPath}/controller/controller${id}.yaml`,
+            `${
+                vscode.workspace.workspaceFolders![0].uri.fsPath
+            }/controller/controller${id}.yaml`,
             YAML.stringify(yaml, null, '\t')
         );
     }
@@ -1340,7 +1352,9 @@ export class YamlCommands {
         //Adding Controller to corresponding controllers/controller[id].yaml file
         fs.cpSync(
             `${context.extensionPath}/res/template/controller/controller1.yaml`,
-            `${vscode.workspace.workspaceFolders![0].uri.fsPath}/controller/controller${id}.yaml`
+            `${
+                vscode.workspace.workspaceFolders![0].uri.fsPath
+            }/controller/controller${id}.yaml`
         );
     }
 
@@ -1364,7 +1378,9 @@ export class YamlCommands {
         );
 
         //remove Controller configuration file
-        let controllerPath = `${vscode.workspace.workspaceFolders![0].uri.fsPath}/controller/controller${id}.yaml`;
+        let controllerPath = `${
+            vscode.workspace.workspaceFolders![0].uri.fsPath
+        }/controller/controller${id}.yaml`;
         if (fs.existsSync(controllerPath)) fs.unlinkSync(controllerPath);
     }
 
@@ -1434,7 +1450,9 @@ export class UploadFunctionality {
     public async uploadFile(id: number) {
         let controller = YamlCommands.getController(id);
         let src = controller?.src;
-        let path = `${vscode.workspace.workspaceFolders![0].uri.fsPath}\\${src}`;
+        let path = `${
+            vscode.workspace.workspaceFolders![0].uri.fsPath
+        }\\${src}`;
 
         if (!fs.existsSync(`${path}/main.py`)) {
             vscode.window.showErrorMessage(
@@ -1680,7 +1698,7 @@ export class UploadFunctionality {
 
         try {
             console.debug('Comparing Versions...');
-            
+
             // Check if there is a new version
             let token = await this.getToken();
 
@@ -1708,7 +1726,7 @@ export class UploadFunctionality {
                 let json = JSON.parse(conManifest);
                 imageConfigController = json[0].Id;
             }
-            
+
             // Get new Image Hash from GitHub Packages
             console.debug('Getting newest Image Manifest...');
             let wantedVersManifest = await this.getImageManifest(
@@ -1727,7 +1745,6 @@ export class UploadFunctionality {
             let conName = YamlCommands.getController(id)?.displayname;
             let autoupdate = YamlCommands.getControllerSettings(id).autoupdate;
             if (autoupdate === 'off') {
-
                 let checkReturn = false;
                 await vscode.window
                     .showWarningMessage(
@@ -1764,71 +1781,91 @@ export class UploadFunctionality {
 
             // Download all Image Layers
             if (!fs.existsSync(path.join(downloadPathFolder, `blobs/sha256`))) {
-                fs.mkdirSync(path.join(downloadPathFolder, `blobs/sha256`), {recursive: true});
+                fs.mkdirSync(path.join(downloadPathFolder, `blobs/sha256`), {
+                    recursive: true,
+                });
             }
 
             let layerArray: String[] = [];
-            let layerResponseArray: Promise<Response>[] = [];
-            
-            // Get Layer Responses
-            vscode.window.withProgress(
-            {
-                location: vscode.ProgressLocation.Notification,
-                title: 'Downloading Image',
-                cancellable: false,
-            }, async (progress, token) => {
-                for (const layer of imageLayers) {
-                console.debug(`Request send: https://ghcr.io/v2/${UploadFunctionality.repo}/blobs/${layer}`);
-                const response = fetch(
-                    `https://ghcr.io/v2/${UploadFunctionality.repo}/blobs/${layer}`,
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                            Accept: 'application/vnd.oci.image.layer.v1.tar+gzip',
-                        },
-                    }
-                );
-                // Add Layer Response Promise to Array
-                layerResponseArray.push(response);
-                }
-            });
+            let layerResponseArray: {
+                response: Promise<Response>;
+                hash: string;
+            }[] = [];
+            await vscode.window.withProgress(
+                {
+                    location: vscode.ProgressLocation.Notification,
+                    title: 'Downloading Image',
+                    cancellable: false,
+                },
+                async () => {
+                    // Get Layer Responses
+                    for (const layer of imageLayers) {
+                        console.debug(
+                            `Request send: https://ghcr.io/v2/${UploadFunctionality.repo}/blobs/${layer}`
+                        );
+                        const response = fetch(
+                            `https://ghcr.io/v2/${UploadFunctionality.repo}/blobs/${layer}`,
+                            {
+                                headers: {
+                                    Authorization: `Bearer ${token}`,
+                                    Accept: 'application/vnd.oci.image.layer.v1.tar+gzip',
+                                },
+                            }
+                        );
+                        let layerWithoutSha = layer.substring(7, layer.length); // Remove sha256: from beginning of the string
 
-            // Resolve Layer Responses
-            vscode.window.withProgress(
-            {
-                location: vscode.ProgressLocation.Notification,
-                title: 'Downloading Image',
-                cancellable: false,
-            }, async (progress, token) => {
-                for (const layer of imageLayers) {
-                    console.debug(`Resolving Response: ${layer}`);
-                    let layerWithoutSha = layer.substring(7, layer.length); // Remove sha256: from beginning of the string
-                    let layerPath = path.join(downloadPathFolder, `blobs/sha256/${layerWithoutSha}`);
-    
-                    fs.open(layerPath, 'w', (err) => {
-                        if (err) vscode.window.showErrorMessage("Error while creating temporary file for the image layer.");
-                    });
-                    const stream = fs.createWriteStream(layerPath);
-                    const body = (await layerResponseArray.shift())!.body;
-                    if (!body) {
-                        vscode.window.showErrorMessage('Error downloading image Layer.');
-                        return;
+                        // Add Layer Response Promise to Array
+                        layerResponseArray.push({
+                            response: response,
+                            hash: layerWithoutSha,
+                        });
                     }
-    
-                    await finished(Readable.fromWeb(body).pipe(stream));
-    
-                    // Add Layer Path to Array
-                    layerArray.push(`blobs/sha256/${layerWithoutSha}`);
+
+                    // Resolve Layer Responses
+                    for (const layer of layerResponseArray) {
+                        console.debug(`Resolving Response: ${layer.hash}`);
+                        let layerPath = path.join(
+                            downloadPathFolder,
+                            `blobs/sha256/${layer.hash}`
+                        );
+
+                        // Add Layer Path to Array
+                        layerArray.push(`blobs/sha256/${layer.hash}`);
+
+                        fs.open(layerPath, 'w', (err, fd) => {
+                            if (err)
+                                vscode.window.showErrorMessage(
+                                    'Error while creating temporary file for the image layer.'
+                                );
+                            fs.close(fd);
+                        });
+                        const stream = fs.createWriteStream(layerPath);
+                        const response = await layer.response;
+                        const body = response.body;
+                        if (!body) {
+                            vscode.window.showErrorMessage(
+                                'Error downloading image Layer.'
+                            );
+                            return;
+                        }
+                        await finished(Readable.fromWeb(body).pipe(stream));
+                    }
                 }
-            });
+            );
 
             // Create config.json file
-            let configJsonPath = path.join(downloadPathFolder, "config.json");
-            fs.open(configJsonPath, 'w', (err) => {
-                if (err) vscode.window.showErrorMessage("Error while creating temporary file for the image config.json.");
+            let configJsonPath = path.join(downloadPathFolder, 'config.json');
+            fs.open(configJsonPath, 'w', (err, fd) => {
+                if (err)
+                    vscode.window.showErrorMessage(
+                        'Error while creating temporary file for the image config.json.'
+                    );
+                fs.close(fd);
             });
             const stream = fs.createWriteStream(configJsonPath);
-            console.debug(`Request send: https://ghcr.io/v2/${UploadFunctionality.repo}/blobs/${imageConfig}`);
+            console.debug(
+                `Request send: https://ghcr.io/v2/${UploadFunctionality.repo}/blobs/${imageConfig}`
+            );
             const { body } = await fetch(
                 `https://ghcr.io/v2/${UploadFunctionality.repo}/blobs/${imageConfig}`,
                 {
@@ -1845,60 +1882,86 @@ export class UploadFunctionality {
             await finished(Readable.fromWeb(body).pipe(stream));
 
             // Create manifest.json file
-            let manifestJsonPath = path.join(downloadPathFolder, "manifest.json");
-            fs.open(manifestJsonPath, 'w', (err) => {
-                if (err) vscode.window.showErrorMessage("Error while creating temporary file for the image manifest.json.");
+            let manifestJsonPath = path.join(
+                downloadPathFolder,
+                'manifest.json'
+            );
+            fs.open(manifestJsonPath, 'w', (err, fd) => {
+                if (err)
+                    vscode.window.showErrorMessage(
+                        'Error while creating temporary file for the image manifest.json.'
+                    );
+                fs.close(fd);
             });
 
             const manifestJson = [
                 {
-                    Config: "config.json",
-                    RepoTags: [`ghcr.io/${UploadFunctionality.repo}:${wantedVers}`],
-                    Layers: layerArray
-                }
-            ]
+                    Config: 'config.json',
+                    RepoTags: [
+                        `ghcr.io/${UploadFunctionality.repo}:${wantedVers}`,
+                    ],
+                    Layers: layerArray,
+                },
+            ];
 
             fs.writeFileSync(manifestJsonPath, JSON.stringify(manifestJson));
 
-            // Put the Manifest and Layers together to an image 
-            let tarPath = path.join(downloadPathFolder, "image.tar");
-            fs.open(tarPath, 'w', (err) => {
-                if (err) vscode.window.showErrorMessage("Error while creating temporary file for the image image.tar.");
+            // Put the Manifest and Layers together to an image
+            let tarPath = path.join(downloadPathFolder, 'image.tar');
+            fs.open(tarPath, 'w', (err, fd) => {
+                if (err)
+                    vscode.window.showErrorMessage(
+                        'Error while creating temporary file for the image image.tar.'
+                    );
+                fs.close(fd);
             });
 
             create(
                 {
                     file: `${downloadPathFolder}/image.tar`,
                     sync: true,
-                    cwd: `${downloadPathFolder}`
-                }, [
-                    "config.json", "manifest.json", "blobs"
-                ]
+                    cwd: `${downloadPathFolder}`,
+                },
+                ['config.json', 'manifest.json', 'blobs']
             );
 
             // Upload new Image
-            await connectionManager.uploadFile(id, path.join(downloadPathFolder, '/image.tar'), '/home/');
-            
-            // Delete local Image files
-            fs.unlinkSync(path.join(downloadPathFolder, `image.tar`));
-            fs.unlinkSync(path.join(downloadPathFolder, `config.json`));
-            fs.unlinkSync(path.join(downloadPathFolder, `manifest.json`));
-            for (let layer in layerArray) {
-                fs.unlinkSync(path.join(downloadPathFolder, layer));
-            }
+            await connectionManager.uploadFile(
+                id,
+                path.join(downloadPathFolder, '/image.tar'),
+                '/home/'
+            );
 
             // Load new Image
             console.debug('Loading new Image...');
-            await connectionManager.executeCommand(
-                id,
-                `docker load -i /home/image.tar`
+            await vscode.window.withProgress(
+                {
+                    location: vscode.ProgressLocation.Notification,
+                    title: 'Loading Image',
+                    cancellable: false,
+                },
+                async () => {
+                    await connectionManager.executeCommand(
+                        id,
+                        `docker load -i /home/image.tar`
+                    );
+                }
             );
             await connectionManager.executeCommand(id, `rm /home/image.tar`);
             await connectionManager.executeScript(
                 id,
-                "dockerCommand.sh",
+                'dockerCommand.sh',
                 wantedVers
             );
+
+            // Delete local Image files
+            fs.unlinkSync(path.join(downloadPathFolder, `image.tar`));
+            fs.unlinkSync(path.join(downloadPathFolder, `config.json`));
+            fs.unlinkSync(path.join(downloadPathFolder, `manifest.json`));
+            fs.rmSync(path.join(downloadPathFolder, `blobs`), {
+                recursive: true,
+                force: true,
+            });
         } catch (error) {
             console.error(`Error Updating Container: ${error}`);
         }
@@ -1974,7 +2037,7 @@ export class UploadFunctionality {
         // Shrinks the Manifest to the size needed later on
         let returnObj = {
             configDigest: manifest.config.digest,
-            layers: manifest.layers.map((layer: any) => layer.digest)
+            layers: manifest.layers.map((layer: any) => layer.digest),
         };
 
         return Promise.resolve(returnObj);
