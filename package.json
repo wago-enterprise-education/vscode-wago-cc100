@@ -331,6 +331,11 @@
           "group": "@1"
         },
         {
+          "command": "vscode-wago-cc100.configure-controller",
+          "when": "view == controller-view && viewItem == controller && projectVersion >= 0.2",
+          "group": "@2"
+        },
+        {
           "command": "vscode-wago-cc100.reset-controller",
           "when": "view == controller-view && viewItem == controller",
           "group": "remove@1"
