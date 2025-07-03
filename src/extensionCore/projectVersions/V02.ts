@@ -1073,14 +1073,25 @@ export class EditSettingsFunctionality {
             | 'port'
             | 'user'
     ): Promise<string> {
-        let input =
-            (await vscode.window.showInputBox({
+        let input;
+        if (settingToEdit === 'src') {
+            input = (await vscode.window.showInputBox({
+                prompt:
+                    'Enter the name of the new folder that ' +
+                    settingToEdit +
+                    ' should be set to',
+                title: 'Set Source Value',
+            })) || '';
+        } else {
+            input = (await vscode.window.showInputBox({
                 prompt:
                     'Enter the value the ' +
                     settingToEdit +
                     ' should be set to',
                 title: 'Set ' + settingToEdit + ' Value',
             })) || '';
+        } 
+        
         return input;
     }
 }
@@ -1471,10 +1482,15 @@ export class UploadFunctionality {
                 try {
                     progress.report({ message: 'Comparing Folders...' });
                     if (await this.compareFolders(id, path)) {
-                        vscode.window.showInformationMessage(
-                            `The files on ${controller?.displayname} are already up to date.`
-                        );
-                        return;
+                        progress.report({
+                            increment: 100,
+                            message: `The files on ${controller?.displayname} are already up to date.`
+                        });
+                        return new Promise<void>((resolve) => {
+                        setTimeout(() => {
+                            resolve();
+                        }, 2000);
+                    });
                     }
                     progress.report({ increment: 10 });
 
