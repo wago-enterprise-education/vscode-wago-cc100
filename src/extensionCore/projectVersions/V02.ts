@@ -532,11 +532,21 @@ export class ViewChildren implements Interface.ViewChildrenInterface {
                         let settings = YamlCommands.getControllerSettings(
                             controller.id
                         );
-                        await ConnectionManager.instance.updateController(
+                        if (settings && settings.connection === 'usb-c') {
+                          await ConnectionManager.instance.updateController(
+                            controller.id,
+                            `192.168.42.42:${settings.port}`,
+                            settings.user
+                        );
+                        }
+                        else if(settings && settings.connection === 'ethernet'){
+                           await ConnectionManager.instance.updateController(
                             controller.id,
                             `${settings.ip}:${settings.port}`,
                             settings.user
                         );
+                        }
+                        
                         await ConnectionManager.instance.ping(controller.id);
                         online = true;
                     } catch (error) {
@@ -805,11 +815,20 @@ export class EstablishConnections
         const controllers = YamlCommands.getControllers();
         controllers.forEach((controller) => {
             const settings = YamlCommands.getControllerSettings(controller.id);
-            ConnectionManager.instance.addController(
+            if (settings && settings.connection === 'usb-c') {
+                ConnectionManager.instance.addController(
+                controller.id,
+                `192.168.42.42:${settings.port}`,
+                settings.user
+            );
+            }
+            else if(settings && settings.connection === 'ethernet'){
+                ConnectionManager.instance.addController(
                 controller.id,
                 `${settings.ip}:${settings.port}`,
                 settings.user
             );
+            }
         });
     }
 }
@@ -974,12 +993,6 @@ export class EditSettingsFunctionality {
                             }
                         )) || '';
                     if (!conType) return;
-                    if (conType === 'usb-c')
-                        YamlCommands.writeControllerYaml(
-                            id,
-                            controllerSettings.ip,
-                            '192.168.42.42'
-                        );
                     YamlCommands.writeControllerYaml(
                         id,
                         controllerSettings[settingToEdit],
