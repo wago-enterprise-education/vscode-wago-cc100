@@ -48,11 +48,6 @@ export interface ViewChildrenInterface {
         element?: Controller | ControllerItem | undefined
     ) => Promise<vscode.ProviderResult<Controller[] | ControllerItem[]>>;
 }
-export interface ViewChildrenInterface {
-    getChildren: (
-        element?: Controller | ControllerItem | undefined
-    ) => Promise<vscode.ProviderResult<Controller[] | ControllerItem[]>>;
-}
 
 export interface AddControllerInterface {
     addController: () => void;

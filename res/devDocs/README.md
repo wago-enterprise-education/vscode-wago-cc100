@@ -88,7 +88,7 @@ Der grundlegende Arbeitsweg der Extension sieht folgendermaßen aus:
 
 ![Extension-Architektur](/res/devDocs/FactoryDiagramm.svg)
 
-Ein VSCode Command ruft dabei den Manager auf. Dieser führt den entsprechenden Befehl aus. Dabei kann es sein, das sowohl Funktionalität für eine spezifische Projektversion, als auch einen bestimmten Controllertypen gebraucht wird. Der Manager fragt mit der entsprechenden Version oder Typen bei den Factories an, welche dann ein Objekt mit der richtigen Funktion anhand der Version oder Typen zurückliefert.
+Ein VSCode Command ruft dabei den Manager auf. Dieser führt den entsprechenden Befehl aus. Dabei kann es sein, das sowohl Funktionalität für eine spezifische Projektversion, als auch einen bestimmten Controllertypen gebraucht wird. Der Manager fragt mit der entsprechenden Version oder Typen bei den Factories an, welche dann ein Objekt mit der richtigen Funktion anhand der Version oder Typen zurückliefern. Auf diesem kann dann die Funktion aufgerufen werden.
 
 ### Hinzufügen von neuen Controllern - Typen
 
@@ -163,11 +163,183 @@ public createUploadCommand(versionNr: number): Interface.UploadInterface {
 }
 ```
 
-Beim Entwickeln von einer neuen Version sollte darauf geachtet werden das die Versionsdateien **NICHT** von einander abhängig sind. Das bedeutet das alles was eine neue Version an Funktionalität braucht in neuen Versionsdatei vorhanden ist. Eine Ausnahme stellt hier aktuell der ConnectionManager dar. Da sowohl die Versionen V01 als auch V02 SSH für die Kommunikation benutzen, ist dies ausgelagert. 
+Beim Entwickeln von einer neuen Version sollte darauf geachtet werden das die Versionsdateien **NICHT** von einander abhängig sind. Das bedeutet das alles was eine neue Version an Funktionalität braucht in der neuen Versionsdatei vorhanden ist. Eine Ausnahme stellt hier aktuell der ConnectionManager dar. Da sowohl die Versionen V01 als auch V02 SSH für die Kommunikation benutzen, ist Der Verbindungsaufbau und die Verwaltung ausgelagert. 
 
 Sollte es in Zukunft dazu kommen, das neben SSH auch Git oder WDX (zum Zeitpunkt der Formulierung dieses Dokuments noch in Entwicklung) für die Kommunikation genutzt werden sollen, empfehlen wir für die verschiedenen Kommunikationsmodelle eine eigene Factory zu implementieren. Dadurch wird es möglich neue Kommunikationswege modular hinzuzufügen. Als Referenz für die Implementierung können die beiden bereits vorhandenen Factories genutzt werden.
 
 ### Hinzufügen neuer VSCode - Commands
+
+Mit neuen Versionen kommen häufig auch neue Funktionen. Diese muss dann an verschiedenen Stellen eingebunden werden. Das reicht vom visuellen Einbinden in die Darstellung der Extension, über das VSCode-Command und den Manager mit den Factories, hin zur eigentlichen Implementierung. 
+
+Alles was mit dem visuellen der Extension zutun hat, wird in der *package.json* umgesetzt. Um einen neuen Command hinzuzufügen müssen folgende Bereiche erweitert werden:
+
+```JSON
+"contributes": {
+    "commands": [
+        {
+            "command": "vscode-wago-cc100.add-controller",
+            "title": "Add Controller",
+            "category": "Wago",
+            "icon": "$(add)"
+        }
+    ]
+}
+```
+- **Command:** Sowas wie die Command-ID
+- **Title:** Der Anzeigename
+- **Category:** Zu welcher Gruppe gehört das Command
+- **Icon:** Welcher Symbol wird für die Darstellung genutzt
+
+ Abhängig davon wo das Command in der Oberfläche untergebracht werden soll, kann das Icon weggelassen werden.
+
+ Desweiteren muss das neue Command noch in VSCode registriert werden:
+
+ ```JSON
+"contributes": {
+    "menus": {
+        "commandPalette": [
+            {
+            "command": "vscode-wago-cc100.add-controller",
+            "when": "projectVersion >= 0.2"
+            }
+        ]
+    }
+}
+ ```
+- **Command:** Wieder die Command-ID
+- **When:** hier wird angegeben wann das Command registriert wird. In unserem Fall ist dies abhängig von der Projectversion die ermittelt wurde
+
+Um das Command visuell anzuzeigen, entweder als Icon oder im Kontextmenu, muss noch ein weiterer Punkt bearbeitet werden:
+
+Für das Anzeigen in der Titelleiste:
+```JSON
+"contributes": {
+    "menus": {
+        "view/title": [
+            {
+                "command": "vscode-wago-cc100.add-controller",
+                "when": "view == controller-view && projectVersion >= 0.2",
+                "group": "navigation@3"
+            }
+        ]
+    }
+}
+```
+
+oder das Anzeigen auf einem Controller(Item):
+
+```JSON
+"contributes": {
+    "menus": {
+        "view/item/context": [
+            {
+                "command": "vscode-wago-cc100.upload",
+                "when": "view == controller-view && viewItem == controller",
+                "group": "inline@3"
+            }
+        ]
+    }
+}
+```
+- **Group:** Über die Group wird eingestellt, ob das Command als Icon oder im Kontextmenu eingefügt wird. Dabei kann auch die Position festgelegt werden
+
+Mit diesen Einstellungen wurde das neue Command jetzt in VSCode registriert.
+
+Ab jetzt passiert alles im Code der Extension. Als erstes wird das neue Command in der *Command.ts* implementiert:
+
+```TS
+export class Command {
+    public static createCommands() {
+        const commands = [];
+
+        commands.push(
+            vscode.commands.registerCommand(
+                'vscode-wago-cc100.add-controller',
+                async () => {
+                    Manager.getInstance().addController();
+                }
+            )
+        );
+    }
+}
+```
+
+Hiermit wird der Code der aufgerufen wird wenn der Button gedrückt mit dem Command verknüpft und VSCode bekannt gemacht. Man sieht hier auch direkt die Verbindung zum Manager und dem entsprechenden Command.
+
+Als nächste muss dann der dazugehörige Part in der *Manager.ts* implementiert werden:
+
+```TS
+public addController() {
+    ProjectFactory.getInstance()
+        .createAddCommand(this.versionNr)
+        .addController();
+}
+```
+
+Wie man hier sehen kann verweist dieser Command nur auf die Projectfactory und lässt sich von dieser ein Objekt mit der gewünschten Funktionalität zu der Projektversionsnummer ausgeben. Von diesem Objekt ruft er eine bestimmte, durch ein Interface festgelegte Funktion auf. 
+
+Aktuell gibt es mit der *resetController* Funktion nur eine Funktion die sowohl die *ProjectFactory* als auch die *ControllerFactory* in einem Command aufruft.
+
+Für beide Factories gilt die gleich Vorgehensweise, wie sie hier an der *ProjetFactory* erklärt wird:
+
+```TS
+public createAddCommand(
+    versionNr: number
+): Interface.AddControllerInterface {
+    switch (versionNr) {
+        case 0.2:
+            return new V2.AddController();
+        default:
+            throw new Error('Invalid version number');
+    }
+}
+```
+
+Wie gezeigt wird in der Factory abhängig von der Projektversion das "Command" angelegt. In diesem Fall wird nur auf die Version V2 verwiesen da es denn AddController Command in der V1 nicht gibt.
+
+Auffällig ist hier das ein Interface implementiert wird. Dies ist wichtig, damit die Extension sauber arbeiten kann. Hierzu später noch mehr.
+
+Nachdem jetzt die Funktion in der Factory erstellt wurde, fehlt "nur" die Implementierung der Logic in den Versionsdateien (hier V2):
+
+```TS
+export class AddController implements Interface.AddControllerInterface{
+    async addController() {
+        const controllerName =
+            (await vscode.window.showInputBox({
+                prompt: 'Enter the name of the controller',
+                title: 'Add Controller / Name',
+                ignoreFocusOut: true,
+            })) || '';
+    
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // much more magic and logic
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+        await YamlCommands.createController(
+            extensionContext,
+            controllerName,
+            controllerDescription,
+            controllerEngine,
+            controllerSrc.label,
+            'latest'
+        );
+        vscode.window.showInformationMessage(
+            `Controller ${controllerName} added`
+        );
+        ControllerProvider.instance.refresh();
+    }
+}
+```
+
+In jeder Version in der es die neue Funktion geben soll muss eine neue Klasse mit der Funktion implementiert werden. Dafür muss standardisiert werden welche Funktion implementiert werden muss. Das ist wichtig damit der Manager immer die gleiche Funktion aufrufen kann, egal welche Version er als Objekt zurück bekommt. Daher werden die eben genannten Interfaces benutzt:
+
+```TS
+export interface AddControllerInterface {
+    addController: () => void;
+}
+```
+
+Dieses Interface stellt sicher, das in egal welcher Version immer eine Funktion *addController()* mit keinen Eingabe- und keinen Ausgabeparametern vorhanden sein muss. Dies wird besonders wichtig wenn die gleiche Funktionalität in verschiedenen Versionen vorkommt. Sollte man weitere Hilfsfunktionen in der Klasse benötigen ist das natürlich kein Problem solange immer die über das Interface geforderte "Haupt"Funktion als Einstieg vorhanden ist. 
 
 ### Debugger Konfigurationen hinzufügen
 
