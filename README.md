@@ -74,11 +74,11 @@ The *IO-Check* feature in this extension imitates the functions of the well know
 
 When the operating mode switch is in the `RUN` position, the status of the CC100 with its inputs and outputs can be viewed.
 
-![IO-Check with CC100 in RUN mode](https://raw.github.com/wago-enterprise-education/vscode-wago-cc100/main/res/Videos/IoCheckRun.gif)
+![IO-Check with CC100 in RUN mode](https://raw.github.com/wago-enterprise-education/vscode-wago-cc100/main/res/Videos/IO_Check_Run.gif)
 
 When the operating mode switch is in the `STOP` position, the outputs as well as the serial port can be set manually by the user.
 
-![IO-Check with CC100 in STOP mode](https://raw.github.com/wago-enterprise-education/vscode-wago-cc100/main/res/Videos/IoCheckStop.gif)
+![IO-Check with CC100 in STOP mode](https://raw.github.com/wago-enterprise-education/vscode-wago-cc100/main/res/Videos/IO_Check_Stop.gif)
 
 <!-- ### Simulation
 
