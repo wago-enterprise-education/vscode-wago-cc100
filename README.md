@@ -22,8 +22,7 @@ A visual studio code extension, for programming the WAGO CC100 in *Python*. Plea
 <!-- - [Simulation](#simulation) -->
 
 ## How to use the Extention
-
-As soon as the WAGO extension is installed in VsCode, on the left Side a WAGO symbol should appear. When you open the extension in the left sidebar there is a button called **init Project**. This is for setting up your workspace by creating a WAGO.yaml and setting up a Controller. Therefore, it will setup a controller.yaml and a sample project. The new Controller has three visible buttons and a connection status icon.  The Icon tells whether the controller is connected (green) :green_circle: :red_circle: or if it is offline (red) :red_circle: .
+As soon as the WAGO extension is installed in VsCode, on the left Side a WAGO symbol should appear. Upon opening the extension in the left sidebar there is a button called **init Project**. This is for setting up your workspace by creating a WAGO.yaml and setting up a Controller. Therefore, it will setup a controller.yaml and a sample project. The new Controller has three visible buttons and a connection status icon.  The Icon tells whether the controller is connected (green) :green_circle: :red_circle: or if it is offline (red) :red_circle: .
 Above the controller buttons are the option to **refresh**, to do a **multiupload** and to add a new controller. 
 When setting up a new controller the extension will ask for a name, a description, to choose a controller like cc100 and to choose a folder for your source.  All these settings can be changed later. To do that, navigate to the dropdown menu of each controller. The menu contains the description, the engine, the Docker image version, the source, the connection type, the port, the user and the option for auto updates which is turned on by default.  
 
@@ -36,20 +35,19 @@ When setting up a new controller the extension will ask for a name, a descriptio
 
 To upload a program to the controller, select the play button of the wanted controller.
 Once a programm is uploaded the code will run automatically.
-**Node:** The extentions checks where a change happend since the last upload and will only upload if the programm is diffrent then the one already uploaded. 
+**Node:** The extentions checks where a change happend since the last upload and will only upload if the programm is different then the one already uploaded. 
 
- To upload a program to multiple controllers, select the two play buttons next to the add controller button. This will upload the program to every connected controller. 
- **Node:** The rules are the same to a multiupload and a single upload. 
+ To upload a program to multiple controllers, select the double play buttons next to the add controller button. This will upload the program to every connected controller. 
+ **Node:** The rules are the same with a multiupload and a single upload. 
 
 ### Debug
 
 To debug a program, simply select the controller you want to debug with the play button with the bug on it. Then vscode will try to connect to the given controller, which can take some time.
 When the connection succeeds, the normal vscode python debugger will appear on the top of the screen, and you can get started. 
-**Node:** There has to be a breakpoint in the projekt. Also to use the Debugger is it required to press Pause(F6) and Step into(F11). The current executed line will be highlighed.
+**Node:** There needs to be a breakpoint in the projekt. Also to use the Debugger it is required to press Pause(F6) and Step into(F11). The current executed line will be highlighed.
 
 ### Remove/Reset
-
-By right clicking a controller you can **rename**, **reset**, **remove** or **reset and remove** the controller. By selecting a **rename** you will be asked to enter a new name. 
+By right clicking a controller you can **rename**, **reset**, **remove** or **reset and remove** the controller. By selecting **rename** you will be asked to enter a new name. 
 The option **reset** will activate codesys again and reset everything that was done by the extension, like removing the program. 
 The **remove** option will remove the controller out of the sidebar. It will also remove the controller.yaml with the corresponding name and remove the controller out of the wago.yaml. The settings on the controller will stay.
 
