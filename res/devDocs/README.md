@@ -170,8 +170,9 @@ Sollte es in Zukunft dazu kommen, das neben SSH auch Git oder WDX (zum Zeitpunkt
 ### Hinzufügen neuer VSCode - Commands
 
 ### Debugger Konfigurationen hinzufügen
+
 Um eine Debuggerkonfiguration hinzuzufügen, sollten andere Sprachen wie Java zusätlich ihre Anwendung finden, wird in commands.ts eine neue Konfiguration hinzugefügt (siehe vorhandene Konfiguration). Die Strucktur ist die gleiche wie in einer normalen launch.json. [Hier](https://code.visualstudio.com/docs/debugtest/debugging-configuration) nachlesen.
 Dabei kann die logik zum verbinden quasi erhalten bleiben.
 Wichtig ist es für zum Beispiel Java oder Pyhton auch die entsprechende Extention in VsCode installiert zu haben. \
 [Java Debugger Extention](https://marketplace.visualstudio.com/items?itemName=vscjava.vscode-java-debug) \
-[Pyhton Debugger Extention](https://marketplace.visualstudio.com/items?itemName=ms-python.debugpy)
+[Python Debugger Extention](https://marketplace.visualstudio.com/items?itemName=ms-python.debugpy)
