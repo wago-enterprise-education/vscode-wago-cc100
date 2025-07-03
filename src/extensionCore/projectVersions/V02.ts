@@ -1529,18 +1529,18 @@ export class UploadFunctionality {
 
                     progress.report({ message: 'Deactivating Codesys...' });
                     await this.deactivateCodeSys3(id);
-                    progress.report({ increment: 10 });
+                    progress.report({ increment: 15 });
 
                     progress.report({ message: 'Activating Docker...' });
                     await connectionManager.executeCommand(
                         id,
                         '/etc/config-tools/config_docker activate'
                     );
-                    progress.report({ increment: 15 });
+                    progress.report({ increment: 20 });
 
                     progress.report({ message: 'Updating Container...' });
                     await this.updateContainer(id);
-                    progress.report({ increment: 20 });
+                    progress.report({ increment: 25 });
 
                     progress.report({ message: 'Uploading...' });
                     await connectionManager
@@ -1552,15 +1552,9 @@ export class UploadFunctionality {
                                 'An error occurred while uploading the files.'
                             );
                         });
-                    progress.report({ increment: 30 });
 
-                    progress.report({ message: 'Starting Python Runtime...' });
-                    await connectionManager.executeCommand(
-                        id,
-                        'docker exec -d pythonRuntime python3 /lib/runtimeCC.py'
-                    );
                     progress.report({
-                        increment: 15,
+                        increment: 30,
                         message: 'Finished Uploading',
                     });
 
@@ -1822,7 +1816,7 @@ export class UploadFunctionality {
             );
             await connectionManager.executeCommand(
                 id,
-                `docker rmi -f ${imageName}`
+                `docker rmi -f ${imageName}:${currTag}`
             );
 
             // Download and Upload new Image
