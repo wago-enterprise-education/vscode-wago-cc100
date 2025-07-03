@@ -511,6 +511,7 @@ class Connection {
     public client: Client;
     private askForPassword: boolean = true;
     private passwordNotification: boolean = false;
+    private reconnectionTimeout: NodeJS.Timeout | null = null;
     private server: net.Server | null = null;
     private initResponse: boolean = false;
     private disconnected: boolean = false;
@@ -571,8 +572,11 @@ class Connection {
                         if (!this.askForPassword) {
                             password = await this.requestPassword();
                             if (password) {
-                                this.client.removeAllListeners();
-                                setTimeout(
+                                if (this.reconnectionTimeout) {
+                                    clearTimeout(this.reconnectionTimeout);
+                                    this.reconnectionTimeout = null;
+                                }
+                                this.reconnectionTimeout = setTimeout(
                                     async () =>
                                         await this.init(password).catch(),
                                     0
@@ -592,7 +596,11 @@ class Connection {
                     console.debug(`Connection to ${this.urn} closed`);
                     ControllerProvider.instance.refresh();
                     this.client.end();
-                    setTimeout(
+                    if(this.reconnectionTimeout) {
+                        clearTimeout(this.reconnectionTimeout);
+                        this.reconnectionTimeout = null;
+                    }
+                    this.reconnectionTimeout = setTimeout(
                         async () => await this.init(),
                         reconnectionTimeout
                     );
@@ -753,8 +761,8 @@ class Connection {
     public executeCommand(cmd: string): Promise<string> {
         return new Promise<string>((resolve, reject) => {
             this.client.exec(cmd, (err, stream) => {
-                if (err) //return resolve("")
-                return reject(`Error executing command "${cmd}": ${err}`);
+                if (err) return resolve("")
+                //return reject(`Error executing command "${cmd}": ${err}`);
                 this.busy = true;
 
                 let output = '';
