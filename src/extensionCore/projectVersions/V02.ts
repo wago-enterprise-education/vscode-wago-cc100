@@ -995,7 +995,7 @@ export class EditSettingsFunctionality {
                     const content = await this.getInput(settingToEdit);
                     if (!content) return;
 
-                    // Change connection to ethernet and check input if ip is to be modified
+                    // Change connection to ethernet and check if input ip is valid
                     if (settingToEdit === controllerSettings.ip) {
                         if (!RegExp(IP_REGEX).test(content)) {
                             vscode.window.showErrorMessage(
@@ -1008,6 +1008,26 @@ export class EditSettingsFunctionality {
                             controllerSettings.connection,
                             'ethernet'
                         );
+                    }
+
+                    // Check input if gateway is valid
+                    if (settingToEdit === controllerSettings.gateway) {
+                        if (!RegExp(IP_REGEX).test(content)) {
+                            vscode.window.showErrorMessage(
+                                'The given gateway is not valid'
+                            );
+                            return;
+                        }
+                    }
+
+                    // Check input if netmask is valid
+                    if (settingToEdit === controllerSettings.netmask) {
+                        if (!RegExp(IP_REGEX).test(content)) {
+                            vscode.window.showErrorMessage(
+                                'The given netmask is not valid'
+                            );
+                            return;
+                        }
                     }
 
                     // Check input if Port is a valid Number
