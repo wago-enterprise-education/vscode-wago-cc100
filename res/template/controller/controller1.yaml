@@ -5,3 +5,4 @@ port: 22
 user: root
 autoupdate: on
 netmask: 255.255.255.0
+gateway: undefined
