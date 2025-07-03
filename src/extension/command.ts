@@ -72,8 +72,8 @@ export class Command {
                         },
                         pathMappings: [
                             {
-                                localRoot: '${workspaceFolder}',
-                                remoteRoot: '/home/user/python_bootaplication',
+                                localRoot: '${fileDirname}',
+                                remoteRoot: '/home/user/python_bootapplication',
                             },
                         ],
                     };
