@@ -3,10 +3,12 @@
 ## Grundidee
 
 Die Grundidee der Extension war es, eine Entwicklungsumgebung für den Wago CC100 zu bieten.
-Nach erfolgreicher Implementierung der Funktion wurde dann entschlosse, dass Projekt weiter auszubauen und VSCode-nativer zu gestalten.
+Nach erfolgreicher Implementierung der Funktion wurde sich dann dazu entschlossen, dass Projekt weiter auszubauen und VSCode-nativer zu gestalten.
 
-So entstand V02 des Projektes. Idee war, eine Extension zu haben die aussieht wie jede andere in VSCode, mit der man jedoch die Controller die WAGO anbietet Programmieren, teilweise Konfigurieren und per Simulation einsehen kann.
-Zu diesem Zweck gibt es eine Factory-Struktur innerhalb der Extension. Sämtliche erstellten Commands werden durch einen Manager erstellt, der je nach Projektversion und Controllerart die entsprechenden Befehle auswählt.
+So entstand V02 des Projektes. Die Idee war, eine Extension zu haben die die VSCode Steuerelemente nutzt und mit der man die Controller die WAGO anbietet per Python Programmieren, teilweise Konfigurieren und Debuggen kann.
+Ein weiteres Ziel der V02 war es, eine "Engine" zu entwickeln, welche es ermöglicht die Extension modular für weitere Controller oder Funktionen anpassbar zu machen.
+
+Die Architektur der Extension nutzt dazu ein Factory-Pattern, welches anhand einer Versionsüberprüfung die entsprechend Funktionalität mit den VSCode Buttons und Befehlen verbindet.
 
 ## Ordnerstruktur
 
@@ -54,7 +56,7 @@ Hier liegen Zusatzdateien, Bilder und Gifs für das GitHub-Repository, Templates
 
 #### devDocs
 
-In diesem Ordner finden sich Dokumentations-Dateien, wie diese hier, die den Developern der Extension helfen solle, den Aufbau dieser zu verstehen.
+Hier liegen verschiedene Dokumentationen zur Extension.
 
 #### images
 
