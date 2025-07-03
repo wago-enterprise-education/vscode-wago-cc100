@@ -85,13 +85,87 @@ Wenn die Extension erweitert werden soll, gibt es verschiedene Punkte die beacht
 ### Der Manager und die Factories
 
 Der grundlegende Arbeitsweg der Extension sieht folgendermaßen aus:
-[Extension-Architektur](/res/devDocs/FactoryDiagramm.svg)
 
-Ein VSCode Command ruft dabei den Manager auf. Dieser für den entsprechenden Befehl aus. Dabei kann es sein, das sowohl Funktionalität für eine spezifische Projektversion, als auch einen bestimmten Controllertypen gebraucht wird. Der Manager fragt mit der entsprechenden Version oder Typen bei den Factories an, welche dann ein Objekt mit der entsprechenden Funktion anhand der Version oder Typen zurückliefert.
+![Extension-Architektur](/res/devDocs/FactoryDiagramm.svg)
+
+Ein VSCode Command ruft dabei den Manager auf. Dieser führt den entsprechenden Befehl aus. Dabei kann es sein, das sowohl Funktionalität für eine spezifische Projektversion, als auch einen bestimmten Controllertypen gebraucht wird. Der Manager fragt mit der entsprechenden Version oder Typen bei den Factories an, welche dann ein Objekt mit der richtigen Funktion anhand der Version oder Typen zurückliefert.
 
 ### Hinzufügen von neuen Controllern - Typen
 
+Wenn ein neuer Controllertyp eingeführt werden soll muss das an verschiedenen Stellen im Programmcode kenntlich gemacht werden.
+
+```ts
+public createResetCommand(
+        engine: string
+    ): Interface.ResetControllerInterface {
+        switch (engine) {
+            case 'CC100':
+                return new CC100.ResetController();
+        // Dieser Part wäre neu
+        // -----------------------------------------------------
+            case 'NeuerController': 
+                return new NeuerController.ResetController();
+        // -----------------------------------------------------
+            default:
+                throw new Error('Invalid Controller');
+        }
+    }
+```
+Bei jedem Command welches den neuen Typen unterstüzten können soll muss der Switch-Case erweitert werden und auf das richtige File und darin die richtige Funktions-"Klasse" verweisen.
+
+Damit dies richtig funktioniert muss natürlich auch die entsprechende Datei mit der entsprechenden Klasse angelegt werden. Hierbei kann man sich einfach am Beispiel der bereits vorhandenen CC100 Datei orientieren. Diese ist zudem sehr übersichtlich, da die der Controller spezifischen Dateien ist, ausschließlich Controller spezifische Commands zu beinhalten. Dies umfasst aktuell eigentlich nur spezielle Pfade auf dem Controller, welche sich zwischen Controllertypen und -versionen ändern können. 
+
+Damit der Typ Controller auch in den Einstellungen ausgewählt werden kann muss zusätzlich noch das Enum für die Controllertypen angepasst werden.
+
+```TS
+export enum engine {
+    CC100 = 'CC100',
+// Neu
+// ---------------------------------------
+    NeuerController = 'NeuerController'
+// ---------------------------------------
+}
+```
+
+Die Möglichkeit neue Controller zu Unterstützen hat aktuell nur die V02, da die Version 1 nur auf den CC100 ausgerichtet war und nur als Legacy Support existiert.
+
+Damit wäre alles getan um einen neuen Controllertypen hinzuzufügen. 
+
+>Kompilieren nicht vergessen
+
 ### Hinzufügen von neuen Extension - Versionen
+
+Das Hinzufügen einer neuen Extension (oder auch Project) Version ähnelt der vom hinzufügen eines neuen Controllertypen, ist aber wesentlich komplexer da es sich hierbei um die Funktionalität der Extension an sich handelt. 
+
+Zum aktuellen Zeitpunkt findet die Verionsunterscheidung beim Starten der Extension statt. Dabei wird im Zuge der Kontrolle ob ein Wagoprojekt geöffnet ist überprüft, ob es sich um eine *Settings.json* (V01) oder eine *Wago.yaml* (V02) handelt. Sollte eine neue Projektversion entwickelt und hinzugefügt werden, muss diese Erkennung angepasst werden. Wenn weiterhin die *Wago.yaml* genutzt wird, kann die darin enthaltene Versionsnummer genutzt werden um eine Unterscheidung möglich zu machen. Die anzupassende Funktion wird in der extension.ts aufgerufen:
+
+```TS
+await verifyProject();
+```
+
+Wenn das erkennen implementiert ist und die Projectversion gesetzt ist, muss die Unterscheidung zwischen Versionen, diesmal in der ProjectFactory angepasst werden.
+
+```TS
+public createUploadCommand(versionNr: number): Interface.UploadInterface {
+    switch (versionNr) {
+        case 0.1:
+            return new V1.UploadController();
+        case 0.2:
+            return new V2.UploadController();
+    // Beispiel
+    // --------------------------------------------------
+        case 0.3:
+            return new V3.UploadController();
+    // --------------------------------------------------
+        default:
+            throw new Error('Invalid version number');
+    }
+}
+```
+
+Beim Entwickeln von einer neuen Version sollte darauf geachtet werden das die Versionsdateien **NICHT** von einander abhängig sind. Das bedeutet das alles was eine neue Version an Funktionalität braucht in neuen Versionsdatei vorhanden ist. Eine Ausnahme stellt hier aktuell der ConnectionManager dar. Da sowohl die Versionen V01 als auch V02 SSH für die Kommunikation benutzen, ist dies ausgelagert. 
+
+Sollte es in Zukunft dazu kommen, das neben SSH auch Git oder WDX (zum Zeitpunkt der Formulierung dieses Dokuments noch in Entwicklung) für die Kommunikation genutzt werden sollen, empfehlen wir für die verschiedenen Kommunikationsmodelle eine eigene Factory zu implementieren. Dadurch wird es möglich neue Kommunikationswege modular hinzuzufügen. Als Referenz für die Implementierung können die beiden bereits vorhandenen Factories genutzt werden.
 
 ### Hinzufügen neuer VSCode - Commands
 
