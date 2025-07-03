@@ -8,7 +8,7 @@ Nach erfolgreicher Implementierung der Funktion wurde sich dann dazu entschlosse
 So entstand V02 des Projektes. Die Idee war, eine Extension zu haben die die VSCode Steuerelemente nutzt und mit der man die Controller die WAGO anbietet per Python Programmieren, teilweise Konfigurieren und Debuggen kann.
 Ein weiteres Ziel der V02 war es, eine "Engine" zu entwickeln, welche es ermöglicht die Extension modular für weitere Controller oder Funktionen anpassbar zu machen.
 
-Die Architektur der Extension nutzt dazu ein Factory-Pattern, welches anhand einer Versionsüberprüfung die entsprechend Funktionalität mit den VSCode Buttons und Befehlen verbindet.
+Die Architektur der Extension nutzt dazu ein Factory-Pattern, welches anhand einer Versionsüberprüfung die entsprechend Funktionalität mit den VSCode Buttons und Befehlen verbindet. Dadurch wird es möglich versionsspezifisch Funktionalität hinzuzufügen ohne ältere Versionen verändern zu müssen.
 
 ## Ordnerstruktur
 
@@ -80,7 +80,16 @@ Dieses Shell Skript dient dem korrekten Starten eines Docker-Containers. Beim St
 
 ## Anleitungen
 
-### Hinzufügen von neuen Controllern
+Wenn die Extension erweitert werden soll, gibt es verschiedene Punkte die beachtet werden müssen, abhängig davon was erweitert werden soll.
+
+### Der Manager und die Factories
+
+Der grundlegende Arbeitsweg der Extension sieht folgendermaßen aus:
+[Extension-Architektur](/res/devDocs/FactoryDiagramm.svg)
+
+Ein VSCode Command ruft dabei den Manager auf. Dieser für den entsprechenden Befehl aus. Dabei kann es sein, das sowohl Funktionalität für eine spezifische Projektversion, als auch einen bestimmten Controllertypen gebraucht wird. Der Manager fragt mit der entsprechenden Version oder Typen bei den Factories an, welche dann ein Objekt mit der entsprechenden Funktion anhand der Version oder Typen zurückliefert.
+
+### Hinzufügen von neuen Controllern - Typen
 
 ### Hinzufügen von neuen Extension - Versionen
 
