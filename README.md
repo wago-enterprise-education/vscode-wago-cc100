@@ -44,7 +44,7 @@ Once a programm is uploaded the code will run automatically.
 
 To debug a program, simply select the controller you want to debug with the play button with the bug on it. Then vscode will try to connect to the given controller, which can take some time.
 When the connection succeeds, the normal vscode python debugger will appear on the top of the screen, and you can get started. 
-**Node:** There needs to be a breakpoint in the projekt. Also to use the Debugger it is required to press Pause(F6) and Step into(F11). The current executed line will be highlighed.
+**Node:** There needs to be a breakpoint in the projekt. The current executed line will be highlighed.
 
 ### Remove/Reset
 By right clicking a controller you can **rename**, **reset**, **remove** or **reset and remove** the controller. By selecting **rename** you will be asked to enter a new name. 
