@@ -49,6 +49,19 @@ Factory Struktur, die die Funktionalität von Commands innerhalb von VSCode zuwe
 - interfaces -> Enthält Interfaces für je die Controllermethoden und die Versionsmethoden, um sicherzustellen, dass bekannt ist, welche Attribute in die Methoden eingehen und welche Rückgabewerte zu erwarten sind.
 - projectVersions -> Enthält die Dateien mit Versions-spezifischen Funktionen. Standardmäßig werden diese Methoden aufgerufen, sobald ein Command ausgeführt wird, da die Mehrheit der Methoden nicht Controller-spezifisch definiert werden muss.
 
+### Connection Manager
+
+Der Connection Manager ist für die Verwaltung und das Verbinden der Controller über SSH zuständig. Es gibt zwei Klassen: die `Connection` und die `ConnectionManager` Klasse. Die `Connection` Klasse ist für die einzelnen Verbindungen zuständig, während sich die `ConnectionManager` Klasse um alle Verbindungen kümmert. Die `ConnectionManager` Klasse ist ein Singleton und kann über `ConnectionManager.instance` aufgerufen werden. Außerdem hält der `ConnectionManager` mindestens eine Verbindung zu jedem Controller aufrecht und schließt über einen Garbage Collector diejenigen Verbindungen, die nicht genutzt werden.
+
+Der Connection Manager verwendet die Node-Bibliothek SSH2, und der SSH-Server auf dem CC100 ist Dropbear. Mit einem oder beiden dieser Komponenten haben wir derzeit noch Probleme, und da uns Dropbear keine Logs liefert, können wir das Problem momentan nicht weiter eingrenzen. In `Connection.executeCommand(cmd)` werden SSH-Befehle ausgeführt.
+
+```typescript
+if (err) return resolve("")
+// return reject(`Error executing command "${cmd}": ${err}`);
+```
+
+Hier sieht man die aktuelle Fehlerüberprüfung. Dabei werden Fehler nicht korrekt abgefangen, denn der auskommentierte Code ist eigentlich dafür vorgesehen. Wenn wir die Fehlerbehandlung wieder aktivieren, wird manchmal `Unable to exec` ausgegeben, obwohl der Befehl auf dem Controller korrekt ausgeführt wird. Unsere beste Vermutung ist, dass durch das Schließen einer vorhandenen Verbindung noch ein Befehl gesendet wird und da die Verbindung gerade geschlossen wird, keine Rückmeldung mehr vom SSH-Server kommt. Dadurch wird der Befehl fälschlicherweise als nicht erfolgreich gekennzeichnet.
+
 ### res
 
 ---
@@ -346,6 +359,7 @@ export interface AddControllerInterface {
 ```
 
 Dieses Interface stellt sicher, dass in egal welcher Version, immer eine Funktion *addController()* mit keinen Eingabe- und keinen Ausgabeparametern vorhanden sein muss. Dies wird besonders wichtig wenn die gleiche Funktionalität in verschiedenen Versionen vorkommt. Sollte man weitere Hilfsfunktionen in der Klasse benötigen ist das natürlich kein Problem solange immer die über das Interface geforderte "Haupt"Funktion als Einstieg vorhanden ist.
+
 
 ### Debugger Konfigurationen hinzufügen
 
