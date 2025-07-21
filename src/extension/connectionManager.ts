@@ -762,7 +762,7 @@ class Connection {
         return new Promise<string>((resolve, reject) => {
             this.client.exec(cmd, (err, stream) => {
                 if (err) return resolve("")
-                //return reject(`Error executing command "${cmd}": ${err}`);
+                // return reject(`Error executing command "${cmd}": ${err}`);
                 this.busy = true;
 
                 let output = '';
