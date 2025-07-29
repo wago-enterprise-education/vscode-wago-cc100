@@ -6,6 +6,12 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+## [0.1.6] - 2025-07-29
+
+### Fixed
+
+- CVE-2025-7783 Critical severity
+
 ## [0.1.5] - 2025-06-03
 
 ### Fixed
