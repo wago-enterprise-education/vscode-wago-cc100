@@ -1487,6 +1487,7 @@ let connectionManager = ConnectionManager.instance;
 
 export class UploadFunctionality {
     static repo = 'wago-enterprise-education/docker-engine-cc100';
+    static imageName = `ghcr.io/${UploadFunctionality.repo}`;
 
     /**
      * This Method uploads the corresponding files to the WAGO Controller.
@@ -1515,36 +1516,32 @@ export class UploadFunctionality {
             },
             async (progress, token) => {
                 try {
-                    progress.report({ message: 'Comparing Folders...' });
-                    if (await this.compareFolders(id, path)) {
+                    progress.report({ increment: 10, message: 'Comparing Folders and Image Version...' });
+                    if (await this.compareFolders(id, path) && await this.compareDockerImageVersion(id)) {
                         progress.report({
                             increment: 100,
-                            message: `The files on ${controller?.displayname} are already up to date.`
+                            message: `The files and docker image on ${controller?.displayname} are already up to date.`
                         });
                         return new Promise<void>((resolve) => {
-                        setTimeout(() => {
-                            resolve();
-                        }, 2000);
-                    });
+                            setTimeout(() => {
+                                resolve();
+                            }, 2000);
+                        });
                     }
-                    progress.report({ increment: 10 });
 
-                    progress.report({ message: 'Deactivating Codesys...' });
+                    progress.report({ increment: 15, message: 'Deactivating Codesys...' });
                     await this.deactivateCodeSys3(id);
-                    progress.report({ increment: 15 });
 
-                    progress.report({ message: 'Activating Docker...' });
+                    progress.report({ increment: 20, message: 'Activating Docker...' });
                     await connectionManager.executeCommand(
                         id,
                         '/etc/config-tools/config_docker activate'
                     );
-                    progress.report({ increment: 20 });
 
-                    progress.report({ message: 'Updating Container...' });
+                    progress.report({ increment: 25, message: 'Updating Container...' });
                     await this.updateContainer(id);
-                    progress.report({ increment: 25 });
 
-                    progress.report({ message: 'Uploading...' });
+                    progress.report({ increment: 15, message: 'Uploading...' });
                     await connectionManager
                         .uploadDirectory(id, path, uploadPath)
                         .then(() => {})
@@ -1556,7 +1553,7 @@ export class UploadFunctionality {
                         });
 
                     progress.report({
-                        increment: 30,
+                        increment: 15,
                         message: 'Finished Uploading',
                     });
 
@@ -1593,7 +1590,6 @@ export class UploadFunctionality {
     ): Promise<Boolean> {
         try {
             // Get Array of remote Hashes
-            console.log('Getting remote Hashes...');
             let remoteHashes = await connectionManager.executeCommand(
                 id,
                 `find ${uploadPath} -type f -exec md5sum {} +`
@@ -1602,7 +1598,6 @@ export class UploadFunctionality {
             console.debug('Remote Hash: ' + remoteHash);
 
             //Get Array of local Hashes
-            console.log('Getting local Hashes...');
             let localHashes = await this.getLocalHashes(localPath);
             let localHash = this.createFolderHash(localHashes);
             console.debug('Local Hash: ' + localHash);
@@ -1725,19 +1720,7 @@ export class UploadFunctionality {
             });
     }
 
-    /**
-     * This Method is used to update the docker-container on the WAGO Controller
-     *
-     * The development of this method is planned for a later date due to time registrations
-     *
-     * @param id The id of the used controller
-     */
-    private async updateContainer(id: number) {
-        const imageName = `ghcr.io/${UploadFunctionality.repo}`;
-        const containerName = 'pythonRuntime';
-        const downloadPathFolder = `${extensionContext.storageUri?.fsPath}`;
-
-        // Cancel if Image Version is specifically chosen
+    private async compareDockerImageVersion(id: number) {
         let wantedVers = YamlCommands.getController(id)?.imageVersion;
         if (!wantedVers) return;
 
@@ -1759,14 +1742,14 @@ export class UploadFunctionality {
             console.debug('Getting controller Image Hash...');
             let currTag = await connectionManager.executeCommand(
                 id,
-                `docker images | grep '${imageName}' | awk '{print $2}' | head -n 1`
+                `docker images | grep '${UploadFunctionality.imageName}' | awk '{print $2}' | head -n 1`
             );
 
             let imageConfigController = '';
             if (currTag != '') {
                 let conManifest = await connectionManager.executeCommand(
                     id,
-                    `docker inspect ${imageName}:${currTag}`
+                    `docker inspect ${UploadFunctionality.imageName}:${currTag}`
                 );
                 let json = JSON.parse(conManifest);
                 imageConfigController = json[0].Id;
@@ -1779,7 +1762,6 @@ export class UploadFunctionality {
                 token
             );
             let imageConfig = wantedVersManifest.configDigest;
-            let imageLayers = wantedVersManifest.layers;
 
             if (imageConfigController == imageConfig) {
                 console.debug('Image up to date');
@@ -1790,223 +1772,274 @@ export class UploadFunctionality {
             let conName = YamlCommands.getController(id)?.displayname;
             let autoupdate = YamlCommands.getControllerSettings(id).autoupdate;
             if (autoupdate === 'off') {
-                let checkReturn = false;
-                await vscode.window
+                let checkReturn = await vscode.window
                     .showWarningMessage(
                         `Update Container on ${conName}?`,
                         'Yes',
                         'No'
-                    )
-                    .then((value) => {
-                        if (value === 'No') checkReturn = true;
+                    );
+                if (checkReturn !== 'Yes') return true;
+            }
+        } catch (error) {
+            console.error(`Error comparing Docker image versions: ${error}`);
+            return Promise.reject(error);
+        }
+    }
+
+    /**
+     * This Method is used to update the docker-container on the WAGO Controller
+     *
+     * The development of this method is planned for a later date due to time registrations
+     *
+     * @param id The id of the used controller
+     */
+    private async updateContainer(id: number): Promise<void> {
+        const containerName = 'pythonRuntime';
+        const downloadPathFolder = `${extensionContext.storageUri?.fsPath}`;
+
+        // Cancel if Image Version is specifically chosen
+        let wantedVers = YamlCommands.getController(id)?.imageVersion;
+        if (!wantedVers) return;
+
+        try {
+            await vscode.window.withProgress(
+            {
+                location: vscode.ProgressLocation.Notification,
+                title: 'Docker Image Progress',
+                cancellable: false,
+            },
+            async (progress) => {
+                progress.report({ increment: 10, message: 'Removing old Image...'});
+
+                let token = await this.getToken();
+
+                // Get current Controller Image Hash
+                console.debug('Getting controller Image Hash...');
+                let currTag = await connectionManager.executeCommand(
+                    id,
+                    `docker images | grep '${UploadFunctionality.imageName}' | awk '{print $2}' | head -n 1`
+                );
+
+                // Get new Image Hash from GitHub Packages
+                console.debug('Getting newest Image Manifest...');
+                let wantedVersManifest = await this.getImageManifest(
+                    wantedVers,
+                    token
+                );
+                let imageConfig = wantedVersManifest.configDigest;
+                let imageLayers = wantedVersManifest.layers;
+
+                // Stop current container
+                console.debug('Stopping Container...');
+                await connectionManager.executeCommand(
+                    id,
+                    `docker stop ${containerName}`
+                );
+
+                // remove all images and containers
+                console.debug('Removing Images and Containers...');
+                await connectionManager.executeCommand(
+                    id,
+                    `docker rm ${containerName}`
+                );
+                await connectionManager.executeCommand(
+                    id,
+                    `docker rmi -f ${UploadFunctionality.imageName}:${currTag}`
+                );
+
+                progress.report({ increment: 10, message: "Downloading image from GitHub Packages..." });
+
+                // Download and Upload new Image
+                console.debug('Downloading new Image...');
+
+                // Download all Image Layers
+                if (!fs.existsSync(path.join(downloadPathFolder, `blobs/sha256`))) {
+                    fs.mkdirSync(path.join(downloadPathFolder, `blobs/sha256`), {
+                        recursive: true,
                     });
-                if (checkReturn) return;
-            }
-
-            // Stop current container
-            console.debug('Stopping Container...');
-            await connectionManager.executeCommand(
-                id,
-                `docker stop ${containerName}`
-            );
-
-            // remove all images and containers
-            console.debug('Removing Images and Containers...');
-            await connectionManager.executeCommand(
-                id,
-                `docker rm ${containerName}`
-            );
-            await connectionManager.executeCommand(
-                id,
-                `docker rmi -f ${imageName}:${currTag}`
-            );
-
-            // Download and Upload new Image
-            console.debug('Downloading new Image...');
-
-            // Download all Image Layers
-            if (!fs.existsSync(path.join(downloadPathFolder, `blobs/sha256`))) {
-                fs.mkdirSync(path.join(downloadPathFolder, `blobs/sha256`), {
-                    recursive: true,
-                });
-            }
-
-            let layerArray: String[] = [];
-            let layerResponseArray: {
-                response: Promise<Response>;
-                hash: string;
-            }[] = [];
-            await vscode.window.withProgress(
-                {
-                    location: vscode.ProgressLocation.Notification,
-                    title: 'Downloading Image',
-                    cancellable: false,
-                },
-                async () => {
-                    // Get Layer Responses
-                    for (const layer of imageLayers) {
-                        console.debug(
-                            `Request send: https://ghcr.io/v2/${UploadFunctionality.repo}/blobs/${layer}`
-                        );
-                        const response = fetch(
-                            `https://ghcr.io/v2/${UploadFunctionality.repo}/blobs/${layer}`,
-                            {
-                                headers: {
-                                    Authorization: `Bearer ${token}`,
-                                    Accept: 'application/vnd.oci.image.layer.v1.tar+gzip',
-                                },
-                            }
-                        );
-                        let layerWithoutSha = layer.substring(7, layer.length); // Remove sha256: from beginning of the string
-
-                        // Add Layer Response Promise to Array
-                        layerResponseArray.push({
-                            response: response,
-                            hash: layerWithoutSha,
-                        });
-                    }
-
-                    // Resolve Layer Responses
-                    for (const layer of layerResponseArray) {
-                        console.debug(`Resolving Response: ${layer.hash}`);
-                        let layerPath = path.join(
-                            downloadPathFolder,
-                            `blobs/sha256/${layer.hash}`
-                        );
-
-                        // Add Layer Path to Array
-                        layerArray.push(`blobs/sha256/${layer.hash}`);
-
-                        fs.open(layerPath, 'w', (err, fd) => {
-                            if (err)
-                                vscode.window.showErrorMessage(
-                                    'Error while creating temporary file for the image layer.'
-                                );
-                            fs.close(fd);
-                        });
-                        const stream = fs.createWriteStream(layerPath);
-                        const response = await layer.response;
-                        const body = response.body;
-                        if (!body) {
-                            vscode.window.showErrorMessage(
-                                'Error downloading image Layer.'
-                            );
-                            return;
-                        }
-                        await finished(Readable.fromWeb(body).pipe(stream));
-                    }
                 }
-            );
 
-            // Create config.json file
-            let configJsonPath = path.join(downloadPathFolder, 'config.json');
-            fs.open(configJsonPath, 'w', (err, fd) => {
-                if (err)
-                    vscode.window.showErrorMessage(
-                        'Error while creating temporary file for the image config.json.'
-                    );
-                fs.close(fd);
-            });
-            const stream = fs.createWriteStream(configJsonPath);
-            console.debug(
-                `Request send: https://ghcr.io/v2/${UploadFunctionality.repo}/blobs/${imageConfig}`
-            );
-            const { body } = await fetch(
-                `https://ghcr.io/v2/${UploadFunctionality.repo}/blobs/${imageConfig}`,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        Accept: 'application/vnd.oci.image.layer.v1.tar+gzip',
+                let layerArray: String[] = [];
+                let layerResponseArray: {
+                    response: Promise<Response>;
+                    hash: string;
+                }[] = [];
+                await vscode.window.withProgress(
+                    {
+                        location: vscode.ProgressLocation.Notification,
+                        title: 'Downloading Image',
+                        cancellable: false,
                     },
+                    async (progress) => {
+                        // Get Layer Responses
+                        for (const layer of imageLayers) {
+                            console.debug(
+                                `Request send: https://ghcr.io/v2/${UploadFunctionality.repo}/blobs/${layer}`
+                            );
+                            const response = fetch(
+                                `https://ghcr.io/v2/${UploadFunctionality.repo}/blobs/${layer}`,
+                                {
+                                    headers: {
+                                        Authorization: `Bearer ${token}`,
+                                        Accept: 'application/vnd.oci.image.layer.v1.tar+gzip',
+                                    },
+                                }
+                            );
+                            let layerWithoutSha = layer.substring(7, layer.length); // Remove sha256: from beginning of the string
+
+                            // Add Layer Response Promise to Array
+                            layerResponseArray.push({
+                                response: response,
+                                hash: layerWithoutSha,
+                            });
+                        }
+
+                        // Resolve Layer Responses
+                        let layerCount = 1
+                        for (const layer of layerResponseArray) {
+                            progress.report({ increment: (1/layerResponseArray.length) * 100, message:`Downloading layer ${layerCount} from ${layerResponseArray.length}`})
+                            console.debug(`Resolving Response: ${layer.hash}`);
+                            let layerPath = path.join(
+                                downloadPathFolder,
+                                `blobs/sha256/${layer.hash}`
+                            );
+
+                            // Add Layer Path to Array
+                            layerArray.push(`blobs/sha256/${layer.hash}`);
+
+                            fs.open(layerPath, 'w', (err, fd) => {
+                                if (err)
+                                    vscode.window.showErrorMessage(
+                                        'Error while creating temporary file for the image layer.'
+                                    );
+                                fs.close(fd);
+                            });
+                            const stream = fs.createWriteStream(layerPath);
+                            const response = await layer.response;
+                            const body = response.body;
+                            if (!body) {
+                                vscode.window.showErrorMessage(
+                                    'Error downloading image Layer.'
+                                );
+                                return;
+                            }
+                            await finished(Readable.fromWeb(body).pipe(stream));
+
+                            layerCount++;
+                        }
+                    }
+                );
+
+                progress.report({ increment: 20, message: "Downloading image metadata..." })
+
+                // Create config.json file
+                let configJsonPath = path.join(downloadPathFolder, 'config.json');
+                fs.open(configJsonPath, 'w', (err, fd) => {
+                    if (err)
+                        vscode.window.showErrorMessage(
+                            'Error while creating temporary file for the image config.json.'
+                        );
+                    fs.close(fd);
+                });
+                const stream = fs.createWriteStream(configJsonPath);
+                console.debug(
+                    `Request send: https://ghcr.io/v2/${UploadFunctionality.repo}/blobs/${imageConfig}`
+                );
+                const { body } = await fetch(
+                    `https://ghcr.io/v2/${UploadFunctionality.repo}/blobs/${imageConfig}`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                            Accept: 'application/vnd.oci.image.layer.v1.tar+gzip',
+                        },
+                    }
+                );
+                if (!body) {
+                    vscode.window.showErrorMessage('Error downloading image.');
+                    return;
                 }
-            );
-            if (!body) {
-                vscode.window.showErrorMessage('Error downloading image.');
-                return;
-            }
-            await finished(Readable.fromWeb(body).pipe(stream));
+                await finished(Readable.fromWeb(body).pipe(stream));
 
-            // Create manifest.json file
-            let manifestJsonPath = path.join(
-                downloadPathFolder,
-                'manifest.json'
-            );
-            fs.open(manifestJsonPath, 'w', (err, fd) => {
-                if (err)
-                    vscode.window.showErrorMessage(
-                        'Error while creating temporary file for the image manifest.json.'
-                    );
-                fs.close(fd);
-            });
+                progress.report({ increment: 20, message: "Building Image..." })
 
-            const manifestJson = [
-                {
-                    Config: 'config.json',
-                    RepoTags: [
-                        `ghcr.io/${UploadFunctionality.repo}:${wantedVers}`,
-                    ],
-                    Layers: layerArray,
-                },
-            ];
+                // Create manifest.json file
+                let manifestJsonPath = path.join(
+                    downloadPathFolder,
+                    'manifest.json'
+                );
+                fs.open(manifestJsonPath, 'w', (err, fd) => {
+                    if (err)
+                        vscode.window.showErrorMessage(
+                            'Error while creating temporary file for the image manifest.json.'
+                        );
+                    fs.close(fd);
+                });
 
-            fs.writeFileSync(manifestJsonPath, JSON.stringify(manifestJson));
+                const manifestJson = [
+                    {
+                        Config: 'config.json',
+                        RepoTags: [
+                            `ghcr.io/${UploadFunctionality.repo}:${wantedVers}`,
+                        ],
+                        Layers: layerArray,
+                    },
+                ];
 
-            // Put the Manifest and Layers together to an image
-            let tarPath = path.join(downloadPathFolder, 'image.tar');
-            fs.open(tarPath, 'w', (err, fd) => {
-                if (err)
-                    vscode.window.showErrorMessage(
-                        'Error while creating temporary file for the image image.tar.'
-                    );
-                fs.close(fd);
-            });
+                fs.writeFileSync(manifestJsonPath, JSON.stringify(manifestJson));
 
-            create(
-                {
-                    file: `${downloadPathFolder}/image.tar`,
-                    sync: true,
-                    cwd: `${downloadPathFolder}`,
-                },
-                ['config.json', 'manifest.json', 'blobs']
-            );
+                // Put the Manifest and Layers together to an image
+                let tarPath = path.join(downloadPathFolder, 'image.tar');
+                fs.open(tarPath, 'w', (err, fd) => {
+                    if (err)
+                        vscode.window.showErrorMessage(
+                            'Error while creating temporary file for the image image.tar.'
+                        );
+                    fs.close(fd);
+                });
 
-            // Upload new Image
-            await connectionManager.uploadFile(
-                id,
-                path.join(downloadPathFolder, '/image.tar'),
-                '/home/'
-            );
+                create(
+                    {
+                        file: `${downloadPathFolder}/image.tar`,
+                        sync: true,
+                        cwd: `${downloadPathFolder}`,
+                    },
+                    ['config.json', 'manifest.json', 'blobs']
+                );
 
-            // Load new Image
-            console.debug('Loading new Image...');
-            await vscode.window.withProgress(
-                {
-                    location: vscode.ProgressLocation.Notification,
-                    title: 'Loading Image',
-                    cancellable: false,
-                },
-                async () => {
-                    await connectionManager.executeCommand(
-                        id,
-                        `docker load -i /home/image.tar`
-                    );
-                }
-            );
-            await connectionManager.executeCommand(id, `rm /home/image.tar`);
-            await connectionManager.executeScript(
-                id,
-                'dockerCommand.sh',
-                wantedVers
-            );
+                progress.report({ increment: 20, message: "Uploading Image..." })
 
-            // Delete local Image files
-            fs.unlinkSync(path.join(downloadPathFolder, `image.tar`));
-            fs.unlinkSync(path.join(downloadPathFolder, `config.json`));
-            fs.unlinkSync(path.join(downloadPathFolder, `manifest.json`));
-            fs.rmSync(path.join(downloadPathFolder, `blobs`), {
-                recursive: true,
-                force: true,
-            });
+                // Upload new Image
+                await connectionManager.uploadFile(
+                    id,
+                    path.join(downloadPathFolder, '/image.tar'),
+                    '/home/'
+                );
+
+                progress.report({ increment: 10, message: "Loading Image..." })
+
+                // Load new Image
+                console.debug('Loading new Image...');
+                await connectionManager.executeCommand(
+                    id,
+                    `docker load -i /home/image.tar`
+                );
+
+                await connectionManager.executeCommand(id, `rm /home/image.tar`);
+                await connectionManager.executeScript(
+                    id,
+                    'dockerCommand.sh',
+                    wantedVers
+                );
+
+                // Delete local Image files
+                fs.unlinkSync(path.join(downloadPathFolder, `image.tar`));
+                fs.unlinkSync(path.join(downloadPathFolder, `config.json`));
+                fs.unlinkSync(path.join(downloadPathFolder, `manifest.json`));
+                fs.rmSync(path.join(downloadPathFolder, `blobs`), {
+                    recursive: true,
+                    force: true,
+                });
+            })
         } catch (error) {
             console.error(`Error Updating Container: ${error}`);
         }
