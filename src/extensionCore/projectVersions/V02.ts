@@ -1008,7 +1008,7 @@ export class EditSettingsFunctionality {
                     );
                     break;
 
-                case controllerSettings.ip:
+                case controllerSettings.ip:  
                 case controllerSettings.netmask:
                 case controllerSettings.gateway:
                 case controllerSettings.port:
@@ -1018,12 +1018,6 @@ export class EditSettingsFunctionality {
 
                     // Change connection to ethernet and check if input ip is valid
                     if (settingToEdit === controllerSettings.ip) {
-                        if (!RegExp(IP_REGEX).test(content)) {
-                            vscode.window.showErrorMessage(
-                                'The given IP-Adress is not valid'
-                            );
-                            return;
-                        }
                         YamlCommands.writeControllerYaml(
                             id,
                             controllerSettings.connection,
