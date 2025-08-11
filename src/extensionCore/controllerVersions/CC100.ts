@@ -139,3 +139,14 @@ export class ResetController implements Interface.ResetControllerInterface {
         );
     }
 }
+
+export class GetUSB_C_IP implements Interface.GetUSB_C_IP_Interface {
+    /**
+     * Retrieves the factory IP address of the USB-C interface of the controller.
+     *
+     * @returns A string representing the IP address of the USB-C interface.
+     */
+    getUSB_C_IP(): string {
+        return '192.168.42.42';
+    }
+}

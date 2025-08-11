@@ -14,11 +14,19 @@ import { Readable } from 'stream';
 import { finished } from 'stream/promises';
 import { extensionContext } from '../../extension';
 import { create } from 'tar';
+import { Manager } from '../manager';
 
 const FOLDER_REGEX =
     '^(?!(?:CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:.[^.]*)?$)[^<>:"/\\|?*\x00-\x1F]*[^<>:"/\\|?*\x00-\x1F .]$';
 const IP_REGEX =
     "^((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)\\.?\\b){4}$";
+
+
+export class GetEngine implements Interface.GetEngineInterface {
+    getEngine(controllerId: number): string {
+        return YamlCommands.getController(controllerId)?.engine || '';
+    }
+}
 
 export class UploadController implements Interface.UploadInterface {
     /**
@@ -535,7 +543,7 @@ export class ViewChildren implements Interface.ViewChildrenInterface {
                         if (settings && settings.connection === 'usb-c') {
                           await ConnectionManager.instance.updateController(
                             controller.id,
-                            `192.168.42.42:${settings.port}`,
+                            `${Manager.getInstance().getUSB_C_IP(controller.id)}:${settings.port}`,
                             settings.user
                         );
                         }
@@ -818,7 +826,7 @@ export class EstablishConnections
             if (settings && settings.connection === 'usb-c') {
                 ConnectionManager.instance.addController(
                 controller.id,
-                `192.168.42.42:${settings.port}`,
+                `${Manager.getInstance().getUSB_C_IP(controller.id)}:${settings.port}`,
                 settings.user
             );
             }

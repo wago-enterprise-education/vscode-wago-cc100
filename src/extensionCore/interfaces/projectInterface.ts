@@ -77,3 +77,7 @@ export interface RemoveResetControllerInterface {
 export interface EstablishConnectionsInterface {
     establishConnections: () => void;
 }
+
+export interface GetEngineInterface {
+    getEngine: (controllerId: number) => string;
+}

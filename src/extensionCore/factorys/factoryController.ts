@@ -23,4 +23,13 @@ export class ControllerFactory {
                 throw new Error('Invalid Controller');
         }
     }
+
+    public createGetUSB_C_IP(engine: string): Interface.GetUSB_C_IP_Interface {
+        switch (engine) {
+            case 'CC100':
+                return new CC100.GetUSB_C_IP();
+            default:
+                throw new Error('Invalid Controller');
+        }
+    }
 }

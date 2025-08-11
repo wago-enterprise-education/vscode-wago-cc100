@@ -178,4 +178,9 @@ export class Manager {
             .createEstablishConnections(this.versionNr)
             .establishConnections();
     }
+
+    public getUSB_C_IP(controllerId: number): string {
+        const engine = ProjectFactory.getInstance().createGetEngine(this.versionNr).getEngine(controllerId);
+        return ControllerFactory.getInstance().createGetUSB_C_IP(engine).getUSB_C_IP();
+    }
 }

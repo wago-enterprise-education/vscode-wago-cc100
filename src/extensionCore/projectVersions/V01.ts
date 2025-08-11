@@ -10,6 +10,12 @@ import * as fs from 'fs';
 import crypto from 'crypto';
 import path from 'path';
 
+export class GetEngine implements Interface.GetEngineInterface {
+    getEngine(controllerId: number): string {
+        return 'CC100';
+    }
+}
+
 export class UploadController implements Interface.UploadInterface {
     async uploadController(controller: Controller | undefined) {
         if (!vscode.workspace.workspaceFolders) {
