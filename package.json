@@ -353,7 +353,8 @@
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile",
     "test": "vscode-test",
-    "deploy": "vsce publish"
+    "deploy": "vsce publish",
+    "build": "vsce package"
   },
   "devDependencies": {
     "@types/node": "^20.14.8",
