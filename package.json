@@ -213,17 +213,17 @@
         {
           "name": "Controller",
           "id": "controller-view",
-          "when": "workspaceFolderCount > 0 && projectVersion > 0"
+          "when": "workbenchState == folder && projectVersion > 0"
         },
         {
           "name": "No Folder Opened",
           "id": "no-folder-view",
-          "when": "workspaceFolderCount == 0 && projectVersion == 0"
+          "when": "workbenchState != folder && projectVersion == 0"
         },
         {
           "name": "No CC100 Project Found",
           "id": "no-project-view",
-          "when": "workspaceFolderCount > 0 && projectVersion == 0"
+          "when": "workbenchState == folder && projectVersion == 0"
         },
         {
           "name": "Loading...",

@@ -8,52 +8,43 @@ export let ProjectVersion: number = 0;
 /**
  * Check if the project is valid by checking if the wago.yaml file is present in the root folder.
  */
-export async function verifyProject(): Promise<Boolean> {
-    let wagoProject = await findWagoYaml();
+export async function verifyProject() {
+    await findWagoYaml();
     setControllerCountContext();
-    return wagoProject;
 }
 
 /**
  * Find the wago.yaml file in the workspace.
  */
-async function findWagoYaml(): Promise<Boolean> {
-    let wagoProject = await vscode.workspace
-        .findFiles('**/wago.yaml', '', 1)
-        .then(async (files) => {
-            if (files.length > 0 && checkIfInRootFolder(files[0])) {
-                ProjectVersion = 0.2;
-                listenOnFileChangeWagoYaml();
-                return true;
-            } else {
-                await findSettingsJson();
-                return false;
-            }
-        });
+async function findWagoYaml() {
+    if (
+        vscode.workspace.workspaceFolders &&
+        fs.existsSync(`${vscode.workspace.workspaceFolders![0].uri.fsPath}/wago.yaml`) &&
+        vscode.workspace.workspaceFolders!.length < 2
+    ) {
+        ProjectVersion = 0.2;
+        listenOnFileChangeWagoYaml();
+    } else {
+        await findSettingsJson();
+    }
     vscode.commands.executeCommand(
         'setContext',
         'projectVersion',
         ProjectVersion
     );
     ControllerProvider.instance.refresh();
-    return wagoProject;
 }
 
 /**
  * Find the settings.json file in the workspace.
  */
 async function findSettingsJson() {
-    await vscode.workspace
-        .findFiles('**/settings.json', '', 1)
-        .then((files) => {
-            if (files.length > 0 && checkIfInRootFolder(files[0])) {
-                ProjectVersion = 0.1;
-                listenOnFileChangeSettingsJson();
-                return true;
-            }
-            ProjectVersion = 0;
-            return false;
-        });
+    if (vscode.workspace.workspaceFolders && fs.existsSync(`${vscode.workspace.workspaceFolders![0].uri.fsPath}/settings.json`) && vscode.workspace.workspaceFolders!.length < 2) {
+        ProjectVersion = 0.1;
+        listenOnFileChangeSettingsJson();
+    } else {
+        ProjectVersion = 0;
+    }
 }
 
 /**
