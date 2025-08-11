@@ -396,14 +396,35 @@ export class webviewIoCheck {
                                 message.value,
                                 this.calibData[message.pin + 4]
                             );
-                            await ConnectionManager.instance
-                                .executeCommand(id, '')
-                                .then(() => {
-                                    this.ioCheckPanel?.webview.postMessage({
-                                        command: 'buttonClick',
-                                        pin: message.pin,
-                                    });
-                                });
+                            let ret = '';
+                            switch (message.pin) {
+                                case 1: // AO1
+                                    ret = await ConnectionManager.instance
+                                        .executeCommand(id, `echo 0 >> /sys/bus/iio/devices/iio:device0/out_voltage1_powerdown`);
+
+                                    ret = await ConnectionManager.instance
+                                        .executeCommand(id, `echo ${value} >> /sys/bus/iio/devices/iio:device0/out_voltage1_raw`);
+
+                                    ret = await ConnectionManager.instance
+                                        .executeCommand(id, `cat /sys/bus/iio/devices/iio:device0/out_voltage1_raw`);
+                                    break;
+                                    
+                                case 2: // AO2
+                                    ret = await ConnectionManager.instance
+                                        .executeCommand(id, `echo 0 >> /sys/bus/iio/devices/iio:device1/out_voltage2_powerdown`);
+
+                                    ret = await ConnectionManager.instance
+                                        .executeCommand(id, `echo ${value} >> /sys/bus/iio/devices/iio:device1/out_voltage2_raw`);
+
+                                    ret = await ConnectionManager.instance
+                                        .executeCommand(id, `cat /sys/bus/iio/devices/iio:device1/out_voltage2_raw`);
+                                    break;
+                            }
+
+                            this.ioCheckPanel?.webview.postMessage({
+                                command: 'buttonClick',
+                                pin: message.pin,
+                            });
                             break;
                         }
                         case 'serialWrite': {
