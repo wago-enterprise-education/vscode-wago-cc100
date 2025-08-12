@@ -13,7 +13,7 @@ import * as path from 'path';
 import { Readable } from 'stream';
 import { finished } from 'stream/promises';
 import { extensionContext } from '../../extension';
-import { create } from 'tar';
+import { c, create } from 'tar';
 import { Manager } from '../manager';
 
 const FOLDER_REGEX =
@@ -1583,9 +1583,13 @@ export class UploadFunctionality {
                         message: 'An Error occured while Uploading',
                     });
                     console.error(`Error uploading to controller: ${error}`);
-                    vscode.window.showErrorMessage(
-                        'An Error occured while Uploading to the Controller'
-                    );
+                    vscode.window.showErrorMessage(String(error));
+
+                    return new Promise<void>((resolve) => {
+                        setTimeout(() => {
+                            resolve();
+                        }, 4000);
+                    });
                 }
             }
         );
@@ -1741,6 +1745,16 @@ export class UploadFunctionality {
 
         try {
             console.debug('Comparing Versions...');
+
+            const dockerPermission = await connectionManager.executeCommand(
+                id,
+                `docker images`
+            );
+
+            if(dockerPermission === '') {
+                console.error(`Docker permission denied on Controller ${id}`);
+                return Promise.reject(new Error('Docker permission denied'));
+            }
 
             // Get current Controller Image Hash
             console.debug('Getting controller Image Hash...');

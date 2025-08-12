@@ -98,6 +98,26 @@ export class Command {
                                     'Checking if port forwarding is enabled...',
                             });
 
+                            const filePermission = await ConnectionManager.instance.executeCommand(
+                                element.controllerId,
+                                "cat /etc/dropbear/dropbear.conf"
+                            );
+
+                            if(filePermission === ''){
+                                vscode.window.showErrorMessage(
+                                    'Dropbear permission denied'
+                                );
+                                progress.report({
+                                    increment: 100,
+                                    message: 'Debugging session failed',
+                                });
+                                return new Promise<void>((resolve) => {
+                                    setTimeout(() => {
+                                        resolve();
+                                    }, 4000);
+                                });
+                            }
+
                             const pfEnabled =
                                 await ConnectionManager.instance.executeCommand(
                                     element.controllerId,
@@ -168,7 +188,7 @@ export class Command {
                                 return new Promise<void>((resolve) => {
                                     setTimeout(() => {
                                         resolve();
-                                    }, 2000);
+                                    }, 4000);
                                 });
                             }
 
@@ -176,6 +196,26 @@ export class Command {
                                 increment: 10,
                                 message: 'Stopping old process...',
                             });
+
+                            const dockerPermission = await connection.executeCommand(
+                                'docker images'
+                            );
+
+                            if (dockerPermission === '') {
+                                connection.disconnect();
+                                vscode.window.showErrorMessage(
+                                    'Docker permission denied'
+                                );
+                                progress.report({
+                                    increment: 100,
+                                    message: 'Debugging session failed',
+                                });
+                                return new Promise<void>((resolve) => {
+                                    setTimeout(() => {
+                                        resolve();
+                                    }, 4000);
+                                });
+                            }
 
                             await connection.executeCommand(
                                 'docker exec pythonRuntime killall -15 python3'
