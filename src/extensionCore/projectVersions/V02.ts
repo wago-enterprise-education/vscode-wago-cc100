@@ -1517,7 +1517,9 @@ export class UploadFunctionality {
             async (progress, token) => {
                 try {
                     progress.report({ increment: 10, message: 'Comparing Folders and Image Version...' });
-                    if (await this.compareFolders(id, path) && await this.compareDockerImageVersion(id)) {
+                    const filesUpToDate = await this.compareFolders(id, path);
+                    const imageVersionResult = await this.compareDockerImageVersion(id);
+                    if (filesUpToDate && imageVersionResult.imageUpToDate) {
                         progress.report({
                             increment: 100,
                             message: `The files and docker image on ${controller?.displayname} are already up to date.`
@@ -1529,7 +1531,7 @@ export class UploadFunctionality {
                         });
                     }
 
-                    progress.report({ increment: 15, message: 'Deactivating Codesys...' });
+                    progress.report({ increment: 20, message: 'Deactivating Codesys...' });
                     await this.deactivateCodeSys3(id);
 
                     progress.report({ increment: 20, message: 'Activating Docker...' });
@@ -1538,22 +1540,35 @@ export class UploadFunctionality {
                         '/etc/config-tools/config_docker activate'
                     );
 
-                    progress.report({ increment: 25, message: 'Updating Container...' });
-                    await this.updateContainer(id);
+                    if (!imageVersionResult.imageUpToDate) {
+                        progress.report({ increment: 10, message: 'Updating image...' });
+                        await this.updateContainer(id, imageVersionResult.wantedVersion, imageVersionResult.currentTag);
+                    }
 
-                    progress.report({ increment: 15, message: 'Uploading...' });
-                    await connectionManager
-                        .uploadDirectory(id, path, uploadPath)
-                        .then(() => {})
-                        .catch((err) => {
-                            console.error(`Error uploading files: ${err}`);
-                            vscode.window.showErrorMessage(
-                                'An error occurred while uploading the files.'
-                            );
-                        });
+                    if(!filesUpToDate) {
+                        progress.report({ increment: 10, message: 'Uploading files...' });
+                        await connectionManager
+                            .uploadDirectory(id, path, uploadPath)
+                            .then(() => {})
+                            .catch((err) => {
+                                console.error(`Error uploading files: ${err}`);
+                                vscode.window.showErrorMessage(
+                                    'An error occurred while uploading the files.'
+                                );
+                            });
+                    }
+
+                    if(!imageVersionResult.imageUpToDate) {
+                        progress.report({ increment: 20, message: 'Starting Python Application...' });
+                        await connectionManager.executeScript(
+                            id,
+                            'dockerCommand.sh',
+                            imageVersionResult.wantedVersion
+                        );
+                    }
 
                     progress.report({
-                        increment: 15,
+                        increment: 100,
                         message: 'Finished Uploading',
                     });
 
@@ -1721,65 +1736,71 @@ export class UploadFunctionality {
     }
 
     private async compareDockerImageVersion(id: number) {
-        let wantedVers = YamlCommands.getController(id)?.imageVersion;
-        if (!wantedVers) return;
+        const wantedVers = YamlCommands.getController(id)?.imageVersion;
+        if (!wantedVers) throw new Error('No docker image version configured');
 
         try {
             console.debug('Comparing Versions...');
 
-            // Check if there is a new version
-            let token = await this.getToken();
+            // Get current Controller Image Hash
+            console.debug('Getting controller Image Hash...');
+            const currTag = (await connectionManager.executeCommand(
+                id,
+                `docker images | grep '${UploadFunctionality.imageName}' | awk '{print $2}'`
+            )).split('\n');
 
-            let tagList: string[] = await this.getTagList(token);
+            // Check if there is a new version
+            const token = await this.getToken();
+
+            const tagList: string[] = await this.getTagList(token);
             if (!tagList.includes(wantedVers)) {
                 vscode.window.showErrorMessage(
                     'Configured Image Tag is not a viable tag'
                 );
-                return;
+                throw new Error('Configured image tag is not a viable tag');
             }
 
-            // Get current Controller Image Hash
-            console.debug('Getting controller Image Hash...');
-            let currTag = await connectionManager.executeCommand(
-                id,
-                `docker images | grep '${UploadFunctionality.imageName}' | awk '{print $2}' | head -n 1`
-            );
 
             let imageConfigController = '';
-            if (currTag != '') {
-                let conManifest = await connectionManager.executeCommand(
+            if (currTag[0] != '') {
+                const conManifest = await connectionManager.executeCommand(
                     id,
-                    `docker inspect ${UploadFunctionality.imageName}:${currTag}`
+                    `docker inspect ${UploadFunctionality.imageName}:${currTag[0]}`
                 );
-                let json = JSON.parse(conManifest);
+                const json = JSON.parse(conManifest);
                 imageConfigController = json[0].Id;
+            } else {
+                return { imageUpToDate: false, wantedVersion: wantedVers, currentTag: currTag };
             }
 
             // Get new Image Hash from GitHub Packages
             console.debug('Getting newest Image Manifest...');
-            let wantedVersManifest = await this.getImageManifest(
+            const wantedVersManifest = await this.getImageManifest(
                 wantedVers,
                 token
             );
-            let imageConfig = wantedVersManifest.configDigest;
+            const imageConfig = wantedVersManifest.configDigest;
 
             if (imageConfigController == imageConfig) {
                 console.debug('Image up to date');
-                return;
+                return { imageUpToDate: true, wantedVersion: wantedVers, currentTag: currTag };
             }
 
             // Autoupdate check
-            let conName = YamlCommands.getController(id)?.displayname;
-            let autoupdate = YamlCommands.getControllerSettings(id).autoupdate;
+            const conName = YamlCommands.getController(id)?.displayname;
+            const autoupdate = YamlCommands.getControllerSettings(id).autoupdate;
             if (autoupdate === 'off') {
-                let checkReturn = await vscode.window
+                const checkReturn = await vscode.window
                     .showWarningMessage(
-                        `Update Container on ${conName}?`,
+                        `Update container image on ${conName}?`,
+                        { modal: true },
                         'Yes',
                         'No'
                     );
-                if (checkReturn !== 'Yes') return true;
+                if (checkReturn !== 'Yes') return { imageUpToDate: true, wantedVersion: wantedVers, currentTag: currTag };
             }
+
+            return { imageUpToDate: false, wantedVersion: wantedVers, currentTag: currTag };
         } catch (error) {
             console.error(`Error comparing Docker image versions: ${error}`);
             return Promise.reject(error);
@@ -1793,13 +1814,9 @@ export class UploadFunctionality {
      *
      * @param id The id of the used controller
      */
-    private async updateContainer(id: number): Promise<void> {
+    private async updateContainer(id: number, wantedVersion: string, currentTag: string[]): Promise<void> {
         const containerName = 'pythonRuntime';
         const downloadPathFolder = `${extensionContext.storageUri?.fsPath}`;
-
-        // Cancel if Image Version is specifically chosen
-        let wantedVers = YamlCommands.getController(id)?.imageVersion;
-        if (!wantedVers) return;
 
         try {
             await vscode.window.withProgress(
@@ -1813,17 +1830,11 @@ export class UploadFunctionality {
 
                 let token = await this.getToken();
 
-                // Get current Controller Image Hash
-                console.debug('Getting controller Image Hash...');
-                let currTag = await connectionManager.executeCommand(
-                    id,
-                    `docker images | grep '${UploadFunctionality.imageName}' | awk '{print $2}' | head -n 1`
-                );
 
                 // Get new Image Hash from GitHub Packages
                 console.debug('Getting newest Image Manifest...');
                 let wantedVersManifest = await this.getImageManifest(
-                    wantedVers,
+                    wantedVersion,
                     token
                 );
                 let imageConfig = wantedVersManifest.configDigest;
@@ -1842,10 +1853,12 @@ export class UploadFunctionality {
                     id,
                     `docker rm ${containerName}`
                 );
-                await connectionManager.executeCommand(
-                    id,
-                    `docker rmi -f ${UploadFunctionality.imageName}:${currTag}`
-                );
+                for (const tag of currentTag) {
+                    await connectionManager.executeCommand(
+                        id,
+                        `docker rmi -f ${UploadFunctionality.imageName}:${tag}`
+                    );
+                }
 
                 progress.report({ increment: 10, message: "Downloading image from GitHub Packages..." });
 
@@ -1979,7 +1992,7 @@ export class UploadFunctionality {
                     {
                         Config: 'config.json',
                         RepoTags: [
-                            `ghcr.io/${UploadFunctionality.repo}:${wantedVers}`,
+                            `ghcr.io/${UploadFunctionality.repo}:${wantedVersion}`,
                         ],
                         Layers: layerArray,
                     },
@@ -2025,11 +2038,6 @@ export class UploadFunctionality {
                 );
 
                 await connectionManager.executeCommand(id, `rm /home/image.tar`);
-                await connectionManager.executeScript(
-                    id,
-                    'dockerCommand.sh',
-                    wantedVers
-                );
 
                 // Delete local Image files
                 fs.unlinkSync(path.join(downloadPathFolder, `image.tar`));
