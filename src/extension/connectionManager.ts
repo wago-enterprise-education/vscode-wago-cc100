@@ -74,7 +74,7 @@ export class ConnectionManager {
         const connection = new Connection(controllerId, urn, username);
         this.connections.push(connection);
         await connection.init(password).catch((error) => {
-            console.log(`Failed to connect to ${urn}: ${error}`);
+            console.warn(`Failed to connect to ${urn}: ${error}`);
         });
     }
 
@@ -548,7 +548,7 @@ class Connection {
         return new Promise((resolve, reject) => {
             this.client
                 .once('ready', () => {
-                    console.info(`Connected to ${this.urn}`);
+                    console.debug(`Connected to ${this.urn}`);
                     if (password) {
                         this.sendSSHKey();
                         password = undefined;
@@ -819,11 +819,7 @@ class Connection {
                         localPath = localPath.slice(0, localPath.lastIndexOf('\\'));
                     }
                     requested++;
-                    console.log(file+" "+remotePath.concat(
-                            file
-                                .replace(localPath, '')
-                                .replaceAll('\\', '/')
-                        ));
+
                     sftp.fastPut(
                         file,
                         remotePath.concat(
@@ -873,7 +869,7 @@ class Connection {
      * Disconnects the client from the remote controller
      */
     public disconnect() {
-        console.info(`Disconnecting from ${this.urn}`);
+        console.debug(`Disconnecting from ${this.urn}`);
         this.client.removeAllListeners();
         if (this.server) {
             this.server.close();

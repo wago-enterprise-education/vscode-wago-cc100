@@ -324,7 +324,6 @@ export class JsonCommands {
     public static writeJson(attribute: settingsJson, value: string) {
         let json = this.getSettingsJson();
         json[attribute] = value;
-        console.log(JSON.stringify(json));
         fs.writeFileSync(
             path.join(vscode.workspace.workspaceFolders![0].uri.fsPath, 'settings.json'),
             JSON.stringify(json, null, '\t')
@@ -735,9 +734,6 @@ export class UploadFunctionality {
                 id,
                 '/etc/config-tools/config_runtime runtime-version=0'
             )
-            .then(() => {
-                console.log('CodeSys3 deactivated.');
-            })
             .catch((err) => {
                 console.error(`Error deactivating CodeSys3: ${err}`);
             });

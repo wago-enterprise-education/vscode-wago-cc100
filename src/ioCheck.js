@@ -498,7 +498,6 @@ function clickedNav(index) {
  * @param index The index of clicked DO
  */
 function clickedDo(index) {
-    console.log('DO');
     if (elemDo[index].value == 'HIGH') {
         doData[index] = 0;
     } else {

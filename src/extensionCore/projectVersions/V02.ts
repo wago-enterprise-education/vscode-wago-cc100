@@ -1181,7 +1181,7 @@ export class YamlCommands {
                 )
             );
         } catch (error) {
-            console.log('getControllerYaml: No File Found! Creating new File');
+            console.debug('getControllerYaml: No File Found! Creating new File');
             fs.cpSync(
                 `${extensionContext.extensionPath}/res/template/controller/controller1.yaml`,
                 `${
@@ -1677,9 +1677,6 @@ export class UploadFunctionality {
                 id,
                 '/etc/config-tools/config_runtime runtime-version=0'
             )
-            .then(() => {
-                console.log('CodeSys3 deactivated.');
-            })
             .catch((err) => {
                 console.error(`Error deactivating CodeSys3: ${err}`);
             });
@@ -1690,8 +1687,6 @@ export class UploadFunctionality {
         if (!wantedVers) throw new Error('No docker image version configured');
 
         try {
-            console.debug('Comparing Versions...');
-
             const dockerPermission = await connectionManager.executeCommand(
                 id,
                 `docker images`
@@ -1703,7 +1698,6 @@ export class UploadFunctionality {
             }
 
             // Get current Controller Image Hash
-            console.debug('Getting controller Image Hash...');
             const currTag = (await connectionManager.executeCommand(
                 id,
                 `docker images | grep '${UploadFunctionality.imageName}' | awk '{print $2}'`
@@ -1734,7 +1728,6 @@ export class UploadFunctionality {
             }
 
             // Get new Image Hash from GitHub Packages
-            console.debug('Getting newest Image Manifest...');
             const wantedVersManifest = await this.getImageManifest(
                 wantedVers,
                 token
@@ -1792,7 +1785,6 @@ export class UploadFunctionality {
 
 
                 // Get new Image Hash from GitHub Packages
-                console.debug('Getting newest Image Manifest...');
                 let wantedVersManifest = await this.getImageManifest(
                     wantedVersion,
                     token
@@ -1801,14 +1793,12 @@ export class UploadFunctionality {
                 let imageLayers = wantedVersManifest.layers;
 
                 // Stop current container
-                console.debug('Stopping Container...');
                 await connectionManager.executeCommand(
                     id,
                     `docker stop ${containerName}`
                 );
 
                 // remove all images and containers
-                console.debug('Removing Images and Containers...');
                 await connectionManager.executeCommand(
                     id,
                     `docker rm ${containerName}`
@@ -1823,8 +1813,6 @@ export class UploadFunctionality {
                 progress.report({ increment: 10, message: "Downloading image from GitHub Packages..." });
 
                 // Download and Upload new Image
-                console.debug('Downloading new Image...');
-
                 // Download all Image Layers
                 if (!fs.existsSync(path.join(downloadPathFolder, "blobs", "sha256"))) {
                     fs.mkdirSync(path.join(downloadPathFolder, "blobs", "sha256"), {
@@ -1846,9 +1834,6 @@ export class UploadFunctionality {
                     async (progress) => {
                         // Get Layer Responses
                         for (const layer of imageLayers) {
-                            console.debug(
-                                `Request send: https://ghcr.io/v2/${UploadFunctionality.repo}/blobs/${layer}`
-                            );
                             const response = fetch(
                                 `https://ghcr.io/v2/${UploadFunctionality.repo}/blobs/${layer}`,
                                 {
@@ -1871,7 +1856,6 @@ export class UploadFunctionality {
                         let layerCount = 1
                         for (const layer of layerResponseArray) {
                             progress.report({ increment: (1/layerResponseArray.length) * 100, message:`Downloading layer ${layerCount} from ${layerResponseArray.length}`})
-                            console.debug(`Resolving Response: ${layer.hash}`);
                             let layerPath = path.join(
                                 downloadPathFolder,
                                 "blobs",
@@ -1899,6 +1883,8 @@ export class UploadFunctionality {
                                 return;
                             }
                             await finished(Readable.fromWeb(body).pipe(stream));
+
+                            console.debug(`Layer ${layer.hash} downloaded successfully.`);
 
                             layerCount++;
                         }
@@ -1993,7 +1979,6 @@ export class UploadFunctionality {
                 progress.report({ increment: 10, message: "Loading Image..." })
 
                 // Load new Image
-                console.debug('Loading new Image...');
                 await connectionManager.executeCommand(
                     id,
                     `docker load -i /home/image.tar`
@@ -2030,7 +2015,7 @@ export class UploadFunctionality {
                 `Failed to fetch token: ${tokenResponse.statusText}`
             );
         let tokenObj: any = await tokenResponse.json();
-        console.debug(`Token: ${tokenObj.token}`);
+        console.debug(`Github Packages Token: ${tokenObj.token}`);
         return tokenObj.token;
     }
 

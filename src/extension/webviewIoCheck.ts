@@ -390,8 +390,6 @@ export class webviewIoCheck {
                             break;
                         }
                         case 'analogWrite': {
-                            console.log('AnalogWrite Value: ' + message.value);
-                            console.log('AnalogWrite Pin: ' + message.pin);
                             var value = this.calcCalibratedValues(
                                 message.value,
                                 this.calibData[message.pin + 4]
