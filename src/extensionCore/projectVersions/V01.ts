@@ -309,7 +309,7 @@ export class JsonCommands {
     private static getSettingsJson() {
         return JSON.parse(
             fs.readFileSync(
-                `${vscode.workspace.workspaceFolders![0].uri.fsPath}/settings.json`,
+                path.join(vscode.workspace.workspaceFolders![0].uri.fsPath, 'settings.json'),
                 'utf8'
             )
         );
@@ -326,7 +326,7 @@ export class JsonCommands {
         json[attribute] = value;
         console.log(JSON.stringify(json));
         fs.writeFileSync(
-            `${vscode.workspace.workspaceFolders![0].uri.fsPath}/settings.json`,
+            path.join(vscode.workspace.workspaceFolders![0].uri.fsPath, 'settings.json'),
             JSON.stringify(json, null, '\t')
         );
     }
@@ -519,9 +519,9 @@ export class UploadFunctionality {
      * @returns A Promise that resolves when the upload is complete or when an early return occurs
      */
     public async uploadFile(id: number) {
-        let path = `${vscode.workspace.workspaceFolders![0].uri.fsPath}\\src`;
+        let srcPath = path.join(vscode.workspace.workspaceFolders![0].uri.fsPath, "src");
 
-        if (!fs.existsSync(`${path}/main.py`)) {
+        if (!fs.existsSync(path.join(srcPath, "main.py"))) {
             vscode.window.showErrorMessage(
                 'The selected Folder does not exist or does not contain a main.py.'
             );
@@ -541,7 +541,7 @@ export class UploadFunctionality {
                     increment: 20,
                     message: 'Comparing Folders...',
                 });
-                if (await this.compareFolders(id, path)) {
+                if (await this.compareFolders(id, srcPath)) {
                     vscode.window.showInformationMessage(
                         `The files on your Controller are already up to date.`
                     );
@@ -568,7 +568,7 @@ export class UploadFunctionality {
                     );
                     progress.report({ increment: 20, message: 'Uploading...' });
                     //Upload Files
-                    await connectionManager.uploadDirectory(id, path, uploadPath);
+                    await connectionManager.uploadDirectory(id, srcPath, uploadPath);
                     progress.report({ increment: 20, message: 'Executing...' });
                     //Execute File
                     await connectionManager.executeCommand(

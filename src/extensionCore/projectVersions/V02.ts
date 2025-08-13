@@ -1362,14 +1362,16 @@ export class YamlCommands {
         let yaml = this.getWagoYaml();
         delete yaml.nodes[id];
         fs.writeFileSync(
-            `${vscode.workspace.workspaceFolders![0].uri.fsPath}/wago.yaml`,
+            path.join(vscode.workspace.workspaceFolders![0].uri.fsPath, "wago.yaml"),
             YAML.stringify(yaml, null, '\t')
         );
 
         //remove Controller configuration file
-        let controllerPath = `${
-            vscode.workspace.workspaceFolders![0].uri.fsPath
-        }/controller/controller${id}.yaml`;
+        let controllerPath = path.join(
+            vscode.workspace.workspaceFolders![0].uri.fsPath,
+            "controller",
+            `controller${id}.yaml`
+        );
         if (fs.existsSync(controllerPath)) fs.unlinkSync(controllerPath);
     }
 
@@ -1440,11 +1442,12 @@ export class UploadFunctionality {
     public async uploadFile(id: number) {
         let controller = YamlCommands.getController(id);
         let src = controller?.src;
-        let path = `${
-            vscode.workspace.workspaceFolders![0].uri.fsPath
-        }\\${src}`;
+        let srcPath = path.join(
+            vscode.workspace.workspaceFolders![0].uri.fsPath,
+            "src"
+        );
 
-        if (!fs.existsSync(`${path}/main.py`)) {
+        if (!fs.existsSync(path.join(srcPath, "main.py"))) {
             vscode.window.showErrorMessage(
                 'The selected Folder does not exist or does not contain a main.py.'
             );
@@ -1460,7 +1463,7 @@ export class UploadFunctionality {
             async (progress, token) => {
                 try {
                     progress.report({ increment: 10, message: 'Comparing Folders and Image Version...' });
-                    const filesUpToDate = await this.compareFolders(id, path);
+                    const filesUpToDate = await this.compareFolders(id, srcPath);
                     const imageVersionResult = await this.compareDockerImageVersion(id);
                     if (filesUpToDate && imageVersionResult.imageUpToDate) {
                         progress.report({
@@ -1491,7 +1494,7 @@ export class UploadFunctionality {
                     if(!filesUpToDate) {
                         progress.report({ increment: 10, message: 'Uploading files...' });
                         await connectionManager
-                            .uploadDirectory(id, path, uploadPath)
+                            .uploadDirectory(id, srcPath, uploadPath)
                             .then(() => {})
                             .catch((err) => {
                                 console.error(`Error uploading files: ${err}`);
@@ -1823,8 +1826,8 @@ export class UploadFunctionality {
                 console.debug('Downloading new Image...');
 
                 // Download all Image Layers
-                if (!fs.existsSync(path.join(downloadPathFolder, `blobs/sha256`))) {
-                    fs.mkdirSync(path.join(downloadPathFolder, `blobs/sha256`), {
+                if (!fs.existsSync(path.join(downloadPathFolder, "blobs", "sha256"))) {
+                    fs.mkdirSync(path.join(downloadPathFolder, "blobs", "sha256"), {
                         recursive: true,
                     });
                 }
@@ -1871,7 +1874,9 @@ export class UploadFunctionality {
                             console.debug(`Resolving Response: ${layer.hash}`);
                             let layerPath = path.join(
                                 downloadPathFolder,
-                                `blobs/sha256/${layer.hash}`
+                                "blobs",
+                                "sha256",
+                                layer.hash
                             );
 
                             // Add Layer Path to Array
@@ -1969,9 +1974,9 @@ export class UploadFunctionality {
 
                 create(
                     {
-                        file: `${downloadPathFolder}/image.tar`,
+                        file: path.join(downloadPathFolder, 'image.tar'),
                         sync: true,
-                        cwd: `${downloadPathFolder}`,
+                        cwd: downloadPathFolder,
                     },
                     ['config.json', 'manifest.json', 'blobs']
                 );
