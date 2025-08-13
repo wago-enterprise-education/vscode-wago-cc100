@@ -188,24 +188,6 @@ export class ProjectFactory {
     }
 
     /**
-     * Creates a create project command for the specified version.
-     *
-     * @param {number} versionNr - The version number of the command to create.
-     * @returns {Interface.CreateProjectInterface} The create project command for the specified version.
-     * @throws {Error} If the version number is invalid.
-     */
-    public createCreateProjectCommand(
-        versionNr: number
-    ): Interface.CreateProjectInterface {
-        switch (versionNr) {
-            case 0:
-                return new V2.CreateProject();
-            default:
-                throw new Error('Invalid version number');
-        }
-    }
-
-    /**
      * Creates a remove reset controller command for the specified version.
      *
      * @param {number} versionNr - The version number of the command to create.

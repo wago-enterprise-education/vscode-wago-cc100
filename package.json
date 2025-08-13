@@ -180,6 +180,11 @@
         "category": "Wago"
       },
       {
+        "command": "vscode-wago-cc100.open-project",
+        "title": "Open Project",
+        "category": "Wago"
+      },
+      {
         "command": "vscode-wago-cc100.configure-controller",
         "title": "Configure Controller",
         "category": "Wago"
@@ -188,7 +193,7 @@
     "viewsWelcome": [
       {
         "view": "no-folder-view",
-        "contents": "In order to use this extension, you need to open a folder containing a CC100 project. \n [Create Project](command:vscode-wago-cc100.create-project) \n [Open Project](command:vscode.openFolder) \n To learn more about the extension read the [documentation](https://github.com/wago-enterprise-education/vscode-wago-cc100/blob/main/README.md)."
+        "contents": "In order to use this extension, you need to open a folder containing a CC100 project. \n [Create Project](command:vscode-wago-cc100.create-project) \n [Open Project](command:vscode-wago-cc100.open-project) \n To learn more about the extension read the [documentation](https://github.com/wago-enterprise-education/vscode-wago-cc100/blob/main/README.md)."
       },
       {
         "view": "no-project-view",

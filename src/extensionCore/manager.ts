@@ -114,16 +114,6 @@ export class Manager {
             .renameController(controller);
     }
     /**
-     * Creates a new project by initializing a project creation command and its controller.
-     * This method uses the ProjectFactory singleton to instantiate a command with the current version
-     * and associates it with the given extension context.
-     */
-    public createProject() {
-        ProjectFactory.getInstance()
-            .createCreateProjectCommand(this.versionNr)
-            .createController();
-    }
-    /**
      * Resets and then removes a controller from the project.
      * First resets the controller using a reset command, then removes it using a remove command.
      *

@@ -9,6 +9,9 @@ import { verifyProject } from './versionDetection';
 const MAX_RETRIES = 10; // Maximum number of retries for the debugger connection
 const RETRY_DELAY = 2000; // Delay between retries in milliseconds
 
+const FOLDER_REGEX =
+    '^(?!(?:CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:.[^.]*)?$)[^<>:"/\\|?*\x00-\x1F]*[^<>:"/\\|?*\x00-\x1F .]$';
+
 export class Command {
     public static createCommands() {
         const commands = [];
@@ -17,7 +20,82 @@ export class Command {
             vscode.commands.registerCommand(
                 'vscode-wago-cc100.create-project',
                 async () => {
-                    Manager.getInstance().createProject();
+                    const projectName = await vscode.window.showInputBox({
+                        prompt: 'Enter the name of the project',
+                        title: 'Create Project',
+                        validateInput: (value: string) => {
+                            if (!RegExp(FOLDER_REGEX).test(value)) {
+                                return 'Invalid project name';
+                            }
+                            return null;
+                        },
+                    });
+            
+                    if (!projectName) return;
+            
+                    await vscode.window
+                        .showOpenDialog({
+                            canSelectFiles: false,
+                            canSelectFolders: true,
+                            canSelectMany: false,
+                            openLabel: 'Select Project Destination',
+                        })
+                        .then(async (uri) => {
+                            if (uri && projectName) {
+                                try {
+                                    fs.mkdirSync(`${uri[0].fsPath}/${projectName}`);
+                                    fs.cpSync(
+                                        `${extensionContext.extensionPath}/res/template`,
+                                        `${uri[0].fsPath}/${projectName}`,
+                                        { recursive: true }
+                                    );
+                                    let newWindow = false;
+                                    if(vscode.workspace.workspaceFolders!.length > 0) {
+                                        newWindow = true;
+                                    }
+                                    await vscode.commands.executeCommand(
+                                        'vscode.openFolder',
+                                        vscode.Uri.file(`${uri[0].fsPath}/${projectName}`),
+                                        {
+                                            forceNewWindow: newWindow,
+                                        }
+                                    );
+                                } catch (error: any) {
+                                    vscode.window.showErrorMessage(
+                                        'Project already exists'
+                                    );
+                                }
+                            }
+                        });
+                }
+            )
+        );
+
+        commands.push(
+            vscode.commands.registerCommand(
+                'vscode-wago-cc100.open-project',
+                async () => {
+                    await vscode.window
+                        .showOpenDialog({
+                            canSelectFiles: false,
+                            canSelectFolders: true,
+                            canSelectMany: false,
+                            openLabel: 'Select Project Folder',
+                        })
+                        .then(async (uri) => {
+                            if (!uri) return;
+                            let newWindow = false;
+                            if (vscode.workspace.workspaceFolders) {
+                                newWindow = true;
+                            }
+                            await vscode.commands.executeCommand(
+                                'vscode.openFolder',
+                                vscode.Uri.file(uri[0].fsPath),
+                                {
+                                    forceNewWindow: newWindow,
+                                }
+                            );
+                        });
                 }
             )
         );

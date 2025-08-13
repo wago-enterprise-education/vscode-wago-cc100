@@ -13,7 +13,7 @@ import * as path from 'path';
 import { Readable } from 'stream';
 import { finished } from 'stream/promises';
 import { extensionContext } from '../../extension';
-import { c, create } from 'tar';
+import { create } from 'tar';
 import { Manager } from '../manager';
 
 const FOLDER_REGEX =
@@ -719,64 +719,7 @@ export class RenameController implements Interface.RenameControllerInterface {
         );
     }
 }
-export class CreateProject implements Interface.CreateProjectInterface {
-    /**
-     * Creates a new project controller by prompting the user for a project name and destination folder.
-     *
-     * This function performs the following steps:
-     * 1. Prompts the user to input a valid project name.
-     * 2. Opens a dialog for the user to select a destination folder for the project.
-     * 3. Creates a new folder with the specified project name at the selected destination.
-     * 4. Copies a template from the extension's resources into the newly created project folder.
-     * 5. Opens the newly created project folder in a new VS Code window.
-     *
-     * @param context - The extension context, providing access to the extension's resources and state.
-     *
-     * @throws Will show an error message if the project folder already exists or if any file system operation fails.
-     */
-    async createController() {
-        const projectName = await vscode.window.showInputBox({
-            prompt: 'Enter the name of the project',
-            title: 'Create Project',
-            validateInput: (value: string) => {
-                if (!RegExp(FOLDER_REGEX).test(value)) {
-                    return 'Invalid project name';
-                }
-                return null;
-            },
-        });
 
-        if (!projectName) return;
-
-        await vscode.window
-            .showOpenDialog({
-                canSelectFiles: false,
-                canSelectFolders: true,
-                canSelectMany: false,
-                openLabel: 'Select Project Destination',
-            })
-            .then(async (uri) => {
-                if (uri && projectName) {
-                    try {
-                        fs.mkdirSync(`${uri[0].fsPath}/${projectName}`);
-                        fs.cpSync(
-                            `${extensionContext.extensionPath}/res/template`,
-                            `${uri[0].fsPath}/${projectName}`,
-                            { recursive: true }
-                        );
-                        await vscode.commands.executeCommand(
-                            'vscode.openFolder',
-                            vscode.Uri.file(`${uri[0].fsPath}/${projectName}`)
-                        );
-                    } catch (error: any) {
-                        vscode.window.showErrorMessage(
-                            'Project already exists'
-                        );
-                    }
-                }
-            });
-    }
-}
 export class RemoveResetController
     implements Interface.RemoveResetControllerInterface
 {

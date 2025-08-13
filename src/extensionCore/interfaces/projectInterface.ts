@@ -64,10 +64,6 @@ export interface RenameControllerInterface {
     renameController: (controller: Controller | undefined) => void;
 }
 
-export interface CreateProjectInterface {
-    createController: () => void;
-}
-
 export interface RemoveResetControllerInterface {
     removeResetController: (
         controller: Controller | undefined
