@@ -1,102 +1,66 @@
 # CC100 Python Extension
 
-A visual studio code extension, for programming the WAGO CC100 in *Python*. The manual for the CC100 can be found [on the WAGO website](https://www.wago.com/medias/m07519301-00000000-0en.pdf?context=bWFzdGVyfGRvd25sb2Fkc3wzNzQwNjM5fGFwcGxpY2F0aW9uL3BkZnxhR1V4TDJnMU9TOHhOREE1TURRMU5EY3lPRGN6TkM5dE1EYzFNVGt6TURGZk1EQXdNREF3TURCZk1HVnVMbkJrWmd8ZDIwMTQzN2JiOTlkYWZiZTZmN2RjYzU3Y2M0MjkyMjliOGMwYmQ0ZTY5NTQwNTI5N2NhZWRjMmFlNzY1ZDVkNA&attachment=true).
+A Visual Studio Code extension for programming the WAGO CC100 in _Python_. The manual for the CC100 can be found on the [WAGO website](https://www.wago.com/medias/m07519301-00000000-0en.pdf?context=bWFzdGVyfGRvd25sb2Fkc3wzNzQwNjM5fGFwcGxpY2F0aW9uL3BkZnxhR1V4TDJnMU9TOHhOREE1TURRMU5EY3lPRGN6TkM5dE1EYzFNVGt6TURGZk1EQXdNREF3TURCZk1HVnVMbkJrWmd8ZDIwMTQzN2JiOTlkYWZiZTZmN2RjYzU3Y2M0MjkyMjliOGMwYmQ0ZTY5NTQwNTI5N2NhZWRjMmFlNzY1ZDVkNA&attachment=true).
 
-**Note that this extension was created as part of a student project and is not regularly maintained. It is neither a stable version nor an official extension of WAGO GmbH & Co. KG.**
-
-<!--
-## Quick start
- - You need the SSH Agent to connect to the CC100 with this extension. If you're using windows you will need to [Install OpenSSH on Windows](https://learn.microsoft.com/de-de/windows-server/administration/openssh/openssh_install_firstuse?tabs=powershell#install-openssh-for-windows). After installation you need to restart your PC. Linux and MacOS should have one preinstalled
- - Connect your computer to the controller using a USB-C cable and open the extension by clicking on the corresponding icon in the activity bar
- - Create a project using the start window that opens. To do this, select a project name and the storage location
- -->
+**Please note: This extension was created as part of a student project and is not regularly maintained. It is neither a stable version nor an official extension of WAGO GmbH & Co. KG.**
 
 ## Content
 
-- [CC100 Python Extension](#cc100-python-extension)
-  - [Content](#content)
-  - [How to use the Extention](#how-to-use-the-extention)
-    - [Write your code](#write-your-code)
-    - [Upload](#upload)
-    - [Debug](#debug)
-    - [Remove/Reset](#removereset)
-    - [IO-Check](#io-check)
- <!-- - [Simulation](#simulation) -->
+- [How to Use the Extension](#how-to-use-the-extension)
+- [Write Your Code](#write-your-code)
+- [Upload](#upload)
+- [Debug](#debug)
+- [Remove/Reset](#remove-reset)
+- [IO-Check](#io-check)
 
-## How to use the Extention
+## How to Use the Extension
 
-As soon as the WAGO extension is installed in VSCode, a WAGO symbol should appear on the left side. Upon clicking on this button, the extension opens in the left sidebar and there will be a button called **Init Project**. This button is for setting up your workspace by creating a template project, containing the wago.yaml and a controller.yaml. These files are vital for the project, as they house the configuration of the controllers. The new Controller has three visible buttons and a connection status icon.  The Icon tells whether the controller is connected :green_circle: or if it is offline :red_circle:.
-Above the controller buttons are the option to **refresh**, to do a **multiupload** and to **add** a new controller.
-When setting up a new controller the extension will ask for a name, a description, a controllertype, like cc100, and a folder as your source. All these settings can be changed later.
+Once the WAGO extension is installed in VSCode, a WAGO symbol should appear on the left sidebar. Click this button to open the extension, which reveals options such as **Create Project** and **Open Project** or **Init Project** if you are in a folder. The **Create Project** button helps set up your workspace by creating a template project containing the `wago.yaml` and `controller.yaml` files. These are essential for housing controller configurations. The controller interface includes three buttons and a connection status icon. The icon indicates whether the controller is connected (:green_circle:) or offline (:red_circle:).
 
-To **change the settings**, navigate to the dropdown menu of the controller. This menu contains all necessary informations of the controller. To edit the appropriate setting, click on the small pen on the right of the field you wish to edit. After that, a popup will appear on the top of your screen, asking you for the necessary inputs.
+Above the controller buttons, you can refresh, perform a multiupload, or add new controllers. When setting up a new controller, the extension will ask for a name, description, controller type (e.g., cc100), and a source folder. These settings can be modified later.
 
-### Write your code
+To **change the settings**, navigate to the dropdown menu of the controller. This menu displays all necessary controller information. Click the small pen icon next to the field you wish to edit, leading to a popup on your screen for input.
 
-Write you code in the file **main.py**, within the source-folder of your controller. Note that this folder must contain a file named main.py when uploading.
+### Write Your Code
 
-Since the extention runs with the help of Docker, we use Pyhon 3.13 inside the container
+Develop your code in the `main.py` file within the source folder of your controller. Ensure this folder contains a file named `main.py` before uploading.
+
+The extension runs using Docker and employs Python 3.13 inside its container.
 
 ### Upload
 
-To upload a program to the controller, select the button commonly known as "play" button of the wanted controller. Depending on the status of the Docker-Image on the controller, this process might take a while.
+To upload a program to the controller, click the "play" button for the desired controller. Depending on the Docker image status on the controller, this process might take some time. Once a program is uploaded, it will run automatically.
 
-Once a programm is uploaded the code will run automatically.
+**Note:** The extension checks for changes since the last upload and will only proceed if the program differs from the existing one on the controller.
 
-**Note:** The extentions checks whether a change happend since the last upload and will only upload if the programm is different then the one already present on the controller.
+For uploading to multiple controllers, click the double "play" button next to the add controller button above your controllers, initiating an upload for every connected controller.
 
-To upload a program to multiple controllers, select the previously mentioned double "play" button next to the add controller button above your controllers. This will initiate an upload sequence for every connected controller.
-
-**Note:** The rules are the same with a multiupload and a single upload.
+**Note:** The rules are the same for both multiupload and single upload.
 
 ### Debug
 
-To debug a program, simply select the play button with the bug on it for the controller you want to debug on. VSCode will try to connect to the given controller, which can take some time.
-When the connection succeeds, the normal vscode python debugger will appear on the screen, and you can get started.
-
-**Note:** There needs to be a breakpoint in the projekt. The line to be executed next will be highlighed.
+To debug a program, click the play button with the bug icon for the controller you want to debug. VSCode will connect to the specified controller, which may take some time. Once connected, the standard VSCode Python debugger will appear, allowing you to begin debugging.
 
 ### Remove/Reset
 
-By right clicking a controller you can **rename**, **reset**, **remove** or **reset and remove** the controller.
+Right-clicking a controller allows you to **rename**, **reset**, **remove**, or **reset and remove** it.
 
-By selecting **rename** you will be asked to enter a new name.
+Selecting **rename** prompts you to enter a new name.
 
-The option **reset** will activate codesys again and reset everything that was done by the extension, including the removal of the program.
+The **reset** option activates Codesys again and reverts all extension actions, including program removal.
 
-The **remove** option will remove the controller out of the sidebar. It will also remove the controller configuration with the corresponding name and remove the controller out of the wago.yaml. The settings on the controller itself will stay.
+Choosing **remove** deletes the controller from the sidebar, its configuration, and its entry from the `wago.yaml`. Controller settings themselves remain unchanged.
 
 **Remove and reset** combines the last two functions.
 
 ### IO-Check
 
-The *IO-Check* feature in this extension imitates the functions of the well known *WAGO IO-Check* application. Please ensure that the connection method and the associated options are set correctly. The *IO-Check* function has two modes: `RUN` and `STOP`:
+The _IO-Check_ feature mimics the functionality of the well-known _WAGO IO-Check_ application. Ensure that the connection method and options are set correctly. The _IO-Check_ function has two modes: `RUN` and `STOP`.
 
-When the operating mode switch is in the `RUN` position, the status of the CC100 with its inputs and outputs can be viewed.
+With the switch in the `RUN` position, you can view the CC100's status along with its inputs and outputs.
 
 ![IO-Check with CC100 in RUN mode](/res/Videos/IoCheckRun.gif)
 
-When the operating mode switch is in the `STOP` position, the outputs as well as the serial port can be set manually by the user.
+With the switch in the `STOP` position, outputs and the serial port can be manually configured by the user.
 
 ![IO-Check with CC100 in STOP mode](/res/Videos/IoCheckStop.gif)
-
-<!-- ### Simulation
-
-This button only appears if the simulator is selected in the settings. To be able to use the simulator, it must be started in a Docker container.
-<details>
-<summary>How to run the Container</summary>
-
-#### Before Starting The Simulator:
-- Install [Docker-Desktop](https://www.docker.com/products/docker-desktop/) and make sure that you already installed "WSL" (windows subsystem for linux)
-
-#### Running The Container:
-1. `docker pull wagoeducation/cc100_simulator:V1.0`
-2. `docker run --privileged -d -p 2222:22 -p 3000:3000 --name cc100_simulator --restart always wagoeducation/cc100_simulator:V1.0`
-
-</details> 
-
-In the simulator, the digital inputs can be switched by clicking on the respective switches. The analog inputs can be controlled using the respective slide switches. The operating mode switch can be moved to different states using the green triangles.
-
-![Upload Project](https://raw.github.com/wago-enterprise-education/vscode-wago-cc100/main/res/Videos/showSimulator.gif)
-
- You can find further information on how the simulator works in detail [here](https://svgithub01001.wago.local/education/cc100_simulator/blob/main/README.md). -->
