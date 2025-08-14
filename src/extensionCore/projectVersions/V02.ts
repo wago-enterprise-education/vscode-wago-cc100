@@ -1154,9 +1154,10 @@ export class UploadFunctionality {
                         increment: 20,
                         message: 'Activating Docker...',
                     });
+                    // Wait for dockerd to create docker.sock
                     await connectionManager.executeCommand(
                         id,
-                        '/etc/config-tools/config_docker activate'
+                        '/etc/config-tools/config_docker activate && sleep 1'
                     );
 
                     progress.report({
@@ -1169,18 +1170,6 @@ export class UploadFunctionality {
                     );
                     const imageVersionResult =
                         await this.compareDockerImageVersion(id);
-                    if (filesUpToDate && imageVersionResult.imageUpToDate) {
-                        progress.report({
-                            increment: 100,
-                            message: `The files and docker image on ${controller?.displayname} are already up to date.`,
-                        });
-                        return new Promise<void>((resolve) => {
-                            setTimeout(() => {
-                                resolve();
-                            }, 2000);
-                        });
-                    }
-
 
                     if (!imageVersionResult.imageUpToDate) {
                         progress.report({
@@ -1210,16 +1199,29 @@ export class UploadFunctionality {
                             });
                     }
 
+                    progress.report({
+                        increment: 20,
+                        message: 'Starting Python Application...',
+                    });
                     if (!imageVersionResult.imageUpToDate) {
-                        progress.report({
-                            increment: 20,
-                            message: 'Starting Python Application...',
-                        });
                         await connectionManager.executeScript(
                             id,
                             'dockerCommand.sh',
                             imageVersionResult.wantedVersion
                         );
+                    } else {
+                        const containerStartResult = await connectionManager.executeCommand(
+                            id,
+                            `docker start ${DOCKER_CONSTANTS.CONTAINER_NAME}`
+                        );
+
+                        if(containerStartResult !== DOCKER_CONSTANTS.CONTAINER_NAME) {
+                            await connectionManager.executeScript(
+                                id,
+                                'dockerCommand.sh',
+                                imageVersionResult.currentTag[0]
+                            );
+                        }
                     }
 
                     progress.report({
