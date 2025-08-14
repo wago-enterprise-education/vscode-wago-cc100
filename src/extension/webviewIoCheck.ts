@@ -8,11 +8,34 @@ import { ProjectVersion } from './versionDetection';
 import { extensionContext } from '../extension';
 import { YamlCommands } from '../shared/yamlCommands';
 
+/**
+ * WebView-based IO-Check panel for interactive WAGO CC100 controller testing.
+ * 
+ * This class provides a comprehensive interface for testing and monitoring CC100 controller I/O:
+ * - Digital inputs and outputs (DI/DO)
+ * - Analog inputs and outputs (AI/AO) with calibration
+ * - RS-485 serial communication
+ * - Temperature monitoring
+ * - Controller switch status
+ * 
+ * The webview communicates with the controller via SSH commands executed through
+ * the ConnectionManager, providing real-time I/O interaction capabilities.
+ */
 export class webviewIoCheck {
+    /** Flag controlling whether the panel can be loaded */
     public canLoadPanel: boolean = true;
+    
+    /** Reference to the active webview panel */
     public ioCheckPanel: vscode.WebviewPanel | undefined = undefined;
+    
+    /** VS Code extension context */
     private context: vscode.ExtensionContext;
 
+    /**
+     * Calibration data for analog inputs/outputs.
+     * First row contains channel names, subsequent rows contain calibration values
+     * for different measurement ranges and reference points.
+     */
     calibData: any[][] = [
         ['PT1', 'PT2', 'AI1', 'AI2', 'AO1', 'AO2'],
         ['9663', '1000', '40753', '3000'],
@@ -22,9 +45,17 @@ export class webviewIoCheck {
         ['1050', '350', '8978', '3000'],
         ['1044', '350', '8970', '3000'],
     ];
+    
+    /** Current controller switch position */
     private switchStatus: string;
+    
+    /** Active serial communication connection */
     private serialConnection: any;
 
+    /**
+     * Initializes the IO-Check webview functionality.
+     * Sets up the extension context and registers the command for opening the panel.
+     */
     constructor() {
         this.context = extensionContext;
         this.calibData = [];
@@ -32,19 +63,25 @@ export class webviewIoCheck {
         this.createNewWebview();
     }
 
+    /**
+     * Creates and registers the IO-Check webview command.
+     * Handles panel creation, reuse, and proper disposal.
+     */
     private createNewWebview() {
         extensionContext.subscriptions.push(
             vscode.commands.registerCommand(
                 'vscode-wago-cc100.iocheck',
                 async (element: Controller) => {
-                    // Check if an activeTextEditor is there, either it exists or it is undefined
+                    // Determine which column to show the webview in
                     const columnToShowIn = vscode.window.activeTextEditor
                         ? vscode.window.activeTextEditor.viewColumn
                         : undefined;
 
                     if (this.ioCheckPanel) {
+                        // Reuse existing panel if available
                         this.ioCheckPanel.reveal(columnToShowIn);
                     } else {
+                        // Create new webview panel
                         this.ioCheckPanel = vscode.window.createWebviewPanel(
                             'iocheck',
                             'IO-Check',
@@ -245,7 +282,7 @@ export class webviewIoCheck {
             await this.startEventForSerialCommunication(id);
             await this.startEventForSwitch(id);
 
-            // serieller Zugriff fehlt
+            // Serial access is missing
 
             await ConnectionManager.instance.executeCommand(
                 id,
@@ -280,9 +317,9 @@ export class webviewIoCheck {
                                         '/dev/leds/u1-green/brightness ' + // USR LED green
                                         '/dev/leds/u1-red/brightness ' + // USR LED red
                                         '/dev/leds/led-mmc/brightness &&' + // µSD LED
-                                        'ethtool ethX1 | grep "Link detected*" &&' + // LNK ACT1 | Das Auslesen der Ethernet-LEDs hat die zyklische Abfrage in IO-Check verdoppelt
-                                        'ethtool ethX2 | grep "Link detected*"'
-                                ) // LNK ACT2
+                                        'ethtool ethX1 | grep "Link detected*" &&' + // LNK ACT1 | Reading the Ethernet LEDs has doubled the cyclic polling in IO-Check
+                                        'ethtool ethX2 | grep "Link detected*"' // LNK ACT2
+                                )
                                 .then((data: any) => {
                                     /**
                                      * `[0]` => digital inputs
@@ -531,11 +568,11 @@ export class webviewIoCheck {
      * @param resistance The calibrated value of the PT [Ohm]
      */
     calcCelsius(resistance: number) {
-        // resistance value at 0°C [Ohm]
+        // Resistance value at 0°C [Ohm]
         const r0 = 1000;
-        // temperature coefficient [ppm/K]
+        // Temperature coefficient [ppm/K]
         const tk = 0.00358;
-        // temperature value (rounded to 2 digits after comma) [°C]
+        // Temperature value (rounded to 2 digits after comma) [°C]
         var valTemperature = (resistance - r0) / (r0 * tk);
 
         if (valTemperature > 850.0) {

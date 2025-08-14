@@ -21,11 +21,18 @@ const {
 } = CONNECTION_SETTINGS;
 
 /**
- * The `ConnectionManager` class is a singleton that manages a pool of connections to controllers.
- * It provides methods to add controllers, execute commands or scripts, and manage connections.
- *
- * This class ensures efficient use of resources by reusing existing connections and removing unused ones
- * through a garbage collection mechanism.
+ * Singleton SSH connection manager for WAGO CC100 controllers.
+ * 
+ * Manages a pool of persistent SSH connections to multiple controllers, providing:
+ * - Connection pooling and reuse for efficient resource utilization
+ * - Automatic garbage collection of unused connections
+ * - Command execution and script running capabilities
+ * - File and directory upload functionality
+ * - Connection health monitoring and automatic reconnection
+ * - SSH key-based authentication with fallback to password authentication
+ * 
+ * The manager maintains multiple connections per controller to handle concurrent operations
+ * while respecting configurable connection limits and timeout settings.
  */
 export class ConnectionManager {
     public static readonly instance = new ConnectionManager();
@@ -33,7 +40,13 @@ export class ConnectionManager {
     private connections: Connection[] = [];
 
     /**
-     * Garbage collector that removes unused connections after garbageCollectorInterval, but keeps at least one connection per controller
+     * Private constructor implementing the Singleton pattern.
+     * Initializes the garbage collection timer to clean up unused connections.
+     * 
+     * The garbage collector runs periodically to:
+     * - Remove connections idle longer than the configured interval
+     * - Preserve at least one connection per controller for quick access
+     * - Prevent memory leaks from abandoned connections
      */
     private constructor() {
         setInterval(() => {
@@ -54,13 +67,14 @@ export class ConnectionManager {
     }
 
     /**
-     * Add a new controller to the connection pool with the given credentials
+     * Adds a new controller to the connection pool with SSH credentials.
+     * Creates the initial connection and attempts authentication.
      *
-     * @param controllerId The unique identifier of the controller
-     * @param urn IP address and port of the controller in the format 'ip:port'
-     * @param username User to connect to the controller
-     * @param password Password to connect to the controller (optional)
-     * @throws Error if the controller already exists or if first connection attempt fails
+     * @param controllerId - Unique identifier for the controller
+     * @param urn - Network address in format 'ip:port' (e.g., '192.168.1.100:22')
+     * @param username - SSH username for authentication
+     * @param password - Optional SSH password (if not provided, uses SSH key authentication)
+     * @throws Error if controller already exists or initial connection fails
      */
     public async addController(
         controllerId: number,
@@ -82,12 +96,13 @@ export class ConnectionManager {
     }
 
     /**
-     * Update the credentials of a controller in the connection pool
+     * Updates controller connection credentials and recreates connections.
+     * Disconnects existing connections if credentials have changed.
      *
-     * @param controllerId Unique identifier of the controller
-     * @param urn IP address and port of the controller in the format 'ip:port'
-     * @param username User to connect to the controller
-     * @throws Error if the controller does not exist
+     * @param controllerId - Unique identifier for the controller
+     * @param urn - Network address in format 'ip:port'
+     * @param username - SSH username for authentication
+     * @throws Error if controller does not exist
      */
     public async updateController(
         controllerId: number,
@@ -108,10 +123,11 @@ export class ConnectionManager {
     }
 
     /**
-     * Check if the controller has only one connection
+     * Checks if a controller has exactly one connection remaining.
+     * Used by garbage collector to preserve at least one connection per controller.
      *
-     * @param controllerId Unique identifier of the controller
-     * @returns Boolean True if the controller has only one connection else False
+     * @param controllerId - Unique identifier for the controller
+     * @returns True if only one connection exists for this controller, false otherwise
      */
     private isLastConnection(controllerId: number): Boolean {
         return (
@@ -122,10 +138,10 @@ export class ConnectionManager {
     }
 
     /**
-     * Get all connections of a controller
+     * Retrieves all active connections for a specific controller.
      *
-     * @param controllerId Unique identifier of the controller
-     * @returns Connaction[] Array of connections of the controller
+     * @param controllerId - Unique identifier for the controller
+     * @returns Array of connections associated with the controller
      */
     private getControllerConnections(controllerId: number): Connection[] {
         return this.connections.filter(
@@ -134,13 +150,12 @@ export class ConnectionManager {
     }
 
     /**
-     * Get a free connection of the controller or create a new one if all connections are busy.
-     * Does not create a new connection if the maximum number of connections is reached.
-     * Waits for a free connection if all connections are busy.
+     * Obtains a free connection for the specified controller.
+     * Creates new connections up to the maximum limit, or waits for existing connections to become available.
      *
-     * @param controllerId Unique identifier of the controller
-     * @returns Promise<Connection> A free connection of the controller
-     * @throws Error if the controller does not exist
+     * @param controllerId - Unique identifier for the controller
+     * @returns Promise resolving to an available connection
+     * @throws Error if controller doesn't exist or all connections have failed
      */
     private getFreeConnection(controllerId: number): Promise<Connection> {
         let controllerConnections = this.getControllerConnections(controllerId);
@@ -158,12 +173,12 @@ export class ConnectionManager {
     }
 
     /**
-     * Create a new connection for the controller if the maximum number of connections is not reached.
-     * Waits for a free connection if all connections are busy.
+     * Creates additional connections when needed or waits for existing ones to become free.
+     * Respects the maximum connection limit per controller.
      *
-     * @param controllerId Unique identifier of the controller
-     * @returns Promise<Connection> A free connection of the controller
-     * @throws Error if timeout is reached
+     * @param controllerId - Unique identifier for the controller
+     * @returns Promise resolving to an available connection
+     * @throws Error if timeout is reached while waiting for a free connection
      */
     private async newConnection(controllerId: number): Promise<Connection> {
         const controllerConnections =
@@ -194,12 +209,12 @@ export class ConnectionManager {
     }
 
     /**
-     * Execute a command on the controller
+     * Executes a single command on the specified controller via SSH.
      *
-     * @param controllerId Unique identifier of the controller
-     * @param cmd Command to execute
-     * @returns Promise<string> Output of the command
-     * @throws Error if the controller does not exist
+     * @param controllerId - Unique identifier for the controller
+     * @param cmd - Shell command to execute on the remote controller
+     * @returns Promise resolving to command output as string
+     * @throws Error if controller doesn't exist or command execution fails
      */
     public async executeCommand(
         controllerId: number,
@@ -216,12 +231,15 @@ export class ConnectionManager {
     }
 
     /**
-     * Execute a script on the controller. The script is split into individual commands and executed sequentially.
+     * Executes a multi-line script on the controller.
+     * The script is parsed into individual commands and executed sequentially.
+     * Supports parameter substitution using $1, $2, etc. placeholders.
      *
-     * @param controllerId Unique identifier of the controller
-     * @param file Name of the script file
-     * @returns Promise<string> Output of the script
-     * @throws Error if the controller does not exist
+     * @param controllerId - Unique identifier for the controller
+     * @param file - Script filename located in the extension's script directory
+     * @param args - Arguments to substitute into the script ($1, $2, etc.)
+     * @returns Promise resolving to combined output from all script commands
+     * @throws Error if controller doesn't exist or script execution fails
      */
     public async executeScript(
         controllerId: number,
@@ -251,10 +269,11 @@ export class ConnectionManager {
     }
 
     /**
-     * Split a script into individual commands
+     * Parses a multi-line script into individual executable commands.
+     * Handles line continuations (\), code blocks ({}), comments (#), and empty lines.
      *
-     * @param script Script to split
-     * @returns string[] Array of commands
+     * @param script - Multi-line script content to parse
+     * @returns Array of individual commands ready for execution
      */
     private splitScript(script: string): string[] {
         let cmds: string[] = [];
@@ -286,13 +305,14 @@ export class ConnectionManager {
     }
 
     /**
-     * Upload a directory to the controller
+     * Uploads an entire directory to the controller using SFTP.
+     * Uses atomic upload strategy: upload to temporary location, then move to final destination.
      *
-     * @param controllerId Unique identifier of the controller
-     * @param localPath Path to the local directory
-     * @param remotePath Path to the remote directory
-     * @returns Promise<string> Output of the upload
-     * @throws Error if the controller does not exist
+     * @param controllerId - Unique identifier for the controller
+     * @param localPath - Local directory path to upload
+     * @param remotePath - Remote destination directory path
+     * @returns Promise resolving to success message
+     * @throws Error if controller doesn't exist or upload fails
      */
     public async uploadDirectory(
         controllerId: number,
@@ -360,13 +380,14 @@ export class ConnectionManager {
     }
 
     /**
-     * Upload a file to the controller
+     * Uploads a single file to the controller using SFTP.
+     * Uses atomic upload strategy for reliability.
      *
-     * @param controllerId Unique identifier of the controller
-     * @param localPath Path to the local file
-     * @param remotePath Path to the remote file
-     * @returns Promise<string> Output of the upload
-     * @throws Error if the controller does not exist
+     * @param controllerId - Unique identifier for the controller
+     * @param localPath - Local file path to upload
+     * @param remotePath - Remote destination directory path
+     * @returns Promise resolving to success message
+     * @throws Error if controller doesn't exist or upload fails
      */
     public async uploadFile(
         controllerId: number,
@@ -422,6 +443,12 @@ export class ConnectionManager {
         });
     }
 
+    /**
+     * Splits a remote path into its component directories for recursive creation.
+     *
+     * @param path - Remote path to split into directory components
+     * @returns Array of progressive directory paths for mkdir commands
+     */
     private getAllRemoteDirectories(path: string): string[] {
         let directories: string[] = [];
         let currentPath = '';
@@ -433,6 +460,13 @@ export class ConnectionManager {
         return directories;
     }
 
+    /**
+     * Recursively discovers all directories in a local path.
+     * Used to recreate directory structure on remote controller.
+     *
+     * @param path - Local directory path to scan
+     * @returns Generator yielding directory paths for remote creation
+     */
     private *getAllLocalDirectories(path: string): Generator<string> {
         const files = fs.readdirSync(path);
 
@@ -445,9 +479,10 @@ export class ConnectionManager {
     }
 
     /**
-     * Remove a controller from the connection pool
+     * Removes all connections for a specific controller from the pool.
+     * Called when a controller is removed from the project configuration.
      *
-     * @param controllerId Unique identifier of the controller
+     * @param controllerId - Unique identifier for the controller to remove
      */
     public removeConnection(controllerId: number) {
         const indicesToRemove: number[] = [];
@@ -464,21 +499,24 @@ export class ConnectionManager {
     }
 
     /**
-     * Get a connection of the controller. The connection is not handled by the connection manager
-     * and therefore not removed by the garbage collector and should be disconnected manually.
+     * Creates an independent connection for special operations requiring extended duration.
+     * This connection is NOT managed by the connection pool and must be manually disconnected.
+     * Used for operations like debugging, port forwarding, or long-running tasks.
      *
-     * @param controllerId Unique identifier of the controller
-     * @returns Connection A connection of the controller
+     * @param controllerId - Unique identifier for the controller
+     * @returns Promise resolving to an independent Connection instance
      */
     public async getConnection(controllerId: number): Promise<Connection> {
         return this.getControllerConnections(controllerId)[0].duplicate();
     }
 
     /**
-     * Ping controller and return the time in milliseconds
+     * Tests connection responsiveness by measuring round-trip time.
+     * Useful for connection health monitoring and network diagnostics.
      *
-     * @param controllerId Unique identifier of the controller
-     * @returns Promise<number> Time in milliseconds to ping the controller
+     * @param controllerId - Unique identifier for the controller
+     * @returns Promise resolving to ping time in milliseconds
+     * @throws Error if controller doesn't exist or ping fails
      */
     public async ping(controllerId: number): Promise<number> {
         let connection: Connection;
@@ -499,10 +537,18 @@ export class ConnectionManager {
 }
 
 /**
- * Represents a connection to a remote controller using SSH.
- * This class manages the connection lifecycle, including authentication
- * with either a password or an SSH key, and provides methods to execute
- * commands on the remote controller.
+ * Individual SSH connection to a WAGO CC100 controller.
+ * 
+ * Manages the lifecycle of a single SSH connection including:
+ * - SSH key generation and password-based authentication fallback
+ * - Automatic reconnection with exponential backoff
+ * - Command execution with proper error handling
+ * - SFTP file transfer capabilities
+ * - SSH port forwarding for debugging and remote access
+ * - Connection state tracking and usage monitoring
+ * 
+ * Each connection can handle one command at a time and tracks its busy state
+ * to support the connection manager's pooling strategy.
  */
 class Connection {
     public readonly controllerId: number;
@@ -520,11 +566,12 @@ class Connection {
     private disconnected: boolean = false;
 
     /**
-     * Creates a new `Connection` instance.
+     * Creates a new SSH connection instance.
      *
-     * @param controllerId - The unique identifier of the controller.
-     * @param urn - The URN of the controller, including host and port.
-     * @param username - The username used for authentication.
+     * @param controllerId - Unique identifier for the target controller
+     * @param urn - Network address in format 'host:port' (e.g., '192.168.1.100:22')
+     * @param username - SSH username for authentication
+     * @param askPassword - Whether to prompt for password on authentication failure (default: false)
      */
     constructor(
         controllerId: number,
@@ -541,10 +588,12 @@ class Connection {
     }
 
     /**
-     * Initializes the connection to the remote controller.
+     * Establishes SSH connection to the remote controller.
+     * Implements automatic reconnection and authentication fallback strategy.
      *
-     * @param password - (Optional) The password for authentication. If not provided, SSH key authentication is used.
-     * @returns - Promise that resolves when the connection is established.
+     * @param password - Optional password for authentication (triggers SSH key setup if provided)
+     * @returns Promise resolving when connection is established
+     * @throws Error if connection fails after all retry attempts
      */
     public init(password?: string | undefined): Promise<void> {
         if (this.disconnected) return Promise.reject(new Error("Connection is disconnected"));
@@ -631,6 +680,12 @@ class Connection {
         });
     }
 
+    /**
+     * Prompts user for password when SSH key authentication fails.
+     * Includes option to disable future password prompts for this controller.
+     *
+     * @returns Promise resolving to user-entered password or empty string if cancelled
+     */
     private async requestPassword(): Promise<string> {
         if(this.passwordNotification) return '';
         this.passwordNotification = true;
@@ -655,9 +710,11 @@ class Connection {
     }
 
     /**
-     * Creates a duplicate of the current connection instance.
+     * Creates an independent duplicate of this connection.
+     * The new connection shares credentials but operates independently.
      *
-     * @returns A new `Connection` instance with the same properties as the current one.
+     * @returns Promise resolving to a new Connection instance
+     * @throws Error if the duplicate connection cannot be established
      */
     public async duplicate(): Promise<Connection> {
         const connection = new Connection(
@@ -678,6 +735,16 @@ class Connection {
         });
     }
 
+    /**
+     * Sets up SSH port forwarding for local access to remote services.
+     * Creates a local TCP server that forwards connections to the remote controller.
+     * Used primarily for Python debugging via debugpy.
+     *
+     * @param localPort - Local port number to listen on
+     * @param remotePort - Remote port number to forward to
+     * @returns Promise resolving when forwarding is established
+     * @throws Error if port forwarding setup fails
+     */
     public forwardPort(localPort: number, remotePort: number): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             this.server = net.createServer((socket) => {
@@ -720,8 +787,9 @@ class Connection {
     }
 
     /**
-     * Generates an SSH key pair if it does not already exist.
-     * The keys are stored in predefined file paths.
+     * Generates RSA SSH key pair if not already present.
+     * Keys are stored in the user's home directory for persistent authentication.
+     * Uses 2048-bit RSA keys with extension-specific comment for identification.
      */
     private generateSSHKey() {
         if (fs.existsSync(publicKeyPath) && fs.existsSync(privateKeyPath))
@@ -740,9 +808,9 @@ class Connection {
     }
 
     /**
-     * Sends the public SSH key to the remote controller, adding it to the
-     * authorized keys for passwordless authentication.
-     * The key is stored on the user's home directory in the `.ssh` folder.
+     * Installs the public SSH key on the remote controller for passwordless authentication.
+     * Appends the key to the user's authorized_keys file, creating the directory if needed.
+     * Called automatically after successful password authentication.
      */
     private async sendSSHKey() {
         this.generateSSHKey();
@@ -756,10 +824,11 @@ class Connection {
     }
 
     /**
-     * Executes a command on the remote controller.
+     * Executes a shell command on the remote controller.
+     * Marks the connection as busy during execution and updates last-used timestamp.
      *
-     * @param cmd - The command to execute.
-     * @returns A promise that resolves with the output of the command.
+     * @param cmd - Shell command to execute remotely
+     * @returns Promise resolving to command output (stdout), empty string on error
      */
     public executeCommand(cmd: string): Promise<string> {
         return new Promise<string>((resolve, _reject) => {
@@ -786,6 +855,14 @@ class Connection {
         });
     }
 
+    /**
+     * Executes a command with real-time output streaming.
+     * Used for long-running commands or monitoring operations where immediate feedback is needed.
+     *
+     * @param cmd - Shell command to execute remotely
+     * @param onData - Callback function for processing output data chunks
+     * @param onError - Callback function for handling execution errors
+     */
     public streamCommand(
         cmd: string,
         onData: (data: Buffer) => void,
@@ -800,11 +877,13 @@ class Connection {
     }
 
     /**
-     * Uploads a file or directory to the remote controller.
+     * Uploads files or directories to the remote controller via SFTP.
+     * Handles both individual files and directory trees with recursive upload.
      *
-     * @param localPath Path to the local file or directory.
-     * @param remotePath Path to the remote file or directory.
-     * @returns Promise that resolves when the upload is complete.
+     * @param localPath - Local file or directory path to upload
+     * @param remotePath - Remote destination path
+     * @returns Promise resolving to success message when upload completes
+     * @throws Error if SFTP connection fails or upload encounters errors
      */
     public upload(localPath: string, remotePath: string): Promise<string> {
         return new Promise<string>((resolve, reject) => {
@@ -851,6 +930,13 @@ class Connection {
         });
     }
 
+    /**
+     * Recursively collects all files in a directory tree.
+     * Used to build file lists for SFTP upload operations.
+     *
+     * @param path - Directory path to scan (or individual file path)
+     * @returns Generator yielding absolute file paths
+     */
     private *getAllLocalFiles(path: string): Generator<string> {
         if(fs.lstatSync(path).isFile()) {
             yield path;
@@ -869,7 +955,9 @@ class Connection {
     }
 
     /**
-     * Disconnects the client from the remote controller
+     * Cleanly disconnects from the remote controller.
+     * Closes SSH connection, stops port forwarding, and marks connection as disconnected.
+     * Called by connection manager during cleanup or when connection is no longer needed.
      */
     public disconnect() {
         console.debug(`Disconnecting from ${this.urn}`);

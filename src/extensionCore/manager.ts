@@ -5,12 +5,18 @@ import { ProjectFactory } from './factorys/factoryProject';
 import { ControllerFactory } from './factorys/factoryController';
 
 /**
- * Manager class for WAGO Controllerproject operations.
+ * Central manager for all WAGO controller project operations.
  *
- * This class implements the Singleton design pattern, ensuring that only one
- * instance exists throughout the application lifecycle. It provides methods
- * for controller management operations such as uploading, editing settings,
- * resetting, adding, removing, and renaming controllers.
+ * This singleton class serves as the main orchestrator for controller management,
+ * delegating operations to version-specific implementations through factory patterns.
+ * It provides a unified API for:
+ * - Project upload operations (single controller or all controllers)
+ * - Controller lifecycle management (add, remove, reset, configure)
+ * - Settings and connection management
+ * - Tree view data provision
+ *
+ * The manager automatically adapts its behavior based on the detected project version
+ * (V01 for legacy single-controller projects, V02 for modern multi-controller projects).
  *
  * @class Manager
  * @singleton
@@ -20,12 +26,13 @@ export class Manager {
     private versionNr: number;
 
     private constructor() {
+        // Cache the current project version for consistent behavior across operations
         this.versionNr = ProjectVersion;
     }
 
     /**
      * Gets the singleton instance of the Manager class.
-     * If the instance doesn't exist yet, it creates one.
+     * Creates the instance on first access using lazy initialization.
      *
      * @returns The singleton Manager instance
      */
@@ -36,15 +43,21 @@ export class Manager {
         return Manager.instance!;
     }
     /**
-     * Uploads the project with the specified version number to the target identified by the given ID.
+     * Uploads the current project's source code to a specific controller.
+     * Delegates to version-specific upload implementation via ProjectFactory.
      *
-     * @param id - The identifier of the upload target
+     * @param controller - Target controller for upload (undefined for user selection prompt)
      */
     public upload(controller: Controller | undefined) {
         ProjectFactory.getInstance()
             .createUploadCommand(this.versionNr)
             .uploadController(controller);
     }
+    /**
+     * Uploads the current project to all configured controllers simultaneously.
+     * Only available in V02 projects that support multiple controllers.
+     * Delegates to version-specific implementation via ProjectFactory.
+     */
     public uploadAll() {
         ProjectFactory.getInstance()
             .createUploadAllCommand(this.versionNr)
@@ -136,6 +149,12 @@ export class Manager {
             });
     }
 
+    /**
+     * Opens controller-specific configuration dialogs.
+     * Allows modification of advanced controller settings beyond basic network configuration.
+     *
+     * @param controller - Controller to configure (undefined for user selection prompt)
+     */
     public configureController(controller: Controller | undefined){
         ProjectFactory.getInstance()
             .createConfigureCommand(this.versionNr)
@@ -157,11 +176,9 @@ export class Manager {
             .getChildren(element);
     }
     /**
-     * Establishes connections through the ProjectFactory.
-     *
-     * Uses the singleton instance of ProjectFactory to create an object capable
-     * of establishing connections based on the current version number, and then
-     * initiates the connection establishment process.
+     * Establishes SSH connections to all controllers defined in the current project.
+     * Called during extension activation to enable communication with hardware.
+     * Delegates to version-specific connection logic via ProjectFactory.
      */
     public establishConnections() {
         ProjectFactory.getInstance()
@@ -169,6 +186,13 @@ export class Manager {
             .establishConnections();
     }
 
+    /**
+     * Retrieves the USB-C interface IP address for a specific controller.
+     * Used for establishing direct USB-C connections to controllers.
+     *
+     * @param controllerId - ID of the controller to get USB-C IP for
+     * @returns The default USB-C IP address for the specified controller
+     */
     public getUSB_C_IP(controllerId: number): string {
         const engine = ProjectFactory.getInstance().createGetEngine(this.versionNr).getEngine(controllerId);
         return ControllerFactory.getInstance().createGetUSB_C_IP(engine).getUSB_C_IP();

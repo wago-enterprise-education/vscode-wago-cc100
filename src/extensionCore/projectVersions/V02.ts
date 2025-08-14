@@ -183,7 +183,6 @@ export class ResetController implements Interface.ResetControllerInterface {
             },
             async (progress, _token) => {
                 try {
-                    //---------------- TO EDIT
                     progress.report({ message: `Stopping Container...` });
                     await ConnectionManager.instance.executeCommand(
                         controllerId,

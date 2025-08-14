@@ -1,9 +1,16 @@
 /**
- * Shared types and enums used across the VS Code WAGO CC100 extension
+ * Shared type definitions and enums for the WAGO CC100 extension.
+ * 
+ * This module provides TypeScript type safety across the extension by defining:
+ * - Controller configuration structures
+ * - Setting name mappings and enums
+ * - Project configuration types
+ * - Display name adapters for UI consistency
  */
 
 /**
- * Represents a controller type with its configuration details
+ * Core controller configuration type for V02 projects.
+ * Represents a controller entry in the wago.yaml file.
  */
 export type ControllerType = {
     id: number;
@@ -15,8 +22,9 @@ export type ControllerType = {
 };
 
 /**
- * Extended controller settings that include network configuration
- * Used in V02 project versions that support additional networking features
+ * Extended controller network settings for V02 projects.
+ * Includes advanced networking options like netmask, gateway, and auto-update.
+ * Used in controller-specific YAML configuration files.
  */
 export type ControllerSettingsExtendedType = {
     connection: string;
@@ -29,7 +37,8 @@ export type ControllerSettingsExtendedType = {
 };
 
 /**
- * Enum representing available settings for the wago.yaml file
+ * Enumeration of configurable settings in the main wago.yaml file.
+ * These settings define controller identity and application configuration.
  */
 export enum WagoSettings {
     displayname = 'displayname',
@@ -40,7 +49,8 @@ export enum WagoSettings {
 }
 
 /**
- * Enum representing available settings for the controller.yaml file
+ * Enumeration of network and connection settings in controller-specific YAML files.
+ * These settings control how the extension connects to and communicates with controllers.
  */
 export enum ControllerSettings {
     connection = 'connection',
@@ -53,8 +63,8 @@ export enum ControllerSettings {
 }
 
 /**
- * Enum representing various display settings used in the application.
- * Each setting corresponds to a specific configuration property.
+ * Human-readable display names for settings shown in the VS Code UI.
+ * Maps internal setting keys to user-friendly labels for dialogs and tree views.
  */
 export enum Setting {
     displayname = 'Name',
@@ -72,8 +82,8 @@ export enum Setting {
 }
 
 /**
- * Enum representing the various settings for an adapter configuration.
- * Each member of the enum corresponds to a specific configuration property.
+ * Reverse mapping adapter from display names back to internal setting keys.
+ * Used to convert user-selected display names back to configuration property names.
  */
 export enum SettingAdapter {
     Name = 'displayname',
@@ -91,8 +101,8 @@ export enum SettingAdapter {
 }
 
 /**
- * Enum representing the keys used in the settings JSON configuration (V01).
- * Each key corresponds to a specific configuration option.
+ * Configuration keys for V01 project settings.json files.
+ * Legacy projects use this simpler configuration format with boolean connection flags.
  */
 export enum SettingsJson {
     connection = 'connection',
@@ -106,7 +116,8 @@ export enum SettingsJson {
 }
 
 /**
- * Enum representing available engines/controllers.
+ * Supported controller hardware types.
+ * Currently only CC100 is supported, but this enum allows for future expansion.
  */
 export enum Engine {
     CC100 = 'CC100',

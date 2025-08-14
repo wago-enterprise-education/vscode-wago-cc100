@@ -12,19 +12,54 @@ import path from 'path';
 import { Setting, SettingAdapter, SettingsJson } from '../../shared/types';
 import { UPLOAD_PATH } from '../../shared/constants';
 
+/**
+ * V01 Project Version Implementation
+ * 
+ * This file contains all the implementations for V01 (legacy) WAGO projects.
+ * V01 projects are characterized by:
+ * - Single controller support only
+ * - settings.json configuration file
+ * - Simplified project structure
+ * - Limited network configuration options
+ * 
+ * All classes in this file implement interfaces from projectInterface.ts
+ * to ensure compatibility with the factory pattern used by the extension.
+ */
+
+/**
+ * Engine detection for V01 projects.
+ * V01 projects only support CC100 controllers.
+ */
 export class GetEngine implements Interface.GetEngineInterface {
+    /**
+     * Returns the engine type for V01 projects (always CC100).
+     * @param _controllerId - Controller ID (unused in V01 as only one controller is supported)
+     * @returns Always returns 'CC100' for V01 projects
+     */
     getEngine(_controllerId: number): string {
         return 'CC100';
     }
 }
 
+/**
+ * Handles project upload functionality for V01 projects.
+ * Uploads Python code and resources to the single supported controller.
+ */
 export class UploadController implements Interface.UploadInterface {
+    /**
+     * Uploads the current project to the specified controller.
+     * In V01, there's only one controller (ID 0), so the controller parameter
+     * is mainly for interface compliance.
+     * 
+     * @param controller - Target controller (defaults to controller 0 if undefined)
+     */
     async uploadController(controller: Controller | undefined) {
         if (!vscode.workspace.workspaceFolders) {
             vscode.window.showErrorMessage('No workspace is open');
             return;
         }
 
+        // Use default controller if none specified (V01 limitation)
         if (!controller) {
             controller = {
                 controllerId: 0,
@@ -182,50 +217,40 @@ export class EditSettings implements Interface.EditSettingsInterface {
     }
 }
 /**
- * Represents a class responsible for establishing connections.
- * Implements the `EstablishConnectionsInterface` from the `Interface` namespace.
+ * Establishes SSH connections for V01 projects.
+ * V01 projects support only a single controller with configuration stored in settings.json.
  */
 export class EstablishConnections
     implements Interface.EstablishConnectionsInterface
 {
     /**
-     * Establishes connections by retrieving the controller information
-     * from `JsonCommands` and adding it to the `ConnectionManager`.
-     *
-     * @returns A promise that resolves when the connection is successfully established.
+     * Establishes connection to the single controller defined in settings.json.
+     * Reads controller configuration and adds it to the connection manager.
      */
     async establishConnections() {
         const controller = JsonCommands.getController();
         ConnectionManager.instance.addController(
-            0,
+            0,  // V01 always uses controller ID 0
             `${controller.ip}:${controller.port}`,
             controller.user
         );
     }
 }
+
 /**
- * Represents a class that provides methods to retrieve child elements
- * for a given controller or controller item.
+ * Provides tree view data for V01 projects.
+ * Manages the hierarchical display of the single controller and its settings.
  */
 export class ViewChildren implements Interface.ViewChildrenInterface {
     /**
-     * Retrieves the child elements of a given controller or controller item.
-     *
-     * @param element - The parent element for which to retrieve children.
-     *                  It can be a `Controller`, `ControllerItem`, or `undefined`.
-     * @returns A promise that resolves to a `vscode.ProviderResult` containing
-     *          an array of `Controller` or `ControllerItem` objects, or an empty array
-     *          if no children are found.
-     *
-     * The method performs the following:
-     * - If no `element` is provided, it checks the online status of the controller
-     *   and returns a new `Controller` instance.
-     * - If the `element` is a `Controller`, it retrieves and returns an array of
-     *   `ControllerItem` objects representing the controller's settings.
-     * - If the `element` is neither provided nor a `Controller`, it resolves to an empty array.
-     *
-     * The method also handles connection updates and pings to determine the online
-     * status of the controller.
+     * Retrieves child elements for the tree view based on the current element.
+     * 
+     * For V01 projects:
+     * - Root level: Returns the single controller
+     * - Controller level: Returns controller settings (connection, IP, port, user, autoupdate)
+     * 
+     * @param element - The parent element (undefined for root, Controller for settings)
+     * @returns Promise resolving to array of controllers or controller settings
      */
     async getChildren(
         element?: Controller | ControllerItem | undefined
@@ -234,6 +259,7 @@ export class ViewChildren implements Interface.ViewChildrenInterface {
         if (!controller) return Promise.resolve([]);
 
         if (!element) {
+            // Root level: return the single controller with online status
             let online = false;
 
             try {
@@ -251,8 +277,10 @@ export class ViewChildren implements Interface.ViewChildrenInterface {
             return Promise.all([new Controller(0, 'Controller', online)]);
         } else {
             if (element instanceof Controller) {
+                // Controller level: return all available settings
                 const settingArray = [];
 
+                // Always show connection type
                 settingArray.push(
                     new ControllerItem(
                         element.controllerId,
@@ -260,6 +288,8 @@ export class ViewChildren implements Interface.ViewChildrenInterface {
                         controller.connection
                     )
                 );
+                
+                // Show IP only for ethernet connections
                 if (controller.connection === 'ethernet') {
                     settingArray.push(
                         new ControllerItem(
@@ -269,6 +299,8 @@ export class ViewChildren implements Interface.ViewChildrenInterface {
                         )
                     );
                 }
+                
+                // Always show port, user, and autoupdate settings
                 settingArray.push(
                     new ControllerItem(
                         element.controllerId,
@@ -297,13 +329,17 @@ export class ViewChildren implements Interface.ViewChildrenInterface {
         return Promise.resolve([]);
     }
 }
+/**
+ * Utility class for managing settings.json operations in V01 projects.
+ * Provides methods to read and write controller configuration data.
+ */
 export class JsonCommands {
     /**
-     * Reads the content of the `settings.json` file located in the workspace folder.
-     *
-     * @private
-     * @returns {object} The content of the `settings.json` file parsed as a JavaScript object.
-     * @throws {Error} If the file cannot be read or parsed.
+     * Reads and parses the settings.json file from the workspace root.
+     * This file contains all controller configuration for V01 projects.
+     * 
+     * @returns Parsed JSON object containing controller settings
+     * @throws Error if the file cannot be read or parsed
      */
     private static getSettingsJson() {
         return JSON.parse(
@@ -313,12 +349,13 @@ export class JsonCommands {
             )
         );
     }
+    
     /**
-     * Updates a specific attribute in the `settings.json` file with the provided value.
-     *
-     * @param {settingsJson} attribute - The key in the `settings.json` file to update.
-     * @param {string} value - The new value to assign to the specified attribute.
-     * @throws {Error} If the file cannot be written.
+     * Updates a specific setting in the settings.json file.
+     * 
+     * @param attribute - The setting key to update (from SettingsJson enum)
+     * @param value - The new value to assign to the setting
+     * @throws Error if the file cannot be written
      */
     public static writeJson(attribute: SettingsJson, value: string) {
         let json = this.getSettingsJson();
@@ -328,78 +365,73 @@ export class JsonCommands {
             JSON.stringify(json, null, '\t')
         );
     }
+    
     /**
-     * Retrieves the controller configuration from the `settings.json` file.
-     *
-     * @returns {object} An object containing the controller's connection type, IP address, port, user, and autoupdate settings.
-     * @throws {Error} If the `settings.json` file cannot be read or parsed.
+     * Retrieves the controller configuration from settings.json.
+     * Processes the raw settings into a normalized controller object.
+     * 
+     * @returns Controller configuration object with connection details
      */
     public static getController() {
         const settings = this.getSettingsJson();
+        
+        // Determine connection type from boolean flags
         let connectionType = '';
         if (settings.ethernet === 'true') connectionType = 'ethernet';
         if (settings.usb_c === 'true') connectionType = 'usb-c';
 
         return {
             connection: connectionType,
-            ip: settings.ip_adress,
+            ip: settings.ip_adress,  // Note: kept original typo for compatibility
             port: settings.port,
             user: settings.user,
             autoupdate: settings.autoupdate,
         };
     }
 }
-//===================================================================================
-// Upload Functionality
-//===================================================================================
 
-let connectionManager = ConnectionManager.instance;
-
+/**
+ * Utility class for editing individual controller settings in V01 projects.
+ * Provides methods to modify settings.json values through user dialogs.
+ */
 export class EditSettingsFunctionality {
     /**
-     * Edits a specific setting in the application's configuration.
-     *
-     * @param id - The identifier for the setting to be edited (currently unused in the function).
-     * @param settingToEdit - The name of the setting to edit. Supported values are:
-     *   - `"connection"`: Allows the user to select a connection type (`usb-c` or `ethernet`).
-     *   - `"ip"`: Prompts the user to input an IP address.
-     *   - `"port"`: Prompts the user to input a port value.
-     *   - `"user"`: Prompts the user to input a username.
-     *   - `"autoupdate"`: Allows the user to toggle the autoupdate setting (`on` or `off`).
-     *
-     * The function interacts with the user through VS Code's UI components (e.g., `showQuickPick` and `showInputBox`)
-     * to gather input for the specified setting. It then updates the corresponding JSON configuration using
-     * `JsonCommands.writeJson`.
-     *
-     * If the workspace is not open, an error message is displayed, and the function exits early.
-     *
-     * @returns A `Promise<void>` that resolves when the operation is complete.
+     * Opens appropriate dialogs to edit a specific controller setting.
+     * Handles different setting types with specialized input methods.
+     * 
+     * @param _id - Controller ID (unused in V01 as only one controller exists)
+     * @param settingToEdit - The name of the setting to edit
      */
     public static async editSetting(_id: number, settingToEdit: string) {
         if (!vscode.workspace.workspaceFolders) {
             vscode.window.showErrorMessage('No workspace is open');
             return;
         }
+        
         let content;
         switch (settingToEdit) {
             case 'connection':
+                // Connection type selection (USB-C or Ethernet)
                 let conType =
                     (await vscode.window.showQuickPick(['usb-c', 'ethernet'], {
                         title: 'Connection Type',
                         canPickMany: false,
                     })) || '';
                 if (!conType) return;
+                
                 switch (conType) {
                     case 'usb-c':
+                        // Set USB-C connection and default IP
                         JsonCommands.writeJson(SettingsJson.usb_c, 'true');
                         JsonCommands.writeJson(SettingsJson.simulator, 'false');
                         JsonCommands.writeJson(SettingsJson.ethernet, 'false');
                         JsonCommands.writeJson(
                             SettingsJson.ip_adress,
-                            '192.168.42.42'
+                            '192.168.42.42'  // Default USB-C IP
                         );
                         break;
                     case 'ethernet':
+                        // Set Ethernet connection
                         JsonCommands.writeJson(SettingsJson.usb_c, 'false');
                         JsonCommands.writeJson(SettingsJson.simulator, 'false');
                         JsonCommands.writeJson(SettingsJson.ethernet, 'true');
@@ -410,17 +442,22 @@ export class EditSettingsFunctionality {
                 break;
 
             case 'ip':
+                // IP address input
                 content = await this.getInput();
                 if (!content) return;
                 JsonCommands.writeJson(SettingsJson.ip_adress, content);
                 break;
+                
             case 'port':
             case 'user':
+                // Generic text input for port and user
                 content = await this.getInput();
                 if (!content) return;
                 JsonCommands.writeJson(SettingsJson[settingToEdit], content);
                 break;
+                
             case 'autoupdate':
+                // Autoupdate toggle
                 let status =
                     (await vscode.window.showQuickPick(['on', 'off'], {
                         title: 'Autoupdate',
@@ -430,6 +467,7 @@ export class EditSettingsFunctionality {
 
                 JsonCommands.writeJson(SettingsJson[settingToEdit], status);
                 break;
+                
             default:
                 vscode.window.showErrorMessage('Invalid Attribute Type');
                 break;
@@ -437,10 +475,9 @@ export class EditSettingsFunctionality {
     }
 
     /**
-     * Prompts the user with an input box to enter a value for a setting.
-     *
-     * @returns A promise that resolves to the string entered by the user.
-     *          If the user cancels the input box, an empty string is returned.
+     * Displays a generic input dialog for setting values.
+     * 
+     * @returns Promise resolving to user input or empty string if cancelled
      */
     private static async getInput(): Promise<string> {
         let input =
@@ -451,10 +488,14 @@ export class EditSettingsFunctionality {
         return input;
     }
 }
-//===================================================================================
-// Upload Functionality
-//===================================================================================
 
+// Cached connection manager instance for upload operations
+let connectionManager = ConnectionManager.instance;
+
+/**
+ * Main upload functionality class for V01 projects.
+ * Handles file upload, folder comparison, and controller management.
+ */
 export class UploadFunctionality {
     /**
      * Uploads project files to the controller with the specified ID.
@@ -505,25 +546,28 @@ export class UploadFunctionality {
                     message: 'Killing all Python Scripts...',
                 });
                 try {
-                    //kill all python processes
+                    // Kill all python processes
                     await connectionManager.executeCommand(
                         id,
                         'killall python3'
                     );
+
+                    // Create bootapplication
                     progress.report({
                         increment: 10,
                         message: 'Creating Bootapplication...',
                     });
-                    //Create bootapplication
                     connectionManager.executeCommand(
                         id,
                         `echo '#!/bin/sh\npython3 ${UPLOAD_PATH}lib/runtimeCC.py &\nstty -F /dev/ttySTM1 cstopb brkint -icrnl -ixon -opost -isig icanon -iexten -echo' > /etc/init.d/S99_python_runtime`
                     );
+
+                    // Upload Files
                     progress.report({ increment: 20, message: 'Uploading...' });
-                    //Upload Files
                     await connectionManager.uploadDirectory(id, srcPath, UPLOAD_PATH);
+
+                    // Execute File
                     progress.report({ increment: 20, message: 'Executing...' });
-                    //Execute File
                     await connectionManager.executeCommand(
                         id,
                         `nohup python3 ${UPLOAD_PATH}lib/runtimeCC.py > /dev/null 2>&1 &`
@@ -550,20 +594,19 @@ export class UploadFunctionality {
     }
 
     /**
-     * This method is used to compare the contents of a folder on the WAGO Controller with the local folder,
-     * using Hashes to compare the contents.
-     *
-     * @param id The id of the used controller
-     * @param localPath The Path to the local folder with the python program
-     * @returns Returns true, if folder contents are equivalent, false if not
+     * Compares local and remote folder contents using MD5 hashes.
+     * This optimization prevents unnecessary uploads when files haven't changed.
+     * 
+     * @param id - Controller ID
+     * @param localPath - Path to local source directory
+     * @returns Promise resolving to true if folders are identical, false otherwise
      */
-
     private async compareFolders(
         id: number,
         localPath: string
     ): Promise<Boolean> {
         try {
-            // Get Array of remote Hashes
+            // Get MD5 hashes of all remote files
             let remoteHashes = await connectionManager.executeCommand(
                 id,
                 `find ${UPLOAD_PATH} -type f -exec md5sum {} +`
@@ -571,11 +614,12 @@ export class UploadFunctionality {
             let remoteHash = this.createFolderHash(remoteHashes);
             console.debug('Remote Hash: ' + remoteHash);
 
-            //Get Array of local Hashes
+            // Get MD5 hashes of all local files
             let localHashes = await this.getLocalHashes(localPath);
             let localHash = this.createFolderHash(localHashes);
             console.debug('Local Hash: ' + localHash);
 
+            // Compare composite hashes
             return Promise.resolve(localHash === remoteHash);
         } catch (error) {
             console.error('Error comparing folders:', error);
@@ -584,58 +628,50 @@ export class UploadFunctionality {
     }
 
     /**
-     * Generates a hash for a given string of folder hashes.
-     *
-     * The method processes the input string by:
-     * - Replacing all newline characters with double spaces.
-     * - Splitting the string into an array using double spaces as the delimiter.
-     * - Filtering the array to include only elements at even indices.
-     * - Sorting the resulting array in lexicographical order.
-     * - Joining the sorted array into a single string without commas.
-     *
-     * Finally, the processed string is hashed using the MD5 algorithm, and the resulting
-     * hexadecimal hash is returned.
-     *
-     * @param hashes - A string containing folder hashes to be processed and hashed.
-     * @returns The MD5 hash of the processed folder hashes.
+     * Creates a composite hash from individual file hashes.
+     * Processes hash strings to create a deterministic folder signature.
+     * 
+     * @param hashes - String containing file hashes from md5sum command
+     * @returns MD5 hash of the processed hash collection
      */
     private createFolderHash(hashes: string): string {
+        // Process hash string: normalize, extract hashes, sort, and combine
         hashes = hashes
             .replaceAll('\n', '  ')
             .split('  ')
             .filter((_val, index) => {
-                return index % 2 === 0;
+                return index % 2 === 0;  // Extract only hash values, not file paths
             })
-            .sort((a, b) => a.localeCompare(b))
+            .sort((a, b) => a.localeCompare(b))  // Sort for deterministic result
             .toString()
             .replaceAll(',', '');
 
+        // Create final hash of the combined hashes
         let hash = crypto.createHash('md5').update(hashes).digest('hex');
-
         return hash;
     }
 
     /**
-     * This Method is used to get the Hashes of all files in a directory
-     * It is made to resemble the output of the following linux command:
-     * find ${src} -type f -exec md5sum {} +
-     *
-     * @param path The Path to the directory to get the Hashes from
-     * @returns Returns a String with Hashes and Paths to all files in the directory
+     * Generates MD5 hashes for all files in a local directory.
+     * Mimics the output format of the Linux 'find ... -exec md5sum {} +' command.
+     * 
+     * @param path - Local directory path to process
+     * @returns Promise resolving to hash string in md5sum format
      */
-
     private async getLocalHashes(path: string): Promise<string> {
         try {
             let localFiles = await this.getFilesInDirectory(path);
             let localHashes = '';
 
-            //For Each File from Path in localFiles Array create Hash and add to localHashes
+            // Generate MD5 hash for each file
             for (let file of localFiles) {
                 let fileContent = fs.readFileSync(file, 'utf8');
                 let hash = crypto
                     .createHash('md5')
                     .update(fileContent)
                     .digest('hex');
+                    
+                // Build hash string in md5sum format
                 if (localHashes.length == 0) {
                     localHashes = `${localHashes}${hash}  ${file}`;
                 } else {
@@ -651,18 +687,19 @@ export class UploadFunctionality {
     }
 
     /**
-     * This Method is used to get Paths to every file in the current directory
-     *
-     * @param dirPath The current folder to be iterated
-     * @returns Returns an Array with all Paths to files in the directory
+     * Recursively collects all file paths in a directory.
+     * Used to build a comprehensive list for hash comparison.
+     * 
+     * @param dirPath - Directory to scan recursively
+     * @returns Promise resolving to array of absolute file paths
      */
-
     private async getFilesInDirectory(dirPath: string): Promise<string[]> {
         try {
             let files: string[] = [];
             let read = fs.readdirSync(dirPath, { recursive: true });
             let dirFiles = read.map(String);
 
+            // Filter for files only (exclude directories)
             for (const file of dirFiles) {
                 const fullPath = path.join(dirPath, file);
                 const stat = fs.statSync(fullPath);
@@ -678,8 +715,17 @@ export class UploadFunctionality {
         }
     }
 
+    /**
+     * Deactivates CodeSys3 runtime on the controller.
+     * This prevents conflicts with Python applications.
+     * 
+     * @param id - Controller ID
+     */
     private async deactivateCodeSys3(id: number) {
+        // Kill CodeSys3 processes
         await connectionManager.executeCommand(id, 'kill $(pidof codesys3)');
+        
+        // Disable CodeSys3 runtime through configuration tool
         await connectionManager
             .executeCommand(
                 id,
