@@ -100,7 +100,7 @@ export class ResetController implements Interface.ResetControllerInterface {
                     });
                     await ConnectionManager.instance.executeCommand(
                         controllerId,
-                        'rm -rf /home/user/python_bootapplication/*'
+                        `rm -rf ${UPLOAD_PATH}*`
                     );
                     progress.report({
                         increment: 10,
@@ -517,7 +517,7 @@ export class UploadFunctionality {
                     //Create bootapplication
                     connectionManager.executeCommand(
                         id,
-                        "echo '#!/bin/sh\npython3 /home/user/python_bootapplication/lib/runtimeCC.py &\nstty -F /dev/ttySTM1 cstopb brkint -icrnl -ixon -opost -isig icanon -iexten -echo' > /etc/init.d/S99_python_runtime"
+                        `echo '#!/bin/sh\npython3 ${UPLOAD_PATH}lib/runtimeCC.py &\nstty -F /dev/ttySTM1 cstopb brkint -icrnl -ixon -opost -isig icanon -iexten -echo' > /etc/init.d/S99_python_runtime`
                     );
                     progress.report({ increment: 20, message: 'Uploading...' });
                     //Upload Files
@@ -526,7 +526,7 @@ export class UploadFunctionality {
                     //Execute File
                     await connectionManager.executeCommand(
                         id,
-                        `nohup python3 /home/user/python_bootapplication/lib/runtimeCC.py > /dev/null 2>&1 &`
+                        `nohup python3 ${UPLOAD_PATH}lib/runtimeCC.py > /dev/null 2>&1 &`
                     );
                     progress.report({
                         increment: 10,

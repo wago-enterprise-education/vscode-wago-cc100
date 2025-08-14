@@ -5,7 +5,7 @@ import { Manager } from '../extensionCore/manager';
 import { ConnectionManager } from './connectionManager';
 import { extensionContext } from '../extension';
 import { verifyProject } from './versionDetection';
-import { FOLDER_REGEX, DEBUGGER_SETTINGS } from '../shared/constants';
+import { FOLDER_REGEX, DEBUGGER_SETTINGS, UPLOAD_PATH } from '../shared/constants';
 
 const { MAX_RETRIES, RETRY_DELAY } = DEBUGGER_SETTINGS;
 
@@ -148,7 +148,7 @@ export class Command {
                         pathMappings: [
                             {
                                 localRoot: '${fileDirname}',
-                                remoteRoot: '/home/user/python_bootapplication',
+                                remoteRoot: UPLOAD_PATH,
                             },
                         ],
                     };

@@ -22,7 +22,15 @@ import {
     SettingAdapter,
     Engine
 } from '../../shared/types';
-import { FOLDER_REGEX, IP_REGEX, UPLOAD_PATH } from '../../shared/constants';
+import { 
+    FOLDER_REGEX, 
+    IP_REGEX, 
+    UPLOAD_PATH, 
+    CONTROLLER_DEFAULTS,
+    DOCKER_CONSTANTS,
+    FILE_NAMES,
+    NETWORK_CONSTANTS
+} from '../../shared/constants';
 
 
 export class GetEngine implements Interface.GetEngineInterface {
@@ -179,7 +187,7 @@ export class ResetController implements Interface.ResetControllerInterface {
                     progress.report({ message: `Stopping Container...` });
                     await ConnectionManager.instance.executeCommand(
                         controllerId,
-                        'docker container stop pythonRuntime'
+                        `docker container stop ${DOCKER_CONSTANTS.CONTAINER_NAME}`
                     );
                     progress.report({
                         increment: 20,
@@ -187,7 +195,7 @@ export class ResetController implements Interface.ResetControllerInterface {
                     });
                     await ConnectionManager.instance.executeCommand(
                         controllerId,
-                        'docker rm pythonRuntime'
+                        `docker rm ${DOCKER_CONSTANTS.CONTAINER_NAME}`
                     );
                     progress.report({
                         increment: 10,
@@ -196,7 +204,7 @@ export class ResetController implements Interface.ResetControllerInterface {
                     //---------------- TO EDIT
                     await ConnectionManager.instance.executeCommand(
                         controllerId,
-                        'docker rmi cc100_python'
+                        `docker rmi ${DOCKER_CONSTANTS.IMAGE_NAME}`
                     );
                     progress.report({
                         increment: 10,
@@ -204,7 +212,7 @@ export class ResetController implements Interface.ResetControllerInterface {
                     });
                     await ConnectionManager.instance.executeCommand(
                         controllerId,
-                        'rm -rf /home/user/python_bootapplication/*'
+                        `rm -rf ${UPLOAD_PATH}*`
                     );
                     progress.report({ increment: 10 });
                 } catch (error) {
@@ -265,10 +273,10 @@ export class AddController implements Interface.AddControllerInterface {
             fs
                 .readdirSync(workspacePath)
                 .map((folder) => {
-                    if (fs.existsSync(`${workspacePath}/${folder}/main.py`)) {
+                    if (fs.existsSync(`${workspacePath}/${folder}/${FILE_NAMES.MAIN_PYTHON}`)) {
                         return {
                             label: `${folder}`,
-                            description: `${folder}/main.py`,
+                            description: `${folder}/${FILE_NAMES.MAIN_PYTHON}`,
                         };
                     }
                     return { label: '' };
@@ -302,8 +310,8 @@ export class AddController implements Interface.AddControllerInterface {
             if (newFolder) {
                 fs.mkdirSync(`${workspacePath}/${newFolder}`);
                 fs.cpSync(
-                    `${extensionContext.extensionPath}/res/template/src/main.py`,
-                    `${workspacePath}/${newFolder}/main.py`
+                    `${extensionContext.extensionPath}/res/template/src/${FILE_NAMES.MAIN_PYTHON}`,
+                    `${workspacePath}/${newFolder}/${FILE_NAMES.MAIN_PYTHON}`
                 );
                 controllerSrc.label = newFolder;
             } else {
@@ -441,13 +449,13 @@ export class ConfigureController
             vscode.window.showErrorMessage('Netmask is undefined')
             return;
         }
-        await connectionManager.addController(-1, "192.168.42.42:22", "root", "wago");
-        await connectionManager.executeCommand(-1, `/etc/config-tools/network_config --ip-config --set='{"br0": {"source": "static", "ipaddr": "${controllerSettings.ip}", "netmask": "${controllerSettings.netmask}"}}'`);
-        await connectionManager.executeCommand(-1, `cd /etc/config-tools && ./config_routing --change static index="0" gw="${controllerSettings.gateway}" state="enabled"`);
+        await connectionManager.addController(CONTROLLER_DEFAULTS.TEMPORARY_ID, `${CONTROLLER_DEFAULTS.IP}:${CONTROLLER_DEFAULTS.PORT}`, CONTROLLER_DEFAULTS.DEFAULT_USER, CONTROLLER_DEFAULTS.DEFAULT_PASSWORD);
+        await connectionManager.executeCommand(CONTROLLER_DEFAULTS.TEMPORARY_ID, `/etc/config-tools/network_config --ip-config --set='{"br0": {"source": "static", "ipaddr": "${controllerSettings.ip}", "netmask": "${controllerSettings.netmask}"}}'`);
+        await connectionManager.executeCommand(CONTROLLER_DEFAULTS.TEMPORARY_ID, `cd /etc/config-tools && ./config_routing --change static index="0" gw="${controllerSettings.gateway}" state="enabled"`);
         vscode.window.showInformationMessage(
             `Controller ${controller.label} configured`
         );
-        connectionManager.removeConnection(-1);
+        connectionManager.removeConnection(CONTROLLER_DEFAULTS.TEMPORARY_ID);
     }
 }
 export class EditSettings implements Interface.EditSettingsInterface {
@@ -858,12 +866,12 @@ export class EditSettingsFunctionality {
                             .map((folder) => {
                                 if (
                                     fs.existsSync(
-                                        `${workspacePath}/${folder}/main.py`
+                                        `${workspacePath}/${folder}/${FILE_NAMES.MAIN_PYTHON}`
                                     )
                                 ) {
                                     return {
                                         label: `${folder}`,
-                                        description: `${folder}/main.py`,
+                                        description: `${folder}/${FILE_NAMES.MAIN_PYTHON}`,
                                     };
                                 }
                                 return { label: '' };
@@ -886,7 +894,7 @@ export class EditSettingsFunctionality {
                         fs.writeFile(
                             `${path.resolve(
                                 workspacePath
-                            )}/${newFolder}/main.py`,
+                            )}/${newFolder}/${FILE_NAMES.MAIN_PYTHON}`,
                             '',
                             (err) => {
                                 if (err) {
@@ -996,8 +1004,8 @@ export class EditSettingsFunctionality {
                         const tempNumber = Number(content);
                         if (
                             Number.isNaN(tempNumber) ||
-                            tempNumber < 0 ||
-                            tempNumber > 65535
+                            tempNumber < NETWORK_CONSTANTS.MIN_PORT ||
+                            tempNumber > NETWORK_CONSTANTS.MAX_PORT
                         ) {
                             vscode.window.showErrorMessage(
                                 'The given Port is not a valid Number'
@@ -1083,8 +1091,8 @@ export class EditSettingsFunctionality {
 let connectionManager = ConnectionManager.instance;
 
 export class UploadFunctionality {
-    static repo = 'wago-enterprise-education/docker-engine-cc100';
-    static imageName = `ghcr.io/${UploadFunctionality.repo}`;
+    static repo = DOCKER_CONSTANTS.REPOSITORY;
+    static imageName = `${DOCKER_CONSTANTS.IMAGE_PREFIX}/${UploadFunctionality.repo}`;
 
     /**
      * This Method uploads the corresponding files to the WAGO Controller.
@@ -1098,9 +1106,9 @@ export class UploadFunctionality {
             controller?.src || ''
         );
 
-        if (!fs.existsSync(path.join(srcPath, "main.py"))) {
+        if (!fs.existsSync(path.join(srcPath, FILE_NAMES.MAIN_PYTHON))) {
             vscode.window.showErrorMessage(
-                'The selected Folder does not exist or does not contain a main.py.'
+                `The selected Folder does not exist or does not contain a ${FILE_NAMES.MAIN_PYTHON}.`
             );
             return;
         }
@@ -1419,7 +1427,7 @@ export class UploadFunctionality {
      * @param id The id of the used controller
      */
     private async updateContainer(id: number, wantedVersion: string, currentTag: string[]): Promise<void> {
-        const containerName = 'pythonRuntime';
+        const containerName = DOCKER_CONSTANTS.CONTAINER_NAME;
         const downloadPathFolder = `${extensionContext.storageUri?.fsPath}`;
 
         try {
@@ -1591,7 +1599,7 @@ export class UploadFunctionality {
                     {
                         Config: 'config.json',
                         RepoTags: [
-                            `ghcr.io/${UploadFunctionality.repo}:${wantedVersion}`,
+                            `${DOCKER_CONSTANTS.IMAGE_PREFIX}/${UploadFunctionality.repo}:${wantedVersion}`,
                         ],
                         Layers: layerArray,
                     },
@@ -1600,18 +1608,18 @@ export class UploadFunctionality {
                 fs.writeFileSync(manifestJsonPath, JSON.stringify(manifestJson));
 
                 // Put the Manifest and Layers together to an image
-                let tarPath = path.join(downloadPathFolder, 'image.tar');
+                let tarPath = path.join(downloadPathFolder, FILE_NAMES.IMAGE_TAR);
                 fs.open(tarPath, 'w', (err, fd) => {
                     if (err)
                         vscode.window.showErrorMessage(
-                            'Error while creating temporary file for the image image.tar.'
+                            `Error while creating temporary file for the image ${FILE_NAMES.IMAGE_TAR}.`
                         );
                     fs.close(fd);
                 });
 
                 create(
                     {
-                        file: path.join(downloadPathFolder, 'image.tar'),
+                        file: path.join(downloadPathFolder, FILE_NAMES.IMAGE_TAR),
                         sync: true,
                         cwd: downloadPathFolder,
                     },
@@ -1623,7 +1631,7 @@ export class UploadFunctionality {
                 // Upload new Image
                 await connectionManager.uploadFile(
                     id,
-                    path.join(downloadPathFolder, '/image.tar'),
+                    path.join(downloadPathFolder, `/${FILE_NAMES.IMAGE_TAR}`),
                     '/home/'
                 );
 
@@ -1632,13 +1640,13 @@ export class UploadFunctionality {
                 // Load new Image
                 await connectionManager.executeCommand(
                     id,
-                    `docker load -i /home/image.tar`
+                    `docker load -i /home/${FILE_NAMES.IMAGE_TAR}`
                 );
 
-                await connectionManager.executeCommand(id, `rm /home/image.tar`);
+                await connectionManager.executeCommand(id, `rm /home/${FILE_NAMES.IMAGE_TAR}`);
 
                 // Delete local Image files
-                fs.unlinkSync(path.join(downloadPathFolder, `image.tar`));
+                fs.unlinkSync(path.join(downloadPathFolder, FILE_NAMES.IMAGE_TAR));
                 fs.unlinkSync(path.join(downloadPathFolder, `config.json`));
                 fs.unlinkSync(path.join(downloadPathFolder, `manifest.json`));
                 fs.rmSync(path.join(downloadPathFolder, `blobs`), {

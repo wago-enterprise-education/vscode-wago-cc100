@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import YAML from 'yaml';
 import { ControllerType, ControllerSettingsExtendedType, WagoSettings, ControllerSettings } from './types';
+import { CONTROLLER_AUTO_ID_START } from './constants';
 
 /**
  * Centralized utility class for managing YAML file operations
@@ -222,7 +223,7 @@ export class YamlCommands {
      */
     private static findNextID(): number {
         let yaml = this.getWagoYaml();
-        let id = 1;
+        let id = CONTROLLER_AUTO_ID_START;
         while (yaml.nodes[id] != undefined) {
             id++;
         }
