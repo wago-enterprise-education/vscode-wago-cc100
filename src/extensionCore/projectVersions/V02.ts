@@ -199,11 +199,18 @@ export class ResetController implements Interface.ResetControllerInterface {
                         increment: 10,
                         message: `Removing Image...`,
                     });
-                    //---------------- TO EDIT
-                    await ConnectionManager.instance.executeCommand(
-                        controllerId,
-                        `docker rmi ${DOCKER_CONSTANTS.IMAGE_NAME}`
-                    );
+                    const tags = (
+                        await connectionManager.executeCommand(
+                            controllerId,
+                            `docker images | grep '${UploadFunctionality.imageName}' | awk '{print $2}'`
+                        )
+                    ).split('\n');
+                    for (const tag of tags) {
+                        await ConnectionManager.instance.executeCommand(
+                            controllerId,
+                            `docker rmi -f ${DOCKER_CONSTANTS.IMAGE_PREFIX}/${DOCKER_CONSTANTS.IMAGE_NAME}/${tag}`
+                        );
+                    }
                     progress.report({
                         increment: 10,
                         message: `Deleting Files...`,
@@ -217,6 +224,7 @@ export class ResetController implements Interface.ResetControllerInterface {
                     vscode.window.showErrorMessage(
                         'Error resetting controller'
                     );
+                    throw error;
                 }
             }
         );
@@ -1137,6 +1145,21 @@ export class UploadFunctionality {
             async (progress, _token) => {
                 try {
                     progress.report({
+                        increment: 20,
+                        message: 'Deactivating Codesys...',
+                    });
+                    await this.deactivateCodeSys3(id);
+
+                    progress.report({
+                        increment: 20,
+                        message: 'Activating Docker...',
+                    });
+                    await connectionManager.executeCommand(
+                        id,
+                        '/etc/config-tools/config_docker activate'
+                    );
+
+                    progress.report({
                         increment: 10,
                         message: 'Comparing Folders and Image Version...',
                     });
@@ -1158,20 +1181,6 @@ export class UploadFunctionality {
                         });
                     }
 
-                    progress.report({
-                        increment: 20,
-                        message: 'Deactivating Codesys...',
-                    });
-                    await this.deactivateCodeSys3(id);
-
-                    progress.report({
-                        increment: 20,
-                        message: 'Activating Docker...',
-                    });
-                    await connectionManager.executeCommand(
-                        id,
-                        '/etc/config-tools/config_docker activate'
-                    );
 
                     if (!imageVersionResult.imageUpToDate) {
                         progress.report({

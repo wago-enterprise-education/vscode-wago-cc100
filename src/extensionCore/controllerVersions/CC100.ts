@@ -32,7 +32,7 @@ export class ResetController implements Interface.ResetControllerInterface {
     async reset(controller: any) {
         let controllerId = controller.controllerId;
 
-        vscode.window.withProgress(
+        return vscode.window.withProgress(
             {
                 location: vscode.ProgressLocation.Notification,
                 title: 'Reset Controller',

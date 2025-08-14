@@ -135,18 +135,27 @@ export class Manager {
      * @throws Will display an error message if resetting the controller fails
      */
     public async removeReset(controller: Controller | undefined) {
-        await ProjectFactory.getInstance()
-            .createResetCommand(this.versionNr)
-            .reset(controller, false)
-            .then(() => {
-                ProjectFactory.getInstance()
-                    .createRemoveCommand(this.versionNr)
-                    .removeController(controller, false);
-            })
-            .catch((error: any) => {
-                console.error(error);
-                vscode.window.showErrorMessage(`Error: Resetting Controller`);
-            });
+        controller = await ProjectFactory
+            .getInstance()
+            .createRemoveResetControllerCommand(this.versionNr)
+            .removeResetController(controller);
+
+        if (!controller) return;
+
+        try {
+            const engine = await ProjectFactory.getInstance()
+                .createResetCommand(this.versionNr)
+                .reset(controller, true);
+            await ControllerFactory.getInstance()
+                .createResetCommand(engine)
+                .reset(controller);
+            ProjectFactory.getInstance()
+                .createRemoveCommand(this.versionNr)
+                .removeController(controller, false);
+        } catch (error) {
+            console.error(error);
+            vscode.window.showErrorMessage(`Error: Resetting Controller`);
+        }
     }
 
     /**
