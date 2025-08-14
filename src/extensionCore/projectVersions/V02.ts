@@ -8,18 +8,21 @@ import * as Interface from '../interfaces/projectInterface';
 import crypto from 'crypto';
 import { ConnectionManager } from '../../extension/connectionManager';
 import * as fs from 'fs';
-import YAML from 'yaml';
 import * as path from 'path';
 import { Readable } from 'stream';
 import { finished } from 'stream/promises';
 import { extensionContext } from '../../extension';
 import { create } from 'tar';
 import { Manager } from '../manager';
-
-const FOLDER_REGEX =
-    '^(?!(?:CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:.[^.]*)?$)[^<>:"/\\|?*\x00-\x1F]*[^<>:"/\\|?*\x00-\x1F .]$';
-const IP_REGEX =
-    "^((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)\\.?\\b){4}$";
+import { YamlCommands } from '../../shared/yamlCommands';
+import {
+    WagoSettings,
+    ControllerSettings,
+    Setting,
+    SettingAdapter,
+    Engine
+} from '../../shared/types';
+import { FOLDER_REGEX, IP_REGEX, UPLOAD_PATH } from '../../shared/constants';
 
 
 export class GetEngine implements Interface.GetEngineInterface {
@@ -30,7 +33,7 @@ export class GetEngine implements Interface.GetEngineInterface {
 
 export class UploadController implements Interface.UploadInterface {
     /**
-     * Uploads the project specified in the Controllersettings to the selected controller.
+     * Uploads the project specified in the ControllerSettings to the selected controller.
      * If no controller is provided, prompts the user to select one from available controllers.
      *
      * @param controller - Optional controller to upload to. If not provided, user will be prompted to select one.
@@ -88,7 +91,7 @@ export class UploadAllControllers implements Interface.UploadAllInterface {
                 title: 'Upload to All Controllers',
                 cancellable: false,
             },
-            (progress, token) => {
+            (progress, _token) => {
                 controllers.forEach(async (controller) => {
                     if (!controller) return;
 
@@ -170,7 +173,7 @@ export class ResetController implements Interface.ResetControllerInterface {
                 title: 'Reset Controller',
                 cancellable: false,
             },
-            async (progress, token) => {
+            async (progress, _token) => {
                 try {
                     //---------------- TO EDIT
                     progress.report({ message: `Stopping Container...` });
@@ -251,7 +254,7 @@ export class AddController implements Interface.AddControllerInterface {
             })) || '';
 
         const controllerEngine =
-            (await vscode.window.showQuickPick(Object.values(engine), {
+            (await vscode.window.showQuickPick(Object.values(Engine), {
                 title: 'Add Controller / Engine',
                 canPickMany: false,
                 ignoreFocusOut: true,
@@ -440,11 +443,11 @@ export class ConfigureController
         }
         await connectionManager.addController(-1, "192.168.42.42:22", "root", "wago");
         await connectionManager.executeCommand(-1, `/etc/config-tools/network_config --ip-config --set='{"br0": {"source": "static", "ipaddr": "${controllerSettings.ip}", "netmask": "${controllerSettings.netmask}"}}'`);
-        let test = await connectionManager.executeCommand(-1, `cd /etc/config-tools && ./config_routing --change static index="0" gw="${controllerSettings.gateway}" state="enabled"`);
+        await connectionManager.executeCommand(-1, `cd /etc/config-tools && ./config_routing --change static index="0" gw="${controllerSettings.gateway}" state="enabled"`);
         vscode.window.showInformationMessage(
             `Controller ${controller.label} configured`
         );
-        await connectionManager.removeConnection(-1);
+        connectionManager.removeConnection(-1);
     }
 }
 export class EditSettings implements Interface.EditSettingsInterface {
@@ -495,7 +498,7 @@ export class EditSettings implements Interface.EditSettingsInterface {
             let id = con.id;
 
             settingToEdit =
-                (await vscode.window.showQuickPick(Object.values(setting), {
+                (await vscode.window.showQuickPick(Object.values(Setting), {
                     title: 'Choose Setting',
                     canPickMany: false,
                 })) || '';
@@ -503,13 +506,13 @@ export class EditSettings implements Interface.EditSettingsInterface {
 
             await EditSettingsFunctionality.editSetting(
                 id,
-                settingAdapter[settingToEdit as keyof typeof settingAdapter]
+                SettingAdapter[settingToEdit as keyof typeof SettingAdapter]
             );
         } else {
             await EditSettingsFunctionality.editSetting(
                 controller.controllerId,
-                settingAdapter[
-                    controller.setting as keyof typeof settingAdapter
+                SettingAdapter[
+                    controller.setting as keyof typeof SettingAdapter
                 ]
             );
         }
@@ -585,7 +588,7 @@ export class ViewChildren implements Interface.ViewChildrenInterface {
                 settingArray.push(
                     new ControllerItem(
                         element.controllerId,
-                        setting.connection,
+                        Setting.connection,
                         settings.connection
                     )
                 );
@@ -593,17 +596,17 @@ export class ViewChildren implements Interface.ViewChildrenInterface {
                     settingArray.push(
                         new ControllerItem(
                             element.controllerId,
-                            setting.ip,
+                            Setting.ip,
                             settings.ip
                         ),
                         new ControllerItem(
                             element.controllerId,
-                            setting.netmask,
+                            Setting.netmask,
                             settings.netmask
                         ),
                         new ControllerItem(
                             element.controllerId,
-                            setting.gateway,
+                            Setting.gateway,
                             settings.gateway
                         )
 
@@ -612,21 +615,21 @@ export class ViewChildren implements Interface.ViewChildrenInterface {
                 settingArray.push(
                     new ControllerItem(
                         element.controllerId,
-                        setting.port,
+                        Setting.port,
                         settings.port
                     )
                 );
                 settingArray.push(
                     new ControllerItem(
                         element.controllerId,
-                        setting.user,
+                        Setting.user,
                         settings.user
                     )
                 );
                 settingArray.push(
                     new ControllerItem(
                         element.controllerId,
-                        setting.autoupdate,
+                        Setting.autoupdate,
                         settings.autoupdate
                     )
                 );
@@ -635,22 +638,22 @@ export class ViewChildren implements Interface.ViewChildrenInterface {
                     [
                         new ControllerItem(
                             element.controllerId,
-                            setting.description,
+                            Setting.description,
                             controller?.description
                         ),
                         new ControllerItem(
                             element.controllerId,
-                            setting.engine,
+                            Setting.engine,
                             controller?.engine
                         ),
                         new ControllerItem(
                             element.controllerId,
-                            setting.imageVersion,
+                            Setting.imageVersion,
                             controller?.imageVersion
                         ),
                         new ControllerItem(
                             element.controllerId,
-                            setting.src,
+                            Setting.src,
                             controller?.src
                         ),
                     ].concat(settingArray)
@@ -714,7 +717,7 @@ export class RenameController implements Interface.RenameControllerInterface {
 
         YamlCommands.writeWagoYaml(
             newController.controllerId,
-            wagoSettings.displayname,
+            WagoSettings.displayname,
             controllerName
         );
     }
@@ -793,7 +796,7 @@ export class EditSettingsFunctionality {
      * mechanisms to update the configuration.
      *
      * @param id - The unique identifier for the setting to be edited.
-     * @param settingToEdit - The name of the setting to be edited. This can belong to either `wagoSettings` or `controllerSettings`.
+     * @param settingToEdit - The name of the setting to be edited. This can belong to either `wagoSettings` or `ControllerSettings`.
      *
      * @remarks
      * - For `wago.yaml` settings:
@@ -814,25 +817,25 @@ export class EditSettingsFunctionality {
             return;
         }
 
-        if (settingToEdit in wagoSettings) {
+        if (settingToEdit in WagoSettings) {
             switch (settingToEdit) {
                 // wago.yaml Setting
-                case wagoSettings.displayname:
-                case wagoSettings.description:
+                case WagoSettings.displayname:
+                case WagoSettings.description:
                     const content = await this.getInput(settingToEdit);
                     if (!content) return;
                     YamlCommands.writeWagoYaml(
                         id,
-                        wagoSettings[settingToEdit],
+                        WagoSettings[settingToEdit],
                         content
                     );
                     break;
 
                 // wago.yaml QuickPick
-                case wagoSettings.engine:
+                case WagoSettings.engine:
                     const pickedEngine =
                         (await vscode.window.showQuickPick(
-                            Object.values(engine),
+                            Object.values(Engine),
                             {
                                 title: 'Engine',
                                 canPickMany: false,
@@ -841,12 +844,12 @@ export class EditSettingsFunctionality {
                     if (!pickedEngine) return;
                     YamlCommands.writeWagoYaml(
                         id,
-                        wagoSettings[settingToEdit],
+                        WagoSettings[settingToEdit],
                         pickedEngine
                     );
                     break;
 
-                case wagoSettings.src:
+                case WagoSettings.src:
                     const workspacePath =
                         vscode.workspace.workspaceFolders![0].uri.fsPath;
                     const controllerSrc = await vscode.window.showQuickPick(
@@ -895,18 +898,18 @@ export class EditSettingsFunctionality {
                     if (!newFolder) {
                         YamlCommands.writeWagoYaml(
                             id,
-                            wagoSettings[settingToEdit],
+                            WagoSettings[settingToEdit],
                             controllerSrc.label
                         );
                     } else {
                         YamlCommands.writeWagoYaml(
                             id,
-                            wagoSettings[settingToEdit],
+                            WagoSettings[settingToEdit],
                             newFolder
                         );
                     }
                     break;
-                case wagoSettings.imageVersion:
+                case WagoSettings.imageVersion:
                     const imageToken =
                         await new UploadFunctionality().getToken();
 
@@ -924,17 +927,17 @@ export class EditSettingsFunctionality {
 
                     YamlCommands.writeWagoYaml(
                         id,
-                        wagoSettings[settingToEdit],
+                        WagoSettings[settingToEdit],
                         dockerImage
                     );
 
                     break;
             }
             return;
-        } else if (settingToEdit in controllerSettings) {
+        } else if (settingToEdit in ControllerSettings) {
             switch (settingToEdit) {
                 // controller.yaml Setting
-                case controllerSettings.connection:
+                case ControllerSettings.connection:
                     const conType =
                         (await vscode.window.showQuickPick(
                             ['usb-c', 'ethernet'],
@@ -946,30 +949,30 @@ export class EditSettingsFunctionality {
                     if (!conType) return;
                     YamlCommands.writeControllerYaml(
                         id,
-                        controllerSettings[settingToEdit],
+                        ControllerSettings[settingToEdit],
                         conType
                     );
                     break;
 
-                case controllerSettings.ip:  
-                case controllerSettings.netmask:
-                case controllerSettings.gateway:
-                case controllerSettings.port:
-                case controllerSettings.user:
+                case ControllerSettings.ip:  
+                case ControllerSettings.netmask:
+                case ControllerSettings.gateway:
+                case ControllerSettings.port:
+                case ControllerSettings.user:
                     const content = await this.getInput(settingToEdit);
                     if (!content) return;
 
                     // Change connection to ethernet and check if input ip is valid
-                    if (settingToEdit === controllerSettings.ip) {
+                    if (settingToEdit === ControllerSettings.ip) {
                         YamlCommands.writeControllerYaml(
                             id,
-                            controllerSettings.connection,
+                            ControllerSettings.connection,
                             'ethernet'
                         );
                     }
 
                     // Check input if gateway is valid
-                    if (settingToEdit === controllerSettings.gateway) {
+                    if (settingToEdit === ControllerSettings.gateway) {
                         if (!RegExp(IP_REGEX).test(content)) {
                             vscode.window.showErrorMessage(
                                 'The given gateway is not valid'
@@ -979,7 +982,7 @@ export class EditSettingsFunctionality {
                     }
 
                     // Check input if netmask is valid
-                    if (settingToEdit === controllerSettings.netmask) {
+                    if (settingToEdit === ControllerSettings.netmask) {
                         if (!RegExp(IP_REGEX).test(content)) {
                             vscode.window.showErrorMessage(
                                 'The given netmask is not valid'
@@ -989,7 +992,7 @@ export class EditSettingsFunctionality {
                     }
 
                     // Check input if Port is a valid Number
-                    if (settingToEdit === controllerSettings.port) {
+                    if (settingToEdit === ControllerSettings.port) {
                         const tempNumber = Number(content);
                         if (
                             Number.isNaN(tempNumber) ||
@@ -1005,13 +1008,13 @@ export class EditSettingsFunctionality {
 
                     YamlCommands.writeControllerYaml(
                         id,
-                        controllerSettings[settingToEdit],
+                        ControllerSettings[settingToEdit],
                         content
                     );
                     break;
 
                 // controller.yaml QuickPick
-                case controllerSettings.autoupdate:
+                case ControllerSettings.autoupdate:
                     const status =
                         (await vscode.window.showQuickPick(['on', 'off'], {
                             title: 'Autoupdate',
@@ -1021,7 +1024,7 @@ export class EditSettingsFunctionality {
 
                     YamlCommands.writeControllerYaml(
                         id,
-                        controllerSettings[settingToEdit],
+                        ControllerSettings[settingToEdit],
                         status
                     );
                     break;
@@ -1073,361 +1076,10 @@ export class EditSettingsFunctionality {
         return input;
     }
 }
-/**
- * Enum representing various settings used in the application.
- * Each setting corresponds to a specific configuration property.
- */
-export enum setting {
-    displayname = 'Name',
-    description = 'Description',
-    engine = 'Engine',
-    src = 'Source',
-    imageVersion = 'Docker Image Version',
-    connection = 'Connection',
-    ip = 'IP',
-    netmask = 'Netmask',
-    gateway = 'Gateway',
-    port = 'Port',
-    user = 'User',
-    autoupdate = 'Autoupdate',
-}
-/**
- * Enum representing the various settings for an adapter configuration.
- * Each member of the enum corresponds to a specific configuration property.
- *
- * @enum {string}
- */
-export enum settingAdapter {
-    Name = 'displayname',
-    Description = 'description',
-    Engine = 'engine',
-    Source = 'src',
-    'Docker Image Version' = 'imageVersion',
-    Connection = 'connection',
-    IP = 'ip',
-    Netmask = 'netmask',
-    Gateway = 'gateway',
-    Port = 'port',
-    User = 'user',
-    Autoupdate = 'autoupdate',
-}
-//===================================================================================
-// File Functionality
-//===================================================================================
-/**
- * Represents the structure of a controller object.
- *
- * @property id - The unique identifier for the controller.
- * @property displayname - The display name of the controller.
- * @property description - A brief description of the controller.
- * @property engine - The engine associated with the controller.
- * @property src - The source or path related to the controller.
- * @property imageVersion - The version of the controller's image.
- */
-type ControllerType = {
-    id: number;
-    displayname: string;
-    description: string;
-    engine: string;
-    src: string;
-    imageVersion: string;
-};
-/**
- * Represents the settings for a controller.
- *
- * @property connection - The type of connection used by the controller (e.g., "ethernet", "usb-c").
- * @property ip - The IP address of the controller.
- * @property port - The port number used for communication with the controller.
- * @property user - The username for authentication with the controller.
- * @property autoupdate - The auto-update setting for the controller (e.g., "on", "off").
- */
-type ControllerSettingsType = {
-    connection: string;
-    ip: string;
-    netmask: string;
-    gateway: string;
-    port: number;
-    user: string;
-    autoupdate: string;
-};
-export class YamlCommands {
-    /**
-     * Function to read the content of the wago.yaml file.
-     *
-     * @returns The content of the wago.yaml file as a JS object
-     */
-    private static getWagoYaml() {
-        return YAML.parse(
-            fs.readFileSync(
-                `${vscode.workspace.workspaceFolders![0].uri.fsPath}/wago.yaml`,
-                'utf8'
-            )
-        );
-    }
-
-    /**
-     * Function to read the content of the wago.yaml file.
-     *
-     * @returns The content of the wago.yaml file as a JS object
-     */
-    private static getControllerYaml(id: number) {
-        try {
-            return YAML.parse(
-                fs.readFileSync(
-                    `${
-                        vscode.workspace.workspaceFolders![0].uri.fsPath
-                    }/controller/controller${id}.yaml`,
-                    'utf8'
-                )
-            );
-        } catch (error) {
-            console.debug('getControllerYaml: No File Found! Creating new File');
-            fs.cpSync(
-                `${extensionContext.extensionPath}/res/template/controller/controller1.yaml`,
-                `${
-                    vscode.workspace.workspaceFolders![0].uri.fsPath
-                }/controller/controller${id}.yaml`
-            );
-        }
-    }
-
-    /**
-     * Retrieves an array of controller objects from the Wago YAML configuration.
-     *
-     * @returns {Array<ControllerType>} An array of controller objects, each containing:
-     * - `id`: The numeric identifier of the controller.
-     * - `displayname`: The display name of the controller.
-     * - `description`: A brief description of the controller.
-     * - `engine`: The engine type associated with the controller.
-     * - `src`: The source path or URL of the controller.
-     * - `imageVersion`: The version of the controller's image.
-     */
-    public static getControllers(): Array<ControllerType> {
-        const nodes = this.getWagoYaml().nodes;
-        return Object.keys(nodes).map((key: string) => ({
-            id: Number.parseInt(key),
-            displayname: nodes[key].displayname,
-            description: nodes[key].description,
-            engine: nodes[key].engine,
-            src: nodes[key].src,
-            imageVersion: nodes[key].imageVersion,
-        }));
-    }
-
-    /**
-     * Retrieves a controller by its unique identifier.
-     *
-     * @param id - The unique identifier of the controller to retrieve.
-     * @returns The controller matching the given ID, or `undefined` if no match is found.
-     */
-    public static getController(id: number): ControllerType | undefined {
-        return this.getControllers().find((controller) => controller.id === id);
-    }
-
-    /**
-     * Retrieves the controller settings for a given controller ID.
-     *
-     * @param id - The unique identifier of the controller.
-     * @returns An object containing the controller settings, including:
-     * - `connection`: The connection type or protocol.
-     * - `ip`: The IP address of the controller.
-     * - `port`: The port number used for communication.
-     * - `user`: The username for authentication.
-     * - `autoupdate`: A flag indicating whether auto-update is enabled.
-     */
-    public static getControllerSettings(id: number): ControllerSettingsType {
-        const settings = this.getControllerYaml(id);
-        return {
-            connection: settings.connection,
-            ip: settings.ip,
-            netmask: settings.netmask,
-            gateway: settings.gateway,
-            port: settings.port,
-            user: settings.user,
-            autoupdate: settings.autoupdate,
-        };
-    }
-
-    /**
-     * Method for changing the contents of the wago.yaml
-     *
-     * @param id Id of the controller
-     * @param attribute Name of the attribute that is to be changed (enum)
-     * @param value Value that is to be written into the attribute (string)
-     */
-    public static writeWagoYaml(
-        id: number,
-        attribute: wagoSettings,
-        value: string
-    ) {
-        let yaml = this.getWagoYaml();
-        yaml.nodes[id][attribute] = value;
-        fs.writeFileSync(
-            `${vscode.workspace.workspaceFolders![0].uri.fsPath}/wago.yaml`,
-            YAML.stringify(yaml, null, '\t')
-        );
-    }
-
-    /**
-     * Method for changing the contents of the controller.yaml
-     *
-     * @param id Id of the controller
-     * @param attribute Name of the attribute that is to be changed (enum)
-     * @param value Value that is to be written into the attribute (string)
-     *
-     * In Case of the Port attribute, the String is autmatically converted to a number
-     */
-    public static writeControllerYaml(
-        id: number,
-        attribute: controllerSettings,
-        value: string
-    ) {
-        let yaml = this.getControllerYaml(id);
-        if (attribute === controllerSettings.port) {
-            yaml[attribute] = Number(value);
-        } else {
-            yaml[attribute] = value;
-        }
-        fs.writeFileSync(
-            `${
-                vscode.workspace.workspaceFolders![0].uri.fsPath
-            }/controller/controller${id}.yaml`,
-            YAML.stringify(yaml, null, '\t')
-        );
-    }
-
-    /**
-     * Creates a new controller by prompting the user for necessary details and updating the `wago.yaml` file.
-     *
-     * This function performs the following steps:
-     * 1. Finds the next available ID for the new controller.
-     * 2. Adds the new controller details to the `wago.yaml` file.
-     * 3. Copies a template controller file to the appropriate location with the new controller's ID.
-     *
-     * @param context - The extension context provided by VS Code.
-     * @returns A promise that resolves when the controller has been created.
-     */
-    public static async createController(
-        context: vscode.ExtensionContext,
-        displayname: string,
-        description: string,
-        engine: string,
-        src: string,
-        imageVersion: string
-    ) {
-        //Addition of the Controller to wago.yaml
-        let id = this.findNextID();
-
-        let obj = {
-            nodes: {
-                [id]: {
-                    displayname: displayname,
-                    description: description,
-                    engine: engine,
-                    src: src,
-                    imageVersion: imageVersion,
-                },
-            },
-        };
-
-        let yaml = this.getWagoYaml();
-        yaml.nodes[id] = obj.nodes[id];
-
-        fs.writeFileSync(
-            `${vscode.workspace.workspaceFolders![0].uri.fsPath}/wago.yaml`,
-            YAML.stringify(yaml, null, '\t')
-        );
-
-        //Adding Controller to corresponding controllers/controller[id].yaml file
-        fs.cpSync(
-            `${context.extensionPath}/res/template/controller/controller1.yaml`,
-            `${
-                vscode.workspace.workspaceFolders![0].uri.fsPath
-            }/controller/controller${id}.yaml`
-        );
-    }
-
-    /**
-     * Removes a controller configuration by its ID.
-     *
-     * This method performs the following actions:
-     * 1. Reads the `wago.yaml` file and removes the controller entry with the specified ID.
-     * 2. Writes the updated `wago.yaml` file back to the filesystem.
-     * 3. Deletes the corresponding controller configuration file from the `controllers` directory.
-     *
-     * @param id - The ID of the controller to be removed.
-     */
-    public static removeController(id: number) {
-        //remove from wago.yaml
-        let yaml = this.getWagoYaml();
-        delete yaml.nodes[id];
-        fs.writeFileSync(
-            path.join(vscode.workspace.workspaceFolders![0].uri.fsPath, "wago.yaml"),
-            YAML.stringify(yaml, null, '\t')
-        );
-
-        //remove Controller configuration file
-        let controllerPath = path.join(
-            vscode.workspace.workspaceFolders![0].uri.fsPath,
-            "controller",
-            `controller${id}.yaml`
-        );
-        if (fs.existsSync(controllerPath)) fs.unlinkSync(controllerPath);
-    }
-
-    /**
-     * Finds the next available ID for a controller in the Wago YAML configuration.
-     *
-     * This method reads the Wago YAML configuration and iterates through the existing
-     * controller IDs to find the next available ID that is not already in use.
-     *
-     * @returns {number} The next available controller ID.
-     */
-    private static findNextID(): number {
-        let yaml = this.getWagoYaml();
-        let id = 1;
-        while (yaml.nodes[id] != undefined) {
-            id++;
-        }
-        return id;
-    }
-}
-export enum engine {
-    CC100 = 'CC100',
-}
-/**
- * Enum representing available settings for the wago.yaml.
- * Wago.yaml-half of the split "setting" from editSettings.ts
- *
- * @enum {string}
- */
-export enum wagoSettings {
-    displayname = 'displayname',
-    description = 'description',
-    engine = 'engine',
-    src = 'src',
-    imageVersion = 'imageVersion',
-}
-/**
- * Enum representing available settings for the controller.yaml.
- * Controller-half of the split "setting" from editSettings.ts
- *
- * @enum {string}
- */
-export enum controllerSettings {
-    connection = 'connection',
-    ip = 'ip',
-    netmask = 'netmask',
-    gateway = 'gateway',
-    port = 'port',
-    user = 'user',
-    autoupdate = 'autoupdate',
-}
 //===================================================================================
 // Upload Functionality
 //===================================================================================
 
-const uploadPath = '/home/user/python_bootapplication/';
 let connectionManager = ConnectionManager.instance;
 
 export class UploadFunctionality {
@@ -1441,10 +1093,9 @@ export class UploadFunctionality {
      */
     public async uploadFile(id: number) {
         let controller = YamlCommands.getController(id);
-        let src = controller?.src;
         let srcPath = path.join(
             vscode.workspace.workspaceFolders![0].uri.fsPath,
-            "src"
+            controller?.src || ''
         );
 
         if (!fs.existsSync(path.join(srcPath, "main.py"))) {
@@ -1460,7 +1111,7 @@ export class UploadFunctionality {
                 title: 'Upload Progress',
                 cancellable: false,
             },
-            async (progress, token) => {
+            async (progress, _token) => {
                 try {
                     progress.report({ increment: 10, message: 'Comparing Folders and Image Version...' });
                     const filesUpToDate = await this.compareFolders(id, srcPath);
@@ -1494,7 +1145,7 @@ export class UploadFunctionality {
                     if(!filesUpToDate) {
                         progress.report({ increment: 10, message: 'Uploading files...' });
                         await connectionManager
-                            .uploadDirectory(id, srcPath, uploadPath)
+                            .uploadDirectory(id, srcPath, UPLOAD_PATH)
                             .then(() => {})
                             .catch((err) => {
                                 console.error(`Error uploading files: ${err}`);
@@ -1557,7 +1208,7 @@ export class UploadFunctionality {
             // Get Array of remote Hashes
             let remoteHashes = await connectionManager.executeCommand(
                 id,
-                `find ${uploadPath} -type f -exec md5sum {} +`
+                `find ${UPLOAD_PATH} -type f -exec md5sum {} +`
             );
             let remoteHash = this.createFolderHash(remoteHashes);
             console.debug('Remote Hash: ' + remoteHash);
@@ -1623,7 +1274,7 @@ export class UploadFunctionality {
             for (const file of dirFiles) {
                 const fullPath = path.join(dirPath, file);
                 let stat = fs.statSync(fullPath);
-                fs.stat(fullPath, (err, stats) => {
+                fs.stat(fullPath, (_err, stats) => {
                     stat = stats;
                 });
                 if (stat.isFile()) {
@@ -1653,7 +1304,7 @@ export class UploadFunctionality {
         hashes = hashes
             .replaceAll('\n', '  ')
             .split('  ')
-            .filter((val, index) => {
+            .filter((_val, index) => {
                 return index % 2 === 0;
             })
             .sort((a, b) => a.localeCompare(b))

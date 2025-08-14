@@ -1,21 +1,24 @@
 import { Client, utils } from 'ssh2';
-import { homedir, userInfo } from 'os';
+import { userInfo } from 'os';
 import * as vscode from 'vscode';
 import * as Path from 'path';
 import * as fs from 'fs';
 import { ControllerProvider } from './view';
-import YAML from 'yaml';
 import * as net from 'net';
 import { extensionContext } from '../extension';
+import { YamlCommands } from '../shared/yamlCommands';
+import { CONNECTION_SETTINGS } from '../shared/constants';
 
-const publicKeyPath = Path.join(homedir(), '.ssh', 'id_rsa_wago.pub');
-const privateKeyPath = Path.join(homedir(), '.ssh', 'id_rsa_wago');
-const scriptPath = `res/scripts`; // Path to scripts folder in extensionPath
-const remoteTmpPath = '/tmp/cc100-extension'; // Remote path for temporary files
-const maxConnections = 3;
-const garbageCollectorInterval = 300_000;
-const timeout = 10_000;
-const reconnectionTimeout = 10_000;
+const { 
+    MAX_CONNECTIONS: maxConnections,
+    GARBAGE_COLLECTOR_INTERVAL: garbageCollectorInterval, 
+    TIMEOUT: timeout,
+    RECONNECTION_TIMEOUT: reconnectionTimeout,
+    SCRIPT_PATH: scriptPath,
+    REMOTE_TMP_PATH: remoteTmpPath,
+    PUBLIC_KEY_PATH: publicKeyPath,
+    PRIVATE_KEY_PATH: privateKeyPath
+} = CONNECTION_SETTINGS;
 
 /**
  * The `ConnectionManager` class is a singleton that manages a pool of connections to controllers.
@@ -759,7 +762,7 @@ class Connection {
      * @returns A promise that resolves with the output of the command.
      */
     public executeCommand(cmd: string): Promise<string> {
-        return new Promise<string>((resolve, reject) => {
+        return new Promise<string>((resolve, _reject) => {
             this.client.exec(cmd, (err, stream) => {
                 if (err) return resolve("")
                 // return reject(`Error executing command "${cmd}": ${err}`);
@@ -879,63 +882,5 @@ class Connection {
         this.client.destroy();
         this.connected = false;
         this.disconnected = true;
-    }
-}
-
-type ControllerType = {
-    id: number;
-    displayname: string;
-    description: string;
-    engine: string;
-    src: string;
-    imageVersion: string;
-};
-
-export class YamlCommands {
-    /**
-     * Function to read the content of the wago.yaml file.
-     *
-     * @returns The content of the wago.yaml file as a JS object
-     */
-    private static getWagoYaml() {
-        return YAML.parse(
-            fs.readFileSync(
-                `${vscode.workspace.workspaceFolders![0].uri.fsPath}/wago.yaml`,
-                'utf8'
-            )
-        );
-    }
-
-    /**
-     * Retrieves an array of controller objects from the Wago YAML configuration.
-     *
-     * @returns {Array<ControllerType>} An array of controller objects, each containing:
-     * - `id`: The numeric identifier of the controller.
-     * - `displayname`: The display name of the controller.
-     * - `description`: A brief description of the controller.
-     * - `engine`: The engine type associated with the controller.
-     * - `src`: The source path or URL of the controller.
-     * - `imageVersion`: The version of the controller's image.
-     */
-    public static getControllers(): Array<ControllerType> {
-        const nodes = this.getWagoYaml().nodes;
-        return Object.keys(nodes).map((key: string) => ({
-            id: Number.parseInt(key),
-            displayname: nodes[key].displayname,
-            description: nodes[key].description,
-            engine: nodes[key].engine,
-            src: nodes[key].src,
-            imageVersion: nodes[key].imageVersion,
-        }));
-    }
-
-    /**
-     * Retrieves a controller by its unique identifier.
-     *
-     * @param id - The unique identifier of the controller to retrieve.
-     * @returns The controller matching the given ID, or `undefined` if no match is found.
-     */
-    public static getController(id: number): ControllerType | undefined {
-        return this.getControllers().find((controller) => controller.id === id);
     }
 }

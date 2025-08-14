@@ -9,9 +9,11 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import crypto from 'crypto';
 import path from 'path';
+import { Setting, SettingAdapter, SettingsJson } from '../../shared/types';
+import { UPLOAD_PATH } from '../../shared/constants';
 
 export class GetEngine implements Interface.GetEngineInterface {
-    getEngine(controllerId: number): string {
+    getEngine(_controllerId: number): string {
         return 'CC100';
     }
 }
@@ -70,15 +72,12 @@ export class ResetController implements Interface.ResetControllerInterface {
         }
         let controllerId: number;
         if (showConfirmation) {
-            await vscode.window
-                .showWarningMessage(`Reset ${controller.label}?`, 'Yes', 'No')
-                .then((value) => {
-                    if (value === 'Yes') {
-                        controllerId = controller.controllerId;
-                    } else {
-                        return '';
-                    }
-                });
+            const response = await vscode.window
+                .showWarningMessage(`Reset ${controller.label}?`, 'Yes', 'No');
+            if (response !== 'Yes') {
+                return '';
+            }
+            controllerId = controller.controllerId;
         } else {
             controllerId = controller.controllerId;
         }
@@ -88,7 +87,7 @@ export class ResetController implements Interface.ResetControllerInterface {
                 title: 'Reset Controller',
                 cancellable: false,
             },
-            async (progress, token) => {
+            async (progress, _token) => {
                 try {
                     progress.report({ message: 'Killing Python...' });
                     await ConnectionManager.instance.executeCommand(
@@ -160,7 +159,7 @@ export class EditSettings implements Interface.EditSettingsInterface {
         let settingToEdit: string;
         if (controller === undefined) {
             settingToEdit =
-                (await vscode.window.showQuickPick(Object.values(setting), {
+                (await vscode.window.showQuickPick(Object.values(Setting), {
                     title: 'Choose Setting',
                     canPickMany: false,
                 })) || '';
@@ -168,13 +167,13 @@ export class EditSettings implements Interface.EditSettingsInterface {
 
             await EditSettingsFunctionality.editSetting(
                 0,
-                settingAdapter[settingToEdit as keyof typeof settingAdapter]
+                SettingAdapter[settingToEdit as keyof typeof SettingAdapter]
             );
         } else {
             await EditSettingsFunctionality.editSetting(
                 0,
-                settingAdapter[
-                    controller.setting as keyof typeof settingAdapter
+                SettingAdapter[
+                    controller.setting as keyof typeof SettingAdapter
                 ]
             );
         }
@@ -257,7 +256,7 @@ export class ViewChildren implements Interface.ViewChildrenInterface {
                 settingArray.push(
                     new ControllerItem(
                         element.controllerId,
-                        setting.connection,
+                        Setting.connection,
                         controller.connection
                     )
                 );
@@ -265,7 +264,7 @@ export class ViewChildren implements Interface.ViewChildrenInterface {
                     settingArray.push(
                         new ControllerItem(
                             element.controllerId,
-                            setting.ip,
+                            Setting.ip,
                             controller.ip
                         )
                     );
@@ -273,21 +272,21 @@ export class ViewChildren implements Interface.ViewChildrenInterface {
                 settingArray.push(
                     new ControllerItem(
                         element.controllerId,
-                        setting.port,
+                        Setting.port,
                         controller.port
                     )
                 );
                 settingArray.push(
                     new ControllerItem(
                         element.controllerId,
-                        setting.user,
+                        Setting.user,
                         controller.user
                     )
                 );
                 settingArray.push(
                     new ControllerItem(
                         element.controllerId,
-                        setting.autoupdate,
+                        Setting.autoupdate,
                         controller.autoupdate
                     )
                 );
@@ -321,7 +320,7 @@ export class JsonCommands {
      * @param {string} value - The new value to assign to the specified attribute.
      * @throws {Error} If the file cannot be written.
      */
-    public static writeJson(attribute: settingsJson, value: string) {
+    public static writeJson(attribute: SettingsJson, value: string) {
         let json = this.getSettingsJson();
         json[attribute] = value;
         fs.writeFileSync(
@@ -350,54 +349,12 @@ export class JsonCommands {
         };
     }
 }
-/**
- * Enum representing various settings used in the application.
- * Each setting is associated with a string value that describes its purpose.
- */
-export enum setting {
-    displayname = 'Name',
-    description = 'Description',
-    engine = 'Engine',
-    src = 'Source',
-    imageVersion = 'Docker Image Version',
-    connection = 'Connection',
-    ip = 'IP',
-    port = 'Port',
-    user = 'User',
-    autoupdate = 'Autoupdate',
-}
-/**
- * Enum representing the various settings adapters used in the application.
- * Each adapter corresponds to a specific configuration property.
- *
- * @enum {string}
- */
-export enum settingAdapter {
-    Name = 'displayname',
-    Description = 'description',
-    Engine = 'engine',
-    Source = 'src',
-    'Docker Image Version' = 'imageVersion',
-    Connection = 'connection',
-    IP = 'ip',
-    Port = 'port',
-    User = 'user',
-    Autoupdate = 'autoupdate',
-}
-/**
- * Enum representing the keys used in the settings JSON configuration.
- * Each key corresponds to a specific configuration option.
- */
-export enum settingsJson {
-    connection = 'connection',
-    usb_c = 'usb_c',
-    simulator = 'simulator',
-    ethernet = 'ethernet',
-    ip_adress = 'ip_adress',
-    port = 'port',
-    user = 'user',
-    autoupdate = 'autoupdate',
-}
+//===================================================================================
+// Upload Functionality
+//===================================================================================
+
+let connectionManager = ConnectionManager.instance;
+
 export class EditSettingsFunctionality {
     /**
      * Edits a specific setting in the application's configuration.
@@ -418,7 +375,7 @@ export class EditSettingsFunctionality {
      *
      * @returns A `Promise<void>` that resolves when the operation is complete.
      */
-    public static async editSetting(id: number, settingToEdit: string) {
+    public static async editSetting(_id: number, settingToEdit: string) {
         if (!vscode.workspace.workspaceFolders) {
             vscode.window.showErrorMessage('No workspace is open');
             return;
@@ -434,18 +391,18 @@ export class EditSettingsFunctionality {
                 if (!conType) return;
                 switch (conType) {
                     case 'usb-c':
-                        JsonCommands.writeJson(settingsJson.usb_c, 'true');
-                        JsonCommands.writeJson(settingsJson.simulator, 'false');
-                        JsonCommands.writeJson(settingsJson.ethernet, 'false');
+                        JsonCommands.writeJson(SettingsJson.usb_c, 'true');
+                        JsonCommands.writeJson(SettingsJson.simulator, 'false');
+                        JsonCommands.writeJson(SettingsJson.ethernet, 'false');
                         JsonCommands.writeJson(
-                            settingsJson.ip_adress,
+                            SettingsJson.ip_adress,
                             '192.168.42.42'
                         );
                         break;
                     case 'ethernet':
-                        JsonCommands.writeJson(settingsJson.usb_c, 'false');
-                        JsonCommands.writeJson(settingsJson.simulator, 'false');
-                        JsonCommands.writeJson(settingsJson.ethernet, 'true');
+                        JsonCommands.writeJson(SettingsJson.usb_c, 'false');
+                        JsonCommands.writeJson(SettingsJson.simulator, 'false');
+                        JsonCommands.writeJson(SettingsJson.ethernet, 'true');
                         break;
                     default:
                         break;
@@ -455,13 +412,13 @@ export class EditSettingsFunctionality {
             case 'ip':
                 content = await this.getInput();
                 if (!content) return;
-                JsonCommands.writeJson(settingsJson.ip_adress, content);
+                JsonCommands.writeJson(SettingsJson.ip_adress, content);
                 break;
             case 'port':
             case 'user':
                 content = await this.getInput();
                 if (!content) return;
-                JsonCommands.writeJson(settingsJson[settingToEdit], content);
+                JsonCommands.writeJson(SettingsJson[settingToEdit], content);
                 break;
             case 'autoupdate':
                 let status =
@@ -471,7 +428,7 @@ export class EditSettingsFunctionality {
                     })) || '';
                 if (!status) return;
 
-                JsonCommands.writeJson(settingsJson[settingToEdit], status);
+                JsonCommands.writeJson(SettingsJson[settingToEdit], status);
                 break;
             default:
                 vscode.window.showErrorMessage('Invalid Attribute Type');
@@ -497,9 +454,6 @@ export class EditSettingsFunctionality {
 //===================================================================================
 // Upload Functionality
 //===================================================================================
-
-const uploadPath = '/home/user/python_bootapplication/';
-let connectionManager = ConnectionManager.instance;
 
 export class UploadFunctionality {
     /**
@@ -533,7 +487,7 @@ export class UploadFunctionality {
                 title: 'Reset Controller',
                 cancellable: false,
             },
-            async (progress, token) => {
+            async (progress, _token) => {
                 progress.report({ message: 'Deactivating CodeSys3...' });
                 await this.deactivateCodeSys3(id);
                 progress.report({
@@ -567,7 +521,7 @@ export class UploadFunctionality {
                     );
                     progress.report({ increment: 20, message: 'Uploading...' });
                     //Upload Files
-                    await connectionManager.uploadDirectory(id, srcPath, uploadPath);
+                    await connectionManager.uploadDirectory(id, srcPath, UPLOAD_PATH);
                     progress.report({ increment: 20, message: 'Executing...' });
                     //Execute File
                     await connectionManager.executeCommand(
@@ -612,7 +566,7 @@ export class UploadFunctionality {
             // Get Array of remote Hashes
             let remoteHashes = await connectionManager.executeCommand(
                 id,
-                `find ${uploadPath} -type f -exec md5sum {} +`
+                `find ${UPLOAD_PATH} -type f -exec md5sum {} +`
             );
             let remoteHash = this.createFolderHash(remoteHashes);
             console.debug('Remote Hash: ' + remoteHash);
@@ -649,7 +603,7 @@ export class UploadFunctionality {
         hashes = hashes
             .replaceAll('\n', '  ')
             .split('  ')
-            .filter((val, index) => {
+            .filter((_val, index) => {
                 return index % 2 === 0;
             })
             .sort((a, b) => a.localeCompare(b))
@@ -711,10 +665,7 @@ export class UploadFunctionality {
 
             for (const file of dirFiles) {
                 const fullPath = path.join(dirPath, file);
-                let stat = fs.statSync(fullPath);
-                fs.stat(fullPath, (err, stats) => {
-                    stat = stats;
-                });
+                const stat = fs.statSync(fullPath);
                 if (stat.isFile()) {
                     files.push(fullPath);
                 }

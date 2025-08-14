@@ -22,7 +22,7 @@ export class ResetController implements Interface.ResetControllerInterface {
                 title: 'Reset Controller',
                 cancellable: false,
             },
-            async (progress, token) => {
+            async (progress, _token) => {
                 try {
                     // Starting at 50 because it continues the Progress bar from the reset in the V2.ts code
                     progress.report({

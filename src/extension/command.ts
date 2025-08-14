@@ -5,12 +5,9 @@ import { Manager } from '../extensionCore/manager';
 import { ConnectionManager } from './connectionManager';
 import { extensionContext } from '../extension';
 import { verifyProject } from './versionDetection';
+import { FOLDER_REGEX, DEBUGGER_SETTINGS } from '../shared/constants';
 
-const MAX_RETRIES = 10; // Maximum number of retries for the debugger connection
-const RETRY_DELAY = 2000; // Delay between retries in milliseconds
-
-const FOLDER_REGEX =
-    '^(?!(?:CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:.[^.]*)?$)[^<>:"/\\|?*\x00-\x1F]*[^<>:"/\\|?*\x00-\x1F .]$';
+const { MAX_RETRIES, RETRY_DELAY } = DEBUGGER_SETTINGS;
 
 export class Command {
     public static createCommands() {
@@ -452,6 +449,6 @@ export class Command {
             )
         )
 
-        extensionContext.subscriptions.concat(commands);
+        extensionContext.subscriptions.push(...commands);
     }
 }

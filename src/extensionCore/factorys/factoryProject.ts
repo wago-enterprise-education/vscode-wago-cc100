@@ -1,7 +1,6 @@
 import * as Interface from '../interfaces/projectInterface';
 import * as V1 from '../projectVersions/V01';
 import * as V2 from '../projectVersions/V02';
-import { create } from 'tar';
 
 /**
  * A factory class for creating various project-related commands and controllers
