@@ -1,10 +1,10 @@
 /**
  * Centralized constants and configuration values for the WAGO CC100 extension.
- * 
+ *
  * This module contains all shared constants used across the extension including:
  * - Validation patterns and regular expressions
  * - Network and file system paths
- * - Connection management settings  
+ * - Connection management settings
  * - Default values and limits
  * - Docker and debugging configuration
  */
@@ -16,14 +16,15 @@
  * - Prohibiting invalid characters (< > : " / \ | ? * and control chars)
  * - Preventing names ending with spaces or periods
  */
-export const FOLDER_REGEX = '^(?!(?:CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:.[^.]*)?$)[^<>:"/\\|?*\x00-\x1F]*[^<>:"/\\|?*\x00-\x1F .]$';
+export const FOLDER_REGEX =
+    '^(?!(?:CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:.[^.]*)?$)[^<>:"/\\|?*\x00-\x1F]*[^<>:"/\\|?*\x00-\x1F .]$';
 
 /**
  * Regular expression for validating IPv4 addresses.
  * Validates standard dotted decimal notation (e.g., 192.168.1.100).
  * Accepts octets from 0-255 with proper boundary checking.
  */
-export const IP_REGEX = "^((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)\\.?\\b){4}$";
+export const IP_REGEX = '^((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)\\.?\\b){4}$';
 
 /**
  * Target directory path on CC100 controllers for uploaded Python applications.
@@ -49,8 +50,16 @@ export const CONNECTION_SETTINGS = {
     /** Temporary directory on controller for atomic file operations */
     REMOTE_TMP_PATH: '/tmp/cc100-extension',
     /** Path to SSH public key for passwordless authentication */
-    PUBLIC_KEY_PATH: require('path').join(require('os').homedir(), '.ssh', 'id_rsa_wago.pub'),
-    PRIVATE_KEY_PATH: require('path').join(require('os').homedir(), '.ssh', 'id_rsa_wago')
+    PUBLIC_KEY_PATH: require('path').join(
+        require('os').homedir(),
+        '.ssh',
+        'id_rsa_wago.pub'
+    ),
+    PRIVATE_KEY_PATH: require('path').join(
+        require('os').homedir(),
+        '.ssh',
+        'id_rsa_wago'
+    ),
 } as const;
 
 /**
@@ -61,7 +70,7 @@ export const DEBUGGER_SETTINGS = {
     /** Maximum retry attempts for debugging connection establishment */
     MAX_RETRIES: 10,
     /** Delay between retry attempts in milliseconds (2 seconds) */
-    RETRY_DELAY: 2000
+    RETRY_DELAY: 2000,
 } as const;
 
 /**
@@ -93,7 +102,7 @@ export const DOCKER_CONSTANTS = {
     /** GitHub repository containing the Docker images */
     REPOSITORY: 'wago-enterprise-education/docker-engine-cc100',
     /** Container registry prefix for image URLs */
-    IMAGE_PREFIX: 'ghcr.io'
+    IMAGE_PREFIX: 'ghcr.io',
 } as const;
 
 /**

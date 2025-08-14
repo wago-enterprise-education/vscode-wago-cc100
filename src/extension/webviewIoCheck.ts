@@ -10,24 +10,24 @@ import { YamlCommands } from '../shared/yamlCommands';
 
 /**
  * WebView-based IO-Check panel for interactive WAGO CC100 controller testing.
- * 
+ *
  * This class provides a comprehensive interface for testing and monitoring CC100 controller I/O:
  * - Digital inputs and outputs (DI/DO)
  * - Analog inputs and outputs (AI/AO) with calibration
  * - RS-485 serial communication
  * - Temperature monitoring
  * - Controller switch status
- * 
+ *
  * The webview communicates with the controller via SSH commands executed through
  * the ConnectionManager, providing real-time I/O interaction capabilities.
  */
 export class webviewIoCheck {
     /** Flag controlling whether the panel can be loaded */
     public canLoadPanel: boolean = true;
-    
+
     /** Reference to the active webview panel */
     public ioCheckPanel: vscode.WebviewPanel | undefined = undefined;
-    
+
     /** VS Code extension context */
     private context: vscode.ExtensionContext;
 
@@ -45,10 +45,10 @@ export class webviewIoCheck {
         ['1050', '350', '8978', '3000'],
         ['1044', '350', '8970', '3000'],
     ];
-    
+
     /** Current controller switch position */
     private switchStatus: string;
-    
+
     /** Active serial communication connection */
     private serialConnection: any;
 
@@ -430,25 +430,37 @@ export class webviewIoCheck {
                             );
                             switch (message.pin) {
                                 case 1: // AO1
-                                    await ConnectionManager.instance
-                                        .executeCommand(id, `echo 0 >> /sys/bus/iio/devices/iio:device0/out_voltage1_powerdown`);
+                                    await ConnectionManager.instance.executeCommand(
+                                        id,
+                                        `echo 0 >> /sys/bus/iio/devices/iio:device0/out_voltage1_powerdown`
+                                    );
 
-                                    await ConnectionManager.instance
-                                        .executeCommand(id, `echo ${value} >> /sys/bus/iio/devices/iio:device0/out_voltage1_raw`);
+                                    await ConnectionManager.instance.executeCommand(
+                                        id,
+                                        `echo ${value} >> /sys/bus/iio/devices/iio:device0/out_voltage1_raw`
+                                    );
 
-                                    await ConnectionManager.instance
-                                        .executeCommand(id, `cat /sys/bus/iio/devices/iio:device0/out_voltage1_raw`);
+                                    await ConnectionManager.instance.executeCommand(
+                                        id,
+                                        `cat /sys/bus/iio/devices/iio:device0/out_voltage1_raw`
+                                    );
                                     break;
-                                    
+
                                 case 2: // AO2
-                                    await ConnectionManager.instance
-                                        .executeCommand(id, `echo 0 >> /sys/bus/iio/devices/iio:device1/out_voltage2_powerdown`);
+                                    await ConnectionManager.instance.executeCommand(
+                                        id,
+                                        `echo 0 >> /sys/bus/iio/devices/iio:device1/out_voltage2_powerdown`
+                                    );
 
-                                    await ConnectionManager.instance
-                                        .executeCommand(id, `echo ${value} >> /sys/bus/iio/devices/iio:device1/out_voltage2_raw`);
+                                    await ConnectionManager.instance.executeCommand(
+                                        id,
+                                        `echo ${value} >> /sys/bus/iio/devices/iio:device1/out_voltage2_raw`
+                                    );
 
-                                    await ConnectionManager.instance
-                                        .executeCommand(id, `cat /sys/bus/iio/devices/iio:device1/out_voltage2_raw`);
+                                    await ConnectionManager.instance.executeCommand(
+                                        id,
+                                        `cat /sys/bus/iio/devices/iio:device1/out_voltage2_raw`
+                                    );
                                     break;
                             }
 

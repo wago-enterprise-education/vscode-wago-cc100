@@ -20,18 +20,17 @@ import {
     ControllerSettings,
     Setting,
     SettingAdapter,
-    Engine
+    Engine,
 } from '../../shared/types';
-import { 
-    FOLDER_REGEX, 
-    IP_REGEX, 
-    UPLOAD_PATH, 
+import {
+    FOLDER_REGEX,
+    IP_REGEX,
+    UPLOAD_PATH,
     CONTROLLER_DEFAULTS,
     DOCKER_CONSTANTS,
     FILE_NAMES,
-    NETWORK_CONSTANTS
+    NETWORK_CONSTANTS,
 } from '../../shared/constants';
-
 
 export class GetEngine implements Interface.GetEngineInterface {
     getEngine(controllerId: number): string {
@@ -272,7 +271,11 @@ export class AddController implements Interface.AddControllerInterface {
             fs
                 .readdirSync(workspacePath)
                 .map((folder) => {
-                    if (fs.existsSync(`${workspacePath}/${folder}/${FILE_NAMES.MAIN_PYTHON}`)) {
+                    if (
+                        fs.existsSync(
+                            `${workspacePath}/${folder}/${FILE_NAMES.MAIN_PYTHON}`
+                        )
+                    ) {
                         return {
                             label: `${folder}`,
                             description: `${folder}/${FILE_NAMES.MAIN_PYTHON}`,
@@ -425,7 +428,7 @@ export class ConfigureController
             );
             if (!controller) return;
         }
-        
+
         let conId = controller.controllerId;
         let controllerSettings = YamlCommands.getControllerSettings(conId);
         // let conIp = (await vscode.window.showInputBox({
@@ -445,12 +448,23 @@ export class ConfigureController
             return;
         }
         if (controllerSettings.netmask === undefined) {
-            vscode.window.showErrorMessage('Netmask is undefined')
+            vscode.window.showErrorMessage('Netmask is undefined');
             return;
         }
-        await connectionManager.addController(CONTROLLER_DEFAULTS.TEMPORARY_ID, `${CONTROLLER_DEFAULTS.IP}:${CONTROLLER_DEFAULTS.PORT}`, CONTROLLER_DEFAULTS.DEFAULT_USER, CONTROLLER_DEFAULTS.DEFAULT_PASSWORD);
-        await connectionManager.executeCommand(CONTROLLER_DEFAULTS.TEMPORARY_ID, `/etc/config-tools/network_config --ip-config --set='{"br0": {"source": "static", "ipaddr": "${controllerSettings.ip}", "netmask": "${controllerSettings.netmask}"}}'`);
-        await connectionManager.executeCommand(CONTROLLER_DEFAULTS.TEMPORARY_ID, `cd /etc/config-tools && ./config_routing --change static index="0" gw="${controllerSettings.gateway}" state="enabled"`);
+        await connectionManager.addController(
+            CONTROLLER_DEFAULTS.TEMPORARY_ID,
+            `${CONTROLLER_DEFAULTS.IP}:${CONTROLLER_DEFAULTS.PORT}`,
+            CONTROLLER_DEFAULTS.DEFAULT_USER,
+            CONTROLLER_DEFAULTS.DEFAULT_PASSWORD
+        );
+        await connectionManager.executeCommand(
+            CONTROLLER_DEFAULTS.TEMPORARY_ID,
+            `/etc/config-tools/network_config --ip-config --set='{"br0": {"source": "static", "ipaddr": "${controllerSettings.ip}", "netmask": "${controllerSettings.netmask}"}}'`
+        );
+        await connectionManager.executeCommand(
+            CONTROLLER_DEFAULTS.TEMPORARY_ID,
+            `cd /etc/config-tools && ./config_routing --change static index="0" gw="${controllerSettings.gateway}" state="enabled"`
+        );
         vscode.window.showInformationMessage(
             `Controller ${controller.label} configured`
         );
@@ -551,20 +565,22 @@ export class ViewChildren implements Interface.ViewChildrenInterface {
                             controller.id
                         );
                         if (settings && settings.connection === 'usb-c') {
-                          await ConnectionManager.instance.updateController(
-                            controller.id,
-                            `${Manager.getInstance().getUSB_C_IP(controller.id)}:${settings.port}`,
-                            settings.user
-                        );
+                            await ConnectionManager.instance.updateController(
+                                controller.id,
+                                `${Manager.getInstance().getUSB_C_IP(controller.id)}:${settings.port}`,
+                                settings.user
+                            );
+                        } else if (
+                            settings &&
+                            settings.connection === 'ethernet'
+                        ) {
+                            await ConnectionManager.instance.updateController(
+                                controller.id,
+                                `${settings.ip}:${settings.port}`,
+                                settings.user
+                            );
                         }
-                        else if(settings && settings.connection === 'ethernet'){
-                           await ConnectionManager.instance.updateController(
-                            controller.id,
-                            `${settings.ip}:${settings.port}`,
-                            settings.user
-                        );
-                        }
-                        
+
                         await ConnectionManager.instance.ping(controller.id);
                         online = true;
                     } catch (error) {
@@ -616,7 +632,6 @@ export class ViewChildren implements Interface.ViewChildrenInterface {
                             Setting.gateway,
                             settings.gateway
                         )
-
                     );
                 }
                 settingArray.push(
@@ -778,17 +793,16 @@ export class EstablishConnections
             const settings = YamlCommands.getControllerSettings(controller.id);
             if (settings && settings.connection === 'usb-c') {
                 ConnectionManager.instance.addController(
-                controller.id,
-                `${Manager.getInstance().getUSB_C_IP(controller.id)}:${settings.port}`,
-                settings.user
-            );
-            }
-            else if(settings && settings.connection === 'ethernet'){
+                    controller.id,
+                    `${Manager.getInstance().getUSB_C_IP(controller.id)}:${settings.port}`,
+                    settings.user
+                );
+            } else if (settings && settings.connection === 'ethernet') {
                 ConnectionManager.instance.addController(
-                controller.id,
-                `${settings.ip}:${settings.port}`,
-                settings.user
-            );
+                    controller.id,
+                    `${settings.ip}:${settings.port}`,
+                    settings.user
+                );
             }
         });
     }
@@ -961,7 +975,7 @@ export class EditSettingsFunctionality {
                     );
                     break;
 
-                case ControllerSettings.ip:  
+                case ControllerSettings.ip:
                 case ControllerSettings.netmask:
                 case ControllerSettings.gateway:
                 case ControllerSettings.port:
@@ -1063,23 +1077,25 @@ export class EditSettingsFunctionality {
     ): Promise<string> {
         let input;
         if (settingToEdit === 'src') {
-            input = (await vscode.window.showInputBox({
-                prompt:
-                    'Enter the name of the new folder that ' +
-                    settingToEdit +
-                    ' should be set to',
-                title: 'Set Source Value',
-            })) || '';
+            input =
+                (await vscode.window.showInputBox({
+                    prompt:
+                        'Enter the name of the new folder that ' +
+                        settingToEdit +
+                        ' should be set to',
+                    title: 'Set Source Value',
+                })) || '';
         } else {
-            input = (await vscode.window.showInputBox({
-                prompt:
-                    'Enter the value the ' +
-                    settingToEdit +
-                    ' should be set to',
-                title: 'Set ' + settingToEdit + ' Value',
-            })) || '';
-        } 
-        
+            input =
+                (await vscode.window.showInputBox({
+                    prompt:
+                        'Enter the value the ' +
+                        settingToEdit +
+                        ' should be set to',
+                    title: 'Set ' + settingToEdit + ' Value',
+                })) || '';
+        }
+
         return input;
     }
 }
@@ -1120,13 +1136,20 @@ export class UploadFunctionality {
             },
             async (progress, _token) => {
                 try {
-                    progress.report({ increment: 10, message: 'Comparing Folders and Image Version...' });
-                    const filesUpToDate = await this.compareFolders(id, srcPath);
-                    const imageVersionResult = await this.compareDockerImageVersion(id);
+                    progress.report({
+                        increment: 10,
+                        message: 'Comparing Folders and Image Version...',
+                    });
+                    const filesUpToDate = await this.compareFolders(
+                        id,
+                        srcPath
+                    );
+                    const imageVersionResult =
+                        await this.compareDockerImageVersion(id);
                     if (filesUpToDate && imageVersionResult.imageUpToDate) {
                         progress.report({
                             increment: 100,
-                            message: `The files and docker image on ${controller?.displayname} are already up to date.`
+                            message: `The files and docker image on ${controller?.displayname} are already up to date.`,
                         });
                         return new Promise<void>((resolve) => {
                             setTimeout(() => {
@@ -1135,22 +1158,38 @@ export class UploadFunctionality {
                         });
                     }
 
-                    progress.report({ increment: 20, message: 'Deactivating Codesys...' });
+                    progress.report({
+                        increment: 20,
+                        message: 'Deactivating Codesys...',
+                    });
                     await this.deactivateCodeSys3(id);
 
-                    progress.report({ increment: 20, message: 'Activating Docker...' });
+                    progress.report({
+                        increment: 20,
+                        message: 'Activating Docker...',
+                    });
                     await connectionManager.executeCommand(
                         id,
                         '/etc/config-tools/config_docker activate'
                     );
 
                     if (!imageVersionResult.imageUpToDate) {
-                        progress.report({ increment: 10, message: 'Updating image...' });
-                        await this.updateContainer(id, imageVersionResult.wantedVersion, imageVersionResult.currentTag);
+                        progress.report({
+                            increment: 10,
+                            message: 'Updating image...',
+                        });
+                        await this.updateContainer(
+                            id,
+                            imageVersionResult.wantedVersion,
+                            imageVersionResult.currentTag
+                        );
                     }
 
-                    if(!filesUpToDate) {
-                        progress.report({ increment: 10, message: 'Uploading files...' });
+                    if (!filesUpToDate) {
+                        progress.report({
+                            increment: 10,
+                            message: 'Uploading files...',
+                        });
                         await connectionManager
                             .uploadDirectory(id, srcPath, UPLOAD_PATH)
                             .then(() => {})
@@ -1162,8 +1201,11 @@ export class UploadFunctionality {
                             });
                     }
 
-                    if(!imageVersionResult.imageUpToDate) {
-                        progress.report({ increment: 20, message: 'Starting Python Application...' });
+                    if (!imageVersionResult.imageUpToDate) {
+                        progress.report({
+                            increment: 20,
+                            message: 'Starting Python Application...',
+                        });
                         await connectionManager.executeScript(
                             id,
                             'dockerCommand.sh',
@@ -1350,16 +1392,18 @@ export class UploadFunctionality {
                 `docker images`
             );
 
-            if(dockerPermission === '') {
+            if (dockerPermission === '') {
                 console.error(`Docker permission denied on Controller ${id}`);
                 return Promise.reject(new Error('Docker permission denied'));
             }
 
             // Get current Controller Image Hash
-            const currTag = (await connectionManager.executeCommand(
-                id,
-                `docker images | grep '${UploadFunctionality.imageName}' | awk '{print $2}'`
-            )).split('\n');
+            const currTag = (
+                await connectionManager.executeCommand(
+                    id,
+                    `docker images | grep '${UploadFunctionality.imageName}' | awk '{print $2}'`
+                )
+            ).split('\n');
 
             // Check if there is a new version
             const token = await this.getToken();
@@ -1372,7 +1416,6 @@ export class UploadFunctionality {
                 throw new Error('Configured image tag is not a viable tag');
             }
 
-
             let imageConfigController = '';
             if (currTag[0] != '') {
                 const conManifest = await connectionManager.executeCommand(
@@ -1382,7 +1425,11 @@ export class UploadFunctionality {
                 const json = JSON.parse(conManifest);
                 imageConfigController = json[0].Id;
             } else {
-                return { imageUpToDate: false, wantedVersion: wantedVers, currentTag: currTag };
+                return {
+                    imageUpToDate: false,
+                    wantedVersion: wantedVers,
+                    currentTag: currTag,
+                };
             }
 
             // Get new Image Hash from GitHub Packages
@@ -1394,24 +1441,37 @@ export class UploadFunctionality {
 
             if (imageConfigController == imageConfig) {
                 console.debug('Image up to date');
-                return { imageUpToDate: true, wantedVersion: wantedVers, currentTag: currTag };
+                return {
+                    imageUpToDate: true,
+                    wantedVersion: wantedVers,
+                    currentTag: currTag,
+                };
             }
 
             // Autoupdate check
             const conName = YamlCommands.getController(id)?.displayname;
-            const autoupdate = YamlCommands.getControllerSettings(id).autoupdate;
+            const autoupdate =
+                YamlCommands.getControllerSettings(id).autoupdate;
             if (autoupdate === 'off') {
-                const checkReturn = await vscode.window
-                    .showWarningMessage(
-                        `Update container image on ${conName}?`,
-                        { modal: true },
-                        'Yes',
-                        'No'
-                    );
-                if (checkReturn !== 'Yes') return { imageUpToDate: true, wantedVersion: wantedVers, currentTag: currTag };
+                const checkReturn = await vscode.window.showWarningMessage(
+                    `Update container image on ${conName}?`,
+                    { modal: true },
+                    'Yes',
+                    'No'
+                );
+                if (checkReturn !== 'Yes')
+                    return {
+                        imageUpToDate: true,
+                        wantedVersion: wantedVers,
+                        currentTag: currTag,
+                    };
             }
 
-            return { imageUpToDate: false, wantedVersion: wantedVers, currentTag: currTag };
+            return {
+                imageUpToDate: false,
+                wantedVersion: wantedVers,
+                currentTag: currTag,
+            };
         } catch (error) {
             console.error(`Error comparing Docker image versions: ${error}`);
             return Promise.reject(error);
@@ -1425,234 +1485,298 @@ export class UploadFunctionality {
      *
      * @param id The id of the used controller
      */
-    private async updateContainer(id: number, wantedVersion: string, currentTag: string[]): Promise<void> {
+    private async updateContainer(
+        id: number,
+        wantedVersion: string,
+        currentTag: string[]
+    ): Promise<void> {
         const containerName = DOCKER_CONSTANTS.CONTAINER_NAME;
         const downloadPathFolder = `${extensionContext.storageUri?.fsPath}`;
 
         try {
             await vscode.window.withProgress(
-            {
-                location: vscode.ProgressLocation.Notification,
-                title: 'Docker Image Progress',
-                cancellable: false,
-            },
-            async (progress) => {
-                progress.report({ increment: 10, message: 'Removing old Image...'});
+                {
+                    location: vscode.ProgressLocation.Notification,
+                    title: 'Docker Image Progress',
+                    cancellable: false,
+                },
+                async (progress) => {
+                    progress.report({
+                        increment: 10,
+                        message: 'Removing old Image...',
+                    });
 
-                let token = await this.getToken();
+                    let token = await this.getToken();
 
+                    // Get new Image Hash from GitHub Packages
+                    let wantedVersManifest = await this.getImageManifest(
+                        wantedVersion,
+                        token
+                    );
+                    let imageConfig = wantedVersManifest.configDigest;
+                    let imageLayers = wantedVersManifest.layers;
 
-                // Get new Image Hash from GitHub Packages
-                let wantedVersManifest = await this.getImageManifest(
-                    wantedVersion,
-                    token
-                );
-                let imageConfig = wantedVersManifest.configDigest;
-                let imageLayers = wantedVersManifest.layers;
-
-                // Stop current container
-                await connectionManager.executeCommand(
-                    id,
-                    `docker stop ${containerName}`
-                );
-
-                // remove all images and containers
-                await connectionManager.executeCommand(
-                    id,
-                    `docker rm ${containerName}`
-                );
-                for (const tag of currentTag) {
+                    // Stop current container
                     await connectionManager.executeCommand(
                         id,
-                        `docker rmi -f ${UploadFunctionality.imageName}:${tag}`
+                        `docker stop ${containerName}`
                     );
-                }
 
-                progress.report({ increment: 10, message: "Downloading image from GitHub Packages..." });
+                    // remove all images and containers
+                    await connectionManager.executeCommand(
+                        id,
+                        `docker rm ${containerName}`
+                    );
+                    for (const tag of currentTag) {
+                        await connectionManager.executeCommand(
+                            id,
+                            `docker rmi -f ${UploadFunctionality.imageName}:${tag}`
+                        );
+                    }
 
-                // Download and Upload new Image
-                // Download all Image Layers
-                if (!fs.existsSync(path.join(downloadPathFolder, "blobs", "sha256"))) {
-                    fs.mkdirSync(path.join(downloadPathFolder, "blobs", "sha256"), {
+                    progress.report({
+                        increment: 10,
+                        message: 'Downloading image from GitHub Packages...',
+                    });
+
+                    // Download and Upload new Image
+                    // Download all Image Layers
+                    if (
+                        !fs.existsSync(
+                            path.join(downloadPathFolder, 'blobs', 'sha256')
+                        )
+                    ) {
+                        fs.mkdirSync(
+                            path.join(downloadPathFolder, 'blobs', 'sha256'),
+                            {
+                                recursive: true,
+                            }
+                        );
+                    }
+
+                    let layerArray: String[] = [];
+                    let layerResponseArray: {
+                        response: Promise<Response>;
+                        hash: string;
+                    }[] = [];
+                    await vscode.window.withProgress(
+                        {
+                            location: vscode.ProgressLocation.Notification,
+                            title: 'Downloading Image',
+                            cancellable: false,
+                        },
+                        async (progress) => {
+                            // Get Layer Responses
+                            for (const layer of imageLayers) {
+                                const response = fetch(
+                                    `https://ghcr.io/v2/${UploadFunctionality.repo}/blobs/${layer}`,
+                                    {
+                                        headers: {
+                                            Authorization: `Bearer ${token}`,
+                                            Accept: 'application/vnd.oci.image.layer.v1.tar+gzip',
+                                        },
+                                    }
+                                );
+                                let layerWithoutSha = layer.substring(
+                                    7,
+                                    layer.length
+                                ); // Remove sha256: from beginning of the string
+
+                                // Add Layer Response Promise to Array
+                                layerResponseArray.push({
+                                    response: response,
+                                    hash: layerWithoutSha,
+                                });
+                            }
+
+                            // Resolve Layer Responses
+                            let layerCount = 1;
+                            for (const layer of layerResponseArray) {
+                                progress.report({
+                                    increment:
+                                        (1 / layerResponseArray.length) * 100,
+                                    message: `Downloading layer ${layerCount} from ${layerResponseArray.length}`,
+                                });
+                                let layerPath = path.join(
+                                    downloadPathFolder,
+                                    'blobs',
+                                    'sha256',
+                                    layer.hash
+                                );
+
+                                // Add Layer Path to Array
+                                layerArray.push(`blobs/sha256/${layer.hash}`);
+
+                                fs.open(layerPath, 'w', (err, fd) => {
+                                    if (err)
+                                        vscode.window.showErrorMessage(
+                                            'Error while creating temporary file for the image layer.'
+                                        );
+                                    fs.close(fd);
+                                });
+                                const stream = fs.createWriteStream(layerPath);
+                                const response = await layer.response;
+                                const body = response.body;
+                                if (!body) {
+                                    vscode.window.showErrorMessage(
+                                        'Error downloading image Layer.'
+                                    );
+                                    return;
+                                }
+                                await finished(
+                                    Readable.fromWeb(body).pipe(stream)
+                                );
+
+                                console.debug(
+                                    `Layer ${layer.hash} downloaded successfully.`
+                                );
+
+                                layerCount++;
+                            }
+                        }
+                    );
+
+                    progress.report({
+                        increment: 20,
+                        message: 'Downloading image metadata...',
+                    });
+
+                    // Create config.json file
+                    let configJsonPath = path.join(
+                        downloadPathFolder,
+                        'config.json'
+                    );
+                    fs.open(configJsonPath, 'w', (err, fd) => {
+                        if (err)
+                            vscode.window.showErrorMessage(
+                                'Error while creating temporary file for the image config.json.'
+                            );
+                        fs.close(fd);
+                    });
+                    const stream = fs.createWriteStream(configJsonPath);
+                    console.debug(
+                        `Request send: https://ghcr.io/v2/${UploadFunctionality.repo}/blobs/${imageConfig}`
+                    );
+                    const { body } = await fetch(
+                        `https://ghcr.io/v2/${UploadFunctionality.repo}/blobs/${imageConfig}`,
+                        {
+                            headers: {
+                                Authorization: `Bearer ${token}`,
+                                Accept: 'application/vnd.oci.image.layer.v1.tar+gzip',
+                            },
+                        }
+                    );
+                    if (!body) {
+                        vscode.window.showErrorMessage(
+                            'Error downloading image.'
+                        );
+                        return;
+                    }
+                    await finished(Readable.fromWeb(body).pipe(stream));
+
+                    progress.report({
+                        increment: 20,
+                        message: 'Building Image...',
+                    });
+
+                    // Create manifest.json file
+                    let manifestJsonPath = path.join(
+                        downloadPathFolder,
+                        'manifest.json'
+                    );
+                    fs.open(manifestJsonPath, 'w', (err, fd) => {
+                        if (err)
+                            vscode.window.showErrorMessage(
+                                'Error while creating temporary file for the image manifest.json.'
+                            );
+                        fs.close(fd);
+                    });
+
+                    const manifestJson = [
+                        {
+                            Config: 'config.json',
+                            RepoTags: [
+                                `${DOCKER_CONSTANTS.IMAGE_PREFIX}/${UploadFunctionality.repo}:${wantedVersion}`,
+                            ],
+                            Layers: layerArray,
+                        },
+                    ];
+
+                    fs.writeFileSync(
+                        manifestJsonPath,
+                        JSON.stringify(manifestJson)
+                    );
+
+                    // Put the Manifest and Layers together to an image
+                    let tarPath = path.join(
+                        downloadPathFolder,
+                        FILE_NAMES.IMAGE_TAR
+                    );
+                    fs.open(tarPath, 'w', (err, fd) => {
+                        if (err)
+                            vscode.window.showErrorMessage(
+                                `Error while creating temporary file for the image ${FILE_NAMES.IMAGE_TAR}.`
+                            );
+                        fs.close(fd);
+                    });
+
+                    create(
+                        {
+                            file: path.join(
+                                downloadPathFolder,
+                                FILE_NAMES.IMAGE_TAR
+                            ),
+                            sync: true,
+                            cwd: downloadPathFolder,
+                        },
+                        ['config.json', 'manifest.json', 'blobs']
+                    );
+
+                    progress.report({
+                        increment: 20,
+                        message: 'Uploading Image...',
+                    });
+
+                    // Upload new Image
+                    await connectionManager.uploadFile(
+                        id,
+                        path.join(
+                            downloadPathFolder,
+                            `/${FILE_NAMES.IMAGE_TAR}`
+                        ),
+                        '/home/'
+                    );
+
+                    progress.report({
+                        increment: 10,
+                        message: 'Loading Image...',
+                    });
+
+                    // Load new Image
+                    await connectionManager.executeCommand(
+                        id,
+                        `docker load -i /home/${FILE_NAMES.IMAGE_TAR}`
+                    );
+
+                    await connectionManager.executeCommand(
+                        id,
+                        `rm /home/${FILE_NAMES.IMAGE_TAR}`
+                    );
+
+                    // Delete local Image files
+                    fs.unlinkSync(
+                        path.join(downloadPathFolder, FILE_NAMES.IMAGE_TAR)
+                    );
+                    fs.unlinkSync(path.join(downloadPathFolder, `config.json`));
+                    fs.unlinkSync(
+                        path.join(downloadPathFolder, `manifest.json`)
+                    );
+                    fs.rmSync(path.join(downloadPathFolder, `blobs`), {
                         recursive: true,
+                        force: true,
                     });
                 }
-
-                let layerArray: String[] = [];
-                let layerResponseArray: {
-                    response: Promise<Response>;
-                    hash: string;
-                }[] = [];
-                await vscode.window.withProgress(
-                    {
-                        location: vscode.ProgressLocation.Notification,
-                        title: 'Downloading Image',
-                        cancellable: false,
-                    },
-                    async (progress) => {
-                        // Get Layer Responses
-                        for (const layer of imageLayers) {
-                            const response = fetch(
-                                `https://ghcr.io/v2/${UploadFunctionality.repo}/blobs/${layer}`,
-                                {
-                                    headers: {
-                                        Authorization: `Bearer ${token}`,
-                                        Accept: 'application/vnd.oci.image.layer.v1.tar+gzip',
-                                    },
-                                }
-                            );
-                            let layerWithoutSha = layer.substring(7, layer.length); // Remove sha256: from beginning of the string
-
-                            // Add Layer Response Promise to Array
-                            layerResponseArray.push({
-                                response: response,
-                                hash: layerWithoutSha,
-                            });
-                        }
-
-                        // Resolve Layer Responses
-                        let layerCount = 1
-                        for (const layer of layerResponseArray) {
-                            progress.report({ increment: (1/layerResponseArray.length) * 100, message:`Downloading layer ${layerCount} from ${layerResponseArray.length}`})
-                            let layerPath = path.join(
-                                downloadPathFolder,
-                                "blobs",
-                                "sha256",
-                                layer.hash
-                            );
-
-                            // Add Layer Path to Array
-                            layerArray.push(`blobs/sha256/${layer.hash}`);
-
-                            fs.open(layerPath, 'w', (err, fd) => {
-                                if (err)
-                                    vscode.window.showErrorMessage(
-                                        'Error while creating temporary file for the image layer.'
-                                    );
-                                fs.close(fd);
-                            });
-                            const stream = fs.createWriteStream(layerPath);
-                            const response = await layer.response;
-                            const body = response.body;
-                            if (!body) {
-                                vscode.window.showErrorMessage(
-                                    'Error downloading image Layer.'
-                                );
-                                return;
-                            }
-                            await finished(Readable.fromWeb(body).pipe(stream));
-
-                            console.debug(`Layer ${layer.hash} downloaded successfully.`);
-
-                            layerCount++;
-                        }
-                    }
-                );
-
-                progress.report({ increment: 20, message: "Downloading image metadata..." })
-
-                // Create config.json file
-                let configJsonPath = path.join(downloadPathFolder, 'config.json');
-                fs.open(configJsonPath, 'w', (err, fd) => {
-                    if (err)
-                        vscode.window.showErrorMessage(
-                            'Error while creating temporary file for the image config.json.'
-                        );
-                    fs.close(fd);
-                });
-                const stream = fs.createWriteStream(configJsonPath);
-                console.debug(
-                    `Request send: https://ghcr.io/v2/${UploadFunctionality.repo}/blobs/${imageConfig}`
-                );
-                const { body } = await fetch(
-                    `https://ghcr.io/v2/${UploadFunctionality.repo}/blobs/${imageConfig}`,
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                            Accept: 'application/vnd.oci.image.layer.v1.tar+gzip',
-                        },
-                    }
-                );
-                if (!body) {
-                    vscode.window.showErrorMessage('Error downloading image.');
-                    return;
-                }
-                await finished(Readable.fromWeb(body).pipe(stream));
-
-                progress.report({ increment: 20, message: "Building Image..." })
-
-                // Create manifest.json file
-                let manifestJsonPath = path.join(
-                    downloadPathFolder,
-                    'manifest.json'
-                );
-                fs.open(manifestJsonPath, 'w', (err, fd) => {
-                    if (err)
-                        vscode.window.showErrorMessage(
-                            'Error while creating temporary file for the image manifest.json.'
-                        );
-                    fs.close(fd);
-                });
-
-                const manifestJson = [
-                    {
-                        Config: 'config.json',
-                        RepoTags: [
-                            `${DOCKER_CONSTANTS.IMAGE_PREFIX}/${UploadFunctionality.repo}:${wantedVersion}`,
-                        ],
-                        Layers: layerArray,
-                    },
-                ];
-
-                fs.writeFileSync(manifestJsonPath, JSON.stringify(manifestJson));
-
-                // Put the Manifest and Layers together to an image
-                let tarPath = path.join(downloadPathFolder, FILE_NAMES.IMAGE_TAR);
-                fs.open(tarPath, 'w', (err, fd) => {
-                    if (err)
-                        vscode.window.showErrorMessage(
-                            `Error while creating temporary file for the image ${FILE_NAMES.IMAGE_TAR}.`
-                        );
-                    fs.close(fd);
-                });
-
-                create(
-                    {
-                        file: path.join(downloadPathFolder, FILE_NAMES.IMAGE_TAR),
-                        sync: true,
-                        cwd: downloadPathFolder,
-                    },
-                    ['config.json', 'manifest.json', 'blobs']
-                );
-
-                progress.report({ increment: 20, message: "Uploading Image..." })
-
-                // Upload new Image
-                await connectionManager.uploadFile(
-                    id,
-                    path.join(downloadPathFolder, `/${FILE_NAMES.IMAGE_TAR}`),
-                    '/home/'
-                );
-
-                progress.report({ increment: 10, message: "Loading Image..." })
-
-                // Load new Image
-                await connectionManager.executeCommand(
-                    id,
-                    `docker load -i /home/${FILE_NAMES.IMAGE_TAR}`
-                );
-
-                await connectionManager.executeCommand(id, `rm /home/${FILE_NAMES.IMAGE_TAR}`);
-
-                // Delete local Image files
-                fs.unlinkSync(path.join(downloadPathFolder, FILE_NAMES.IMAGE_TAR));
-                fs.unlinkSync(path.join(downloadPathFolder, `config.json`));
-                fs.unlinkSync(path.join(downloadPathFolder, `manifest.json`));
-                fs.rmSync(path.join(downloadPathFolder, `blobs`), {
-                    recursive: true,
-                    force: true,
-                });
-            })
+            );
         } catch (error) {
             console.error(`Error Updating Container: ${error}`);
         }

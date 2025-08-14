@@ -224,9 +224,7 @@ export class ProjectFactory {
         }
     }
 
-    public createGetEngine(
-        versionNr: number
-    ): Interface.GetEngineInterface {
+    public createGetEngine(versionNr: number): Interface.GetEngineInterface {
         switch (versionNr) {
             case 0.2:
                 return new V2.GetEngine();

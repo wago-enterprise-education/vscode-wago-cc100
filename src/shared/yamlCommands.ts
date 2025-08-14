@@ -1,7 +1,12 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import YAML from 'yaml';
-import { ControllerType, ControllerSettingsExtendedType, WagoSettings, ControllerSettings } from './types';
+import {
+    ControllerType,
+    ControllerSettingsExtendedType,
+    WagoSettings,
+    ControllerSettings,
+} from './types';
 import { CONTROLLER_AUTO_ID_START } from './constants';
 
 /**
@@ -81,7 +86,9 @@ export class YamlCommands {
      * - `user`: The username for authentication.
      * - `autoupdate`: A flag indicating whether auto-update is enabled.
      */
-    public static getControllerSettings(id: number): ControllerSettingsExtendedType {
+    public static getControllerSettings(
+        id: number
+    ): ControllerSettingsExtendedType {
         const settings = this.getControllerYaml(id);
         return {
             connection: settings.connection,

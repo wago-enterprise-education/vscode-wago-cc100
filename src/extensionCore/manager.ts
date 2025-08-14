@@ -155,10 +155,10 @@ export class Manager {
      *
      * @param controller - Controller to configure (undefined for user selection prompt)
      */
-    public configureController(controller: Controller | undefined){
+    public configureController(controller: Controller | undefined) {
         ProjectFactory.getInstance()
             .createConfigureCommand(this.versionNr)
-            .configure(controller);  
+            .configure(controller);
     }
     /**
      * Retrieves child elements for display in the view.
@@ -194,7 +194,11 @@ export class Manager {
      * @returns The default USB-C IP address for the specified controller
      */
     public getUSB_C_IP(controllerId: number): string {
-        const engine = ProjectFactory.getInstance().createGetEngine(this.versionNr).getEngine(controllerId);
-        return ControllerFactory.getInstance().createGetUSB_C_IP(engine).getUSB_C_IP();
+        const engine = ProjectFactory.getInstance()
+            .createGetEngine(this.versionNr)
+            .getEngine(controllerId);
+        return ControllerFactory.getInstance()
+            .createGetUSB_C_IP(engine)
+            .getUSB_C_IP();
     }
 }

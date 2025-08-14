@@ -4,7 +4,7 @@ import { Manager } from '../extensionCore/manager';
 /**
  * Tree data provider for the WAGO CC100 controller view in VS Code's sidebar.
  * Implements the singleton pattern to ensure a single instance manages the entire tree view.
- * 
+ *
  * This provider is responsible for:
  * - Displaying controllers and their configuration settings
  * - Handling tree refresh events when data changes
@@ -14,11 +14,11 @@ export class ControllerProvider
     implements vscode.TreeDataProvider<Controller | ControllerItem>
 {
     static readonly instance = new ControllerProvider();
-    
+
     private _onDidChangeTreeData: vscode.EventEmitter<
         Controller | undefined | null | void
     > = new vscode.EventEmitter<Controller | undefined | null | void>();
-    
+
     readonly onDidChangeTreeData: vscode.Event<
         Controller | ControllerItem | undefined | null | void
     > = this._onDidChangeTreeData.event;
@@ -33,7 +33,7 @@ export class ControllerProvider
 
     /**
      * Converts a controller or controller item into a VS Code tree item for display.
-     * 
+     *
      * @param element - The controller or controller item to convert
      * @returns The VS Code tree item representation
      */
@@ -43,7 +43,7 @@ export class ControllerProvider
 
     /**
      * Retrieves the children of a tree element for hierarchical display.
-     * 
+     *
      * @param element - The parent element (undefined for root level)
      * @returns Array of child controllers or controller items
      */
@@ -74,7 +74,7 @@ export class Controller extends vscode.TreeItem {
         super(label, vscode.TreeItemCollapsibleState.Collapsed);
         this.contextValue = 'controller';
         this.tooltip = `ID: ${controllerId} \nOnline: ${online}`;
-        
+
         // Set icon color based on connection status (green = online, red = offline)
         this.iconPath = new vscode.ThemeIcon(
             'circle-filled',

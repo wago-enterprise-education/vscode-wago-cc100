@@ -28,7 +28,9 @@ export async function verifyProject() {
 async function findWagoYaml() {
     if (
         vscode.workspace.workspaceFolders &&
-        fs.existsSync(`${vscode.workspace.workspaceFolders![0].uri.fsPath}/wago.yaml`) &&
+        fs.existsSync(
+            `${vscode.workspace.workspaceFolders![0].uri.fsPath}/wago.yaml`
+        ) &&
         vscode.workspace.workspaceFolders!.length < 2
     ) {
         ProjectVersion = 0.2;
@@ -50,7 +52,13 @@ async function findWagoYaml() {
  * This is the fallback detection method for legacy project structures.
  */
 async function findSettingsJson() {
-    if (vscode.workspace.workspaceFolders && fs.existsSync(`${vscode.workspace.workspaceFolders![0].uri.fsPath}/settings.json`) && vscode.workspace.workspaceFolders!.length < 2) {
+    if (
+        vscode.workspace.workspaceFolders &&
+        fs.existsSync(
+            `${vscode.workspace.workspaceFolders![0].uri.fsPath}/settings.json`
+        ) &&
+        vscode.workspace.workspaceFolders!.length < 2
+    ) {
         ProjectVersion = 0.1;
         listenOnFileChangeSettingsJson();
     } else {
@@ -172,7 +180,7 @@ function checkIfInRootFolder(uri: vscode.Uri): Boolean {
 /**
  * Updates the VS Code context variable 'controllerCount' based on the current project version.
  * This context variable is used to control the visibility of UI elements in the extension.
- * 
+ *
  * Controller count determination:
  * - V02 projects: Read from wago.yaml configuration
  * - V01 projects: Always 1 (single controller support)

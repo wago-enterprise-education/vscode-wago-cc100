@@ -14,14 +14,14 @@ export let extensionContext: vscode.ExtensionContext;
 /**
  * Main entry point for the WAGO CC100 extension.
  * This function is called automatically when the extension is activated by VS Code.
- * 
+ *
  * The activation process:
  * 1. Registers the controller tree view in the sidebar
  * 2. Initializes the IO-Check webview functionality
  * 3. Creates and registers all VS Code commands
  * 4. Detects project version and validates project structure
  * 5. Establishes connections to configured controllers
- * 
+ *
  * @param context - The VS Code extension context providing access to extension lifecycle and resources
  */
 export async function activate(context: vscode.ExtensionContext) {

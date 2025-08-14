@@ -14,14 +14,14 @@ import { UPLOAD_PATH } from '../../shared/constants';
 
 /**
  * V01 Project Version Implementation
- * 
+ *
  * This file contains all the implementations for V01 (legacy) WAGO projects.
  * V01 projects are characterized by:
  * - Single controller support only
  * - settings.json configuration file
  * - Simplified project structure
  * - Limited network configuration options
- * 
+ *
  * All classes in this file implement interfaces from projectInterface.ts
  * to ensure compatibility with the factory pattern used by the extension.
  */
@@ -50,7 +50,7 @@ export class UploadController implements Interface.UploadInterface {
      * Uploads the current project to the specified controller.
      * In V01, there's only one controller (ID 0), so the controller parameter
      * is mainly for interface compliance.
-     * 
+     *
      * @param controller - Target controller (defaults to controller 0 if undefined)
      */
     async uploadController(controller: Controller | undefined) {
@@ -107,8 +107,11 @@ export class ResetController implements Interface.ResetControllerInterface {
         }
         let controllerId: number;
         if (showConfirmation) {
-            const response = await vscode.window
-                .showWarningMessage(`Reset ${controller.label}?`, 'Yes', 'No');
+            const response = await vscode.window.showWarningMessage(
+                `Reset ${controller.label}?`,
+                'Yes',
+                'No'
+            );
             if (response !== 'Yes') {
                 return '';
             }
@@ -230,7 +233,7 @@ export class EstablishConnections
     async establishConnections() {
         const controller = JsonCommands.getController();
         ConnectionManager.instance.addController(
-            0,  // V01 always uses controller ID 0
+            0, // V01 always uses controller ID 0
             `${controller.ip}:${controller.port}`,
             controller.user
         );
@@ -244,11 +247,11 @@ export class EstablishConnections
 export class ViewChildren implements Interface.ViewChildrenInterface {
     /**
      * Retrieves child elements for the tree view based on the current element.
-     * 
+     *
      * For V01 projects:
      * - Root level: Returns the single controller
      * - Controller level: Returns controller settings (connection, IP, port, user, autoupdate)
-     * 
+     *
      * @param element - The parent element (undefined for root, Controller for settings)
      * @returns Promise resolving to array of controllers or controller settings
      */
@@ -288,7 +291,7 @@ export class ViewChildren implements Interface.ViewChildrenInterface {
                         controller.connection
                     )
                 );
-                
+
                 // Show IP only for ethernet connections
                 if (controller.connection === 'ethernet') {
                     settingArray.push(
@@ -299,7 +302,7 @@ export class ViewChildren implements Interface.ViewChildrenInterface {
                         )
                     );
                 }
-                
+
                 // Always show port, user, and autoupdate settings
                 settingArray.push(
                     new ControllerItem(
@@ -337,22 +340,25 @@ export class JsonCommands {
     /**
      * Reads and parses the settings.json file from the workspace root.
      * This file contains all controller configuration for V01 projects.
-     * 
+     *
      * @returns Parsed JSON object containing controller settings
      * @throws Error if the file cannot be read or parsed
      */
     private static getSettingsJson() {
         return JSON.parse(
             fs.readFileSync(
-                path.join(vscode.workspace.workspaceFolders![0].uri.fsPath, 'settings.json'),
+                path.join(
+                    vscode.workspace.workspaceFolders![0].uri.fsPath,
+                    'settings.json'
+                ),
                 'utf8'
             )
         );
     }
-    
+
     /**
      * Updates a specific setting in the settings.json file.
-     * 
+     *
      * @param attribute - The setting key to update (from SettingsJson enum)
      * @param value - The new value to assign to the setting
      * @throws Error if the file cannot be written
@@ -361,20 +367,23 @@ export class JsonCommands {
         let json = this.getSettingsJson();
         json[attribute] = value;
         fs.writeFileSync(
-            path.join(vscode.workspace.workspaceFolders![0].uri.fsPath, 'settings.json'),
+            path.join(
+                vscode.workspace.workspaceFolders![0].uri.fsPath,
+                'settings.json'
+            ),
             JSON.stringify(json, null, '\t')
         );
     }
-    
+
     /**
      * Retrieves the controller configuration from settings.json.
      * Processes the raw settings into a normalized controller object.
-     * 
+     *
      * @returns Controller configuration object with connection details
      */
     public static getController() {
         const settings = this.getSettingsJson();
-        
+
         // Determine connection type from boolean flags
         let connectionType = '';
         if (settings.ethernet === 'true') connectionType = 'ethernet';
@@ -382,7 +391,7 @@ export class JsonCommands {
 
         return {
             connection: connectionType,
-            ip: settings.ip_adress,  // Note: kept original typo for compatibility
+            ip: settings.ip_adress, // Note: kept original typo for compatibility
             port: settings.port,
             user: settings.user,
             autoupdate: settings.autoupdate,
@@ -398,7 +407,7 @@ export class EditSettingsFunctionality {
     /**
      * Opens appropriate dialogs to edit a specific controller setting.
      * Handles different setting types with specialized input methods.
-     * 
+     *
      * @param _id - Controller ID (unused in V01 as only one controller exists)
      * @param settingToEdit - The name of the setting to edit
      */
@@ -407,7 +416,7 @@ export class EditSettingsFunctionality {
             vscode.window.showErrorMessage('No workspace is open');
             return;
         }
-        
+
         let content;
         switch (settingToEdit) {
             case 'connection':
@@ -418,7 +427,7 @@ export class EditSettingsFunctionality {
                         canPickMany: false,
                     })) || '';
                 if (!conType) return;
-                
+
                 switch (conType) {
                     case 'usb-c':
                         // Set USB-C connection and default IP
@@ -427,7 +436,7 @@ export class EditSettingsFunctionality {
                         JsonCommands.writeJson(SettingsJson.ethernet, 'false');
                         JsonCommands.writeJson(
                             SettingsJson.ip_adress,
-                            '192.168.42.42'  // Default USB-C IP
+                            '192.168.42.42' // Default USB-C IP
                         );
                         break;
                     case 'ethernet':
@@ -447,7 +456,7 @@ export class EditSettingsFunctionality {
                 if (!content) return;
                 JsonCommands.writeJson(SettingsJson.ip_adress, content);
                 break;
-                
+
             case 'port':
             case 'user':
                 // Generic text input for port and user
@@ -455,7 +464,7 @@ export class EditSettingsFunctionality {
                 if (!content) return;
                 JsonCommands.writeJson(SettingsJson[settingToEdit], content);
                 break;
-                
+
             case 'autoupdate':
                 // Autoupdate toggle
                 let status =
@@ -467,7 +476,7 @@ export class EditSettingsFunctionality {
 
                 JsonCommands.writeJson(SettingsJson[settingToEdit], status);
                 break;
-                
+
             default:
                 vscode.window.showErrorMessage('Invalid Attribute Type');
                 break;
@@ -476,7 +485,7 @@ export class EditSettingsFunctionality {
 
     /**
      * Displays a generic input dialog for setting values.
-     * 
+     *
      * @returns Promise resolving to user input or empty string if cancelled
      */
     private static async getInput(): Promise<string> {
@@ -513,9 +522,12 @@ export class UploadFunctionality {
      * @returns A Promise that resolves when the upload is complete or when an early return occurs
      */
     public async uploadFile(id: number) {
-        let srcPath = path.join(vscode.workspace.workspaceFolders![0].uri.fsPath, "src");
+        let srcPath = path.join(
+            vscode.workspace.workspaceFolders![0].uri.fsPath,
+            'src'
+        );
 
-        if (!fs.existsSync(path.join(srcPath, "main.py"))) {
+        if (!fs.existsSync(path.join(srcPath, 'main.py'))) {
             vscode.window.showErrorMessage(
                 'The selected Folder does not exist or does not contain a main.py.'
             );
@@ -564,7 +576,11 @@ export class UploadFunctionality {
 
                     // Upload Files
                     progress.report({ increment: 20, message: 'Uploading...' });
-                    await connectionManager.uploadDirectory(id, srcPath, UPLOAD_PATH);
+                    await connectionManager.uploadDirectory(
+                        id,
+                        srcPath,
+                        UPLOAD_PATH
+                    );
 
                     // Execute File
                     progress.report({ increment: 20, message: 'Executing...' });
@@ -596,7 +612,7 @@ export class UploadFunctionality {
     /**
      * Compares local and remote folder contents using MD5 hashes.
      * This optimization prevents unnecessary uploads when files haven't changed.
-     * 
+     *
      * @param id - Controller ID
      * @param localPath - Path to local source directory
      * @returns Promise resolving to true if folders are identical, false otherwise
@@ -630,7 +646,7 @@ export class UploadFunctionality {
     /**
      * Creates a composite hash from individual file hashes.
      * Processes hash strings to create a deterministic folder signature.
-     * 
+     *
      * @param hashes - String containing file hashes from md5sum command
      * @returns MD5 hash of the processed hash collection
      */
@@ -640,9 +656,9 @@ export class UploadFunctionality {
             .replaceAll('\n', '  ')
             .split('  ')
             .filter((_val, index) => {
-                return index % 2 === 0;  // Extract only hash values, not file paths
+                return index % 2 === 0; // Extract only hash values, not file paths
             })
-            .sort((a, b) => a.localeCompare(b))  // Sort for deterministic result
+            .sort((a, b) => a.localeCompare(b)) // Sort for deterministic result
             .toString()
             .replaceAll(',', '');
 
@@ -654,7 +670,7 @@ export class UploadFunctionality {
     /**
      * Generates MD5 hashes for all files in a local directory.
      * Mimics the output format of the Linux 'find ... -exec md5sum {} +' command.
-     * 
+     *
      * @param path - Local directory path to process
      * @returns Promise resolving to hash string in md5sum format
      */
@@ -670,7 +686,7 @@ export class UploadFunctionality {
                     .createHash('md5')
                     .update(fileContent)
                     .digest('hex');
-                    
+
                 // Build hash string in md5sum format
                 if (localHashes.length == 0) {
                     localHashes = `${localHashes}${hash}  ${file}`;
@@ -689,7 +705,7 @@ export class UploadFunctionality {
     /**
      * Recursively collects all file paths in a directory.
      * Used to build a comprehensive list for hash comparison.
-     * 
+     *
      * @param dirPath - Directory to scan recursively
      * @returns Promise resolving to array of absolute file paths
      */
@@ -718,13 +734,13 @@ export class UploadFunctionality {
     /**
      * Deactivates CodeSys3 runtime on the controller.
      * This prevents conflicts with Python applications.
-     * 
+     *
      * @param id - Controller ID
      */
     private async deactivateCodeSys3(id: number) {
         // Kill CodeSys3 processes
         await connectionManager.executeCommand(id, 'kill $(pidof codesys3)');
-        
+
         // Disable CodeSys3 runtime through configuration tool
         await connectionManager
             .executeCommand(

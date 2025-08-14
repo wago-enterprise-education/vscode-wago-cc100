@@ -9,20 +9,20 @@ import { extensionContext } from '../extension';
 import { YamlCommands } from '../shared/yamlCommands';
 import { CONNECTION_SETTINGS } from '../shared/constants';
 
-const { 
+const {
     MAX_CONNECTIONS: maxConnections,
-    GARBAGE_COLLECTOR_INTERVAL: garbageCollectorInterval, 
+    GARBAGE_COLLECTOR_INTERVAL: garbageCollectorInterval,
     TIMEOUT: timeout,
     RECONNECTION_TIMEOUT: reconnectionTimeout,
     SCRIPT_PATH: scriptPath,
     REMOTE_TMP_PATH: remoteTmpPath,
     PUBLIC_KEY_PATH: publicKeyPath,
-    PRIVATE_KEY_PATH: privateKeyPath
+    PRIVATE_KEY_PATH: privateKeyPath,
 } = CONNECTION_SETTINGS;
 
 /**
  * Singleton SSH connection manager for WAGO CC100 controllers.
- * 
+ *
  * Manages a pool of persistent SSH connections to multiple controllers, providing:
  * - Connection pooling and reuse for efficient resource utilization
  * - Automatic garbage collection of unused connections
@@ -30,7 +30,7 @@ const {
  * - File and directory upload functionality
  * - Connection health monitoring and automatic reconnection
  * - SSH key-based authentication with fallback to password authentication
- * 
+ *
  * The manager maintains multiple connections per controller to handle concurrent operations
  * while respecting configurable connection limits and timeout settings.
  */
@@ -42,7 +42,7 @@ export class ConnectionManager {
     /**
      * Private constructor implementing the Singleton pattern.
      * Initializes the garbage collection timer to clean up unused connections.
-     * 
+     *
      * The garbage collector runs periodically to:
      * - Remove connections idle longer than the configured interval
      * - Preserve at least one connection per controller for quick access
@@ -246,7 +246,9 @@ export class ConnectionManager {
         file: string,
         ...args: string[]
     ): Promise<string> {
-        let script = fs.readFileSync(`${extensionContext?.extensionPath}/${scriptPath}/${file}`);
+        let script = fs.readFileSync(
+            `${extensionContext?.extensionPath}/${scriptPath}/${file}`
+        );
 
         let connection: Connection;
         try {
@@ -260,7 +262,7 @@ export class ConnectionManager {
         this.splitScript(script.toString()).forEach(async (cmd) => {
             args.forEach((arg, index) => {
                 cmd = cmd.replace(`$${index + 1}`, arg);
-            })
+            });
 
             output += await connection.executeCommand(cmd);
         });
@@ -326,7 +328,7 @@ export class ConnectionManager {
             throw error;
         }
 
-        if(localPath.endsWith('/')) {
+        if (localPath.endsWith('/')) {
             localPath = localPath.slice(0, -1);
         }
 
@@ -401,14 +403,14 @@ export class ConnectionManager {
             throw error;
         }
 
-        if(localPath.endsWith('/')) {
+        if (localPath.endsWith('/')) {
             localPath = localPath.slice(0, -1);
         }
 
         if (remotePath.endsWith('/')) {
             remotePath = remotePath.slice(0, -1);
         }
-        
+
         return new Promise(async (resolve, reject) => {
             await connection
                 .executeCommand(`rm -rf ${remoteTmpPath}`)
@@ -491,7 +493,7 @@ export class ConnectionManager {
             connection.disconnect();
             indicesToRemove.push(index);
         });
-        
+
         // Remove connections in reverse order to avoid index shifting
         for (const index of indicesToRemove.reverse()) {
             this.connections.splice(index, 1);
@@ -538,7 +540,7 @@ export class ConnectionManager {
 
 /**
  * Individual SSH connection to a WAGO CC100 controller.
- * 
+ *
  * Manages the lifecycle of a single SSH connection including:
  * - SSH key generation and password-based authentication fallback
  * - Automatic reconnection with exponential backoff
@@ -546,7 +548,7 @@ export class ConnectionManager {
  * - SFTP file transfer capabilities
  * - SSH port forwarding for debugging and remote access
  * - Connection state tracking and usage monitoring
- * 
+ *
  * Each connection can handle one command at a time and tracks its busy state
  * to support the connection manager's pooling strategy.
  */
@@ -596,7 +598,8 @@ class Connection {
      * @throws Error if connection fails after all retry attempts
      */
     public init(password?: string | undefined): Promise<void> {
-        if (this.disconnected) return Promise.reject(new Error("Connection is disconnected"));
+        if (this.disconnected)
+            return Promise.reject(new Error('Connection is disconnected'));
         return new Promise((resolve, reject) => {
             this.client
                 .once('ready', () => {
@@ -648,7 +651,7 @@ class Connection {
                     console.debug(`Connection to ${this.urn} closed`);
                     ControllerProvider.instance.refresh();
                     this.client.end();
-                    if(this.reconnectionTimeout) {
+                    if (this.reconnectionTimeout) {
                         clearTimeout(this.reconnectionTimeout);
                         this.reconnectionTimeout = null;
                     }
@@ -674,7 +677,7 @@ class Connection {
                     host: this.urn.split(':')[0],
                     port: parseInt(this.urn.split(':')[1]),
                     username: this.username,
-                    privateKey: fs.readFileSync(privateKeyPath)
+                    privateKey: fs.readFileSync(privateKeyPath),
                 });
             }
         });
@@ -687,7 +690,7 @@ class Connection {
      * @returns Promise resolving to user-entered password or empty string if cancelled
      */
     private async requestPassword(): Promise<string> {
-        if(this.passwordNotification) return '';
+        if (this.passwordNotification) return '';
         this.passwordNotification = true;
         const selection = await vscode.window.showErrorMessage(
             `Authentication failed for ${YamlCommands.getController(this.controllerId)?.displayname}. Want to reenter the password?`,
@@ -695,11 +698,12 @@ class Connection {
             "Don't ask again"
         );
         if (selection === 'Yes') {
-            const response = await vscode.window.showInputBox({
+            const response =
+                (await vscode.window.showInputBox({
                     prompt: `Enter the password for ${YamlCommands.getController(this.controllerId)?.displayname}`,
                     ignoreFocusOut: true,
                     password: true,
-                }) || ''
+                })) || '';
             this.passwordNotification = false;
             return response;
         } else {
@@ -833,7 +837,7 @@ class Connection {
     public executeCommand(cmd: string): Promise<string> {
         return new Promise<string>((resolve, _reject) => {
             this.client.exec(cmd, (err, stream) => {
-                if (err) return resolve("")
+                if (err) return resolve('');
                 // return reject(`Error executing command "${cmd}": ${err}`);
                 this.busy = true;
 
@@ -898,16 +902,17 @@ class Connection {
                 let answered = 0;
                 for await (const file of this.getAllLocalFiles(localPath)) {
                     if (file === localPath) {
-                        localPath = localPath.slice(0, localPath.lastIndexOf('\\'));
+                        localPath = localPath.slice(
+                            0,
+                            localPath.lastIndexOf('\\')
+                        );
                     }
                     requested++;
 
                     sftp.fastPut(
                         file,
                         remotePath.concat(
-                            file
-                                .replace(localPath, '')
-                                .replaceAll('\\', '/')
+                            file.replace(localPath, '').replaceAll('\\', '/')
                         ),
                         async (err) => {
                             answered++;
@@ -938,7 +943,7 @@ class Connection {
      * @returns Generator yielding absolute file paths
      */
     private *getAllLocalFiles(path: string): Generator<string> {
-        if(fs.lstatSync(path).isFile()) {
+        if (fs.lstatSync(path).isFile()) {
             yield path;
             return;
         }

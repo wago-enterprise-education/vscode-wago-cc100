@@ -1,6 +1,6 @@
 /**
  * Shared type definitions and enums for the WAGO CC100 extension.
- * 
+ *
  * This module provides TypeScript type safety across the extension by defining:
  * - Controller configuration structures
  * - Setting name mappings and enums
