@@ -327,7 +327,7 @@ export class AddController implements Interface.AddControllerInterface {
             controllerDescription,
             controllerEngine,
             controllerSrc.label,
-            'latest'
+            'cc100-latest'
         );
         vscode.window.showInformationMessage(
             `Controller ${controllerName} added`
