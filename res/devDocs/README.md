@@ -1,6 +1,31 @@
-# Wago Extension für Visual Studio Code
+# WAGO CC100 Extension für Visual Studio Code - Entwicklerdokumentation
 
-## Grundidee
+## Inhaltsverzeichnis
+
+1. [Überblick](#überblick)
+2. [Ordnerstruktur](#ordnerstruktur)
+   - [src](#src)
+     - [Extension.ts](#extensionts)
+     - [Extension](#extension)
+     - [ExtensionCore](#extensioncore)
+     - [Shared](#shared)
+   - [res](#res)
+     - [devDocs](#devdocs)
+     - [images](#images)
+     - [template](#template)
+     - [Videos](#videos)
+     - [webviews](#webviews)
+     - [dockerCommand.sh](#dockercommandsh)
+3. [Anleitungen](#anleitungen)
+   - [Der Manager und die Factories](#der-manager-und-die-factories)
+   - [Hinzufügen von neuen Controllern - Typen](#hinzufügen-von-neuen-controllern---typen)
+   - [Hinzufügen von neuen Extension - Versionen](#hinzufügen-von-neuen-extension---versionen)
+   - [Hinzufügen neuer VSCode - Commands](#hinzufügen-neuer-vscode---commands)
+   - [Connection Manager](#connection-manager)
+   - [Debugger Konfigurationen hinzufügen](#debugger-konfigurationen-hinzufügen)
+   - [Image herunterladen](#image-herunterladen)
+
+## Überblick
 
 Die Grundidee der Extension war es, eine Entwicklungsumgebung für den Wago CC100 zu bieten.
 Nach erfolgreicher Implementierung der Funktion wurde sich dann dazu entschlossen, dass Projekt weiter auszubauen und VSCode-nativer zu gestalten.
@@ -48,6 +73,15 @@ Factory Struktur, die die Funktionalität von Commands innerhalb von VSCode zuwe
 - factorys -> Die tatsächlichen Factorys, die von dem Manager aufgerufen werden. Verweisen jeweils auf die festgestellten Controllerspezifischen- und Versionsspezifischen Methodendateien.
 - interfaces -> Enthält Interfaces für je die Controllermethoden und die Versionsmethoden, um sicherzustellen, dass bekannt ist, welche Attribute in die Methoden eingehen und welche Rückgabewerte zu erwarten sind.
 - projectVersions -> Enthält die Dateien mit Versions-spezifischen Funktionen. Standardmäßig werden diese Methoden aufgerufen, sobald ein Command ausgeführt wird, da die Mehrheit der Methoden nicht Controller-spezifisch definiert werden muss.
+
+#### Shared
+
+Hier befinden sich gemeinsam genutzte Ressourcen, die von verschiedenen Teilen der Extension verwendet werden. Der Shared-Ordner stellt zentrale Definitionen und Utility-Funktionen bereit, um Code-Duplikation zu vermeiden und Konsistenz über die gesamte Extension hinweg zu gewährleisten.
+
+- constants.ts -> Zentrale Konstanten und Konfigurationswerte der Extension. Enthält unter anderem Regex-Pattern für Validierungen, Netzwerk-Pfade, SSH-Verbindungseinstellungen, Docker-Konfigurationen und Standard-IP-Adressen. Diese Datei ist die einzige Quelle für alle konfigurierbaren Werte und erleichtert damit die Wartung der Extension.
+- types.ts -> TypeScript-Typdefinitionen und Enums für die Extension. Definiert die Struktur von Controller-Konfigurationen, Settings-Mappings und bietet Type-Safety für die gesamte Codebase. Enthält sowohl Legacy-Support für V01-Projekte als auch moderne Typen für V02-Projekte.
+- yamlCommands.ts -> Utility-Klasse für alle YAML-Datei-Operationen. Stellt zentrale Methoden zum Lesen, Schreiben und Manipulieren von wago.yaml und controller.yaml Dateien bereit. Diese Klasse abstrahiert alle YAML-bezogenen Operationen und sorgt für einheitliche Dateibehandlung in der gesamten Extension.
+
 
 ### res
 
