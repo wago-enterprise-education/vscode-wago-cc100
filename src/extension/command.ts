@@ -10,6 +10,7 @@ import {
     DEBUGGER_SETTINGS,
     UPLOAD_PATH,
 } from '../shared/constants';
+import { YamlCommands } from '../shared/yamlCommands';
 
 const { MAX_RETRIES, RETRY_DELAY } = DEBUGGER_SETTINGS;
 
@@ -336,6 +337,21 @@ export class Command {
                             },
                         ],
                     };
+
+                    if(!element) {
+                        element = await vscode.window.showQuickPick(
+                            YamlCommands.getControllers().map((controller) => ({
+                                controllerId: controller.id,
+                                label: controller.displayname,
+                                description: controller.description,
+                                online: true,
+                            })),
+                            {
+                                title: 'Debug Controller',
+                                canPickMany: false,
+                            }
+                        )
+                    }
 
                     if (!element) {
                         vscode.window.showErrorMessage(
