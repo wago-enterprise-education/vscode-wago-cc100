@@ -69,8 +69,7 @@ export class UploadController implements Interface.UploadInterface {
             if (!controller) return;
         }
 
-        await new UploadFunctionality().uploadFile(controller.controllerId);
-        return;
+        return await new UploadFunctionality().uploadFile(controller.controllerId);
     }
 }
 export class UploadAllControllers implements Interface.UploadAllInterface {
@@ -98,31 +97,30 @@ export class UploadAllControllers implements Interface.UploadAllInterface {
                 title: 'Upload to All Controllers',
                 cancellable: false,
             },
-            (progress, _token) => {
-                controllers.forEach(async (controller) => {
-                    if (!controller) return;
-
+            async (progress, _token) => {
+                for (const controller of controllers) {
                     progress.report({
                         message: `Uploading to ${controller.displayname}...`,
+                        increment: 0,
                     });
-                    upload
-                        .uploadController({
-                            controllerId: controller.id,
-                            label: controller.displayname,
-                            online: true,
-                        })
-                        .then(() => {
-                            vscode.window.showInformationMessage(
-                                `Controller ${controller.displayname} uploaded`
-                            );
-                        })
-                        .catch((error) => {
-                            vscode.window.showErrorMessage(
-                                `Error uploading controller ${controller.displayname}: ${error}`
-                            );
-                        });
+                    try {
+                        await upload
+                            .uploadController({
+                                controllerId: controller.id,
+                                label: controller.displayname,
+                                online: true,
+                            });
+
+                        vscode.window.showInformationMessage(
+                            `Controller ${controller.displayname} uploaded`
+                        );
+                    } catch(error) {
+                        vscode.window.showErrorMessage(
+                            `Error uploading controller ${controller.displayname}: ${error}`
+                        );
+                    }
                     progress.report({ increment: 100 / controllers.length });
-                });
+                }
                 return Promise.resolve(true);
             }
         );
@@ -1136,7 +1134,7 @@ export class UploadFunctionality {
             return;
         }
 
-        vscode.window.withProgress(
+        await vscode.window.withProgress(
             {
                 location: vscode.ProgressLocation.Notification,
                 title: 'Upload Progress',
