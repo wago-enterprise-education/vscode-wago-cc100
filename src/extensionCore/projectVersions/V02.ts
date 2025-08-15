@@ -206,7 +206,7 @@ export class ResetController implements Interface.ResetControllerInterface {
                     for (const tag of tags) {
                         await ConnectionManager.instance.executeCommand(
                             controllerId,
-                            `docker rmi -f ${DOCKER_CONSTANTS.IMAGE_PREFIX}/${DOCKER_CONSTANTS.IMAGE_NAME}/${tag}`
+                            `docker rmi -f ${DOCKER_CONSTANTS.IMAGE_PREFIX}/${DOCKER_CONSTANTS.IMAGE_NAME}:${tag}`
                         );
                     }
                     progress.report({
