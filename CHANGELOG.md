@@ -6,6 +6,14 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+## [0.1.7] - 2025-11-18
+
+### Fixed
+
+- CVE-2025-54798 tmp allows arbitrary temporary file / directory write via symbolic link `dir` parameter (closes #7)
+- CVE-2025-59343 tar-fs has a symlink validation bypass if destination directory is predictable with a specific tarball (closes #8)
+- CVE-2025-64718 js-yaml has prototype pollution in merge (<<) (closes #10)
+
 ## [0.1.6] - 2025-07-29
 
 ### Fixed
