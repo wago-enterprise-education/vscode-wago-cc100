@@ -6,6 +6,12 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+## [0.1.8] - 2025-11-19
+
+### Fixed
+
+- CVE-2025-64756 glob CLI: Command injection via -c/--cmd executes matches with shell:true
+
 ## [0.1.7] - 2025-11-18
 
 ### Fixed
