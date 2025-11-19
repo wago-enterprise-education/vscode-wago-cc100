@@ -2,7 +2,7 @@
   "name": "vscode-wago-cc100",
   "displayName": "WAGO CC100",
   "description": "VS Code extension to develop python scripts for the WAGO CC100 programmable logic controller",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "author": {
     "name": "WAGO Education",
     "email": "ausbildungminden@wago.com",
