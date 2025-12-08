@@ -6,6 +6,13 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+## [0.1.9] - 2025-12-05
+
+### Fixed
+
+- CVE-2025-65945 auth0/node-jws Improperly Verifies HMAC Signature
+- Updated NPM packages
+
 ## [0.1.8] - 2025-11-19
 
 ### Fixed
