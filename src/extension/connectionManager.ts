@@ -337,11 +337,21 @@ export class ConnectionManager {
         }
 
         return new Promise(async (resolve, reject) => {
+            // Ensure target directory exists
+            await connection
+                .executeCommand(`mkdir -p ${remotePath}`)
+                .catch((err) => {
+                    reject(err);
+                });
+            
+            // Clean up temporary path
             await connection
                 .executeCommand(`rm -rf ${remoteTmpPath}`)
                 .catch((err) => {
                     reject(err);
                 });
+            
+            // Create temporary directory structure
             for await (const directory of this.getAllRemoteDirectories(
                 remoteTmpPath
             )) {
@@ -351,6 +361,8 @@ export class ConnectionManager {
                         reject(err);
                     });
             }
+            
+            // Create local directory structure in temp location
             for await (const directory of this.getAllLocalDirectories(
                 localPath
             )) {
@@ -362,15 +374,19 @@ export class ConnectionManager {
                         reject(err);
                     });
             }
+            
+            // Upload files to temporary location
             await connection
                 .upload(localPath, remoteTmpPath)
                 .catch(async (err) => {
                     await connection.executeCommand(`rm -rf ${remoteTmpPath}`);
                     reject(err);
                 });
+            
+            // Move files from temp to target, preserving directory structure
             await connection
                 .executeCommand(
-                    `rm -rf ${remotePath}/* && mv ${remoteTmpPath}/* ${remotePath} && rm -rf ${remoteTmpPath}`
+                    `rm -rf ${remotePath}/* && cp -r ${remoteTmpPath}/* ${remotePath}/ && rm -rf ${remoteTmpPath}`
                 )
                 .then(() => {
                     resolve('Upload successful');
@@ -412,11 +428,21 @@ export class ConnectionManager {
         }
 
         return new Promise(async (resolve, reject) => {
+            // Ensure target directory exists
+            await connection
+                .executeCommand(`mkdir -p ${remotePath}`)
+                .catch((err) => {
+                    reject(err);
+                });
+            
+            // Clean up temporary path
             await connection
                 .executeCommand(`rm -rf ${remoteTmpPath}`)
                 .catch((err) => {
                     reject(err);
                 });
+            
+            // Create temporary directory structure
             for await (const directory of this.getAllRemoteDirectories(
                 remoteTmpPath
             )) {
@@ -426,15 +452,19 @@ export class ConnectionManager {
                         reject(err);
                     });
             }
+            
+            // Upload file to temporary location
             await connection
                 .upload(localPath, remoteTmpPath)
                 .catch(async (err) => {
                     await connection.executeCommand(`rm -rf ${remoteTmpPath}`);
                     reject(err);
                 });
+            
+            // Move file from temp to target directory
             await connection
                 .executeCommand(
-                    `rm -rf ${remotePath}/${Path.basename(localPath)} && mv ${remoteTmpPath}/${Path.basename(localPath)} ${remotePath} && rm -rf ${remoteTmpPath}`
+                    `rm -f ${remotePath}/${Path.basename(localPath)} && mv ${remoteTmpPath}/${Path.basename(localPath)} ${remotePath}/ && rm -rf ${remoteTmpPath}`
                 )
                 .then(() => {
                     resolve('Upload successful');
