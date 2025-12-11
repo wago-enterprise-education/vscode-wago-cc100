@@ -136,6 +136,12 @@ export class ResetController implements Interface.ResetControllerInterface {
                         increment: 10,
                         message: 'Removing Files...',
                     });
+                    // Clean up python_bootapplication directory completely
+                    await ConnectionManager.instance.executeCommand(
+                        controllerId,
+                        `rm -rf ${UPLOAD_PATH}`
+                    );
+                    // Also clean up any legacy python_bootproject directories
                     await ConnectionManager.instance.executeCommand(
                         controllerId,
                         `rm -rf ${UPLOAD_PATH}*`
@@ -562,6 +568,16 @@ export class UploadFunctionality {
                     await connectionManager.executeCommand(
                         id,
                         'killall python3'
+                    );
+
+                    // Ensure upload directory exists and is clean
+                    progress.report({
+                        increment: 5,
+                        message: 'Preparing upload directory...',
+                    });
+                    await connectionManager.executeCommand(
+                        id,
+                        `mkdir -p ${UPLOAD_PATH} && rm -rf ${UPLOAD_PATH}*`
                     );
 
                     // Create bootapplication

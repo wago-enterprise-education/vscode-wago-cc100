@@ -213,9 +213,15 @@ export class ResetController implements Interface.ResetControllerInterface {
                         increment: 10,
                         message: `Deleting Files...`,
                     });
+                    // Clean up python_bootapplication directory completely
                     await ConnectionManager.instance.executeCommand(
                         controllerId,
-                        `rm -rf ${UPLOAD_PATH}*`
+                        `rm -rf ${UPLOAD_PATH}`
+                    );
+                    // Also clean up any legacy python_bootproject directories
+                    await ConnectionManager.instance.executeCommand(
+                        controllerId,
+                        'rm -rf /home/user/python_bootproject'
                     );
                     progress.report({ increment: 10 });
                 } catch (error) {
