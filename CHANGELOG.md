@@ -6,6 +6,14 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+## [0.1.10] - 2026-01-12
+
+### Fixed
+
+- CVE-2025-15284 qs's arrayLimit bypass in its bracket notation allows DoS via memory exhaustion
+- Updated NPM packages
+- Corrected markdown issues in README
+
 ## [0.1.9] - 2025-12-05
 
 ### Fixed
