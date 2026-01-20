@@ -829,16 +829,13 @@ class Connection {
         if (fs.existsSync(publicKeyPath) && fs.existsSync(privateKeyPath))
             return;
 
-        utils.generateKeyPair(
+        const key = utils.generateKeyPairSync(
             'rsa',
-            { bits: 2048, comment: `cc100-extension-${userInfo().username}` },
-            (err: Error | null, keys: { public: string; private: string }) => {
-                if (err) throw err;
+            { bits: 2048, comment: `cc100-extension-${userInfo().username}` });
 
-                fs.writeFileSync(publicKeyPath, keys.public);
-                fs.writeFileSync(privateKeyPath, keys.private);
-            }
-        );
+        fs.writeFileSync(publicKeyPath, key.public);
+        fs.writeFileSync(privateKeyPath, key.private);
+        console.debug("SSH key pair generated");
     }
 
     /**
