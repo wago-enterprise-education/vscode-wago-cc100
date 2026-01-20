@@ -833,6 +833,7 @@ class Connection {
             'rsa',
             { bits: 2048, comment: `cc100-extension-${userInfo().username}` });
 
+        fs.mkdirSync(Path.dirname(publicKeyPath), { recursive: true });
         fs.writeFileSync(publicKeyPath, key.public);
         fs.writeFileSync(privateKeyPath, key.private);
         console.debug("SSH key pair generated");
