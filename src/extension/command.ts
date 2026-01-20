@@ -82,7 +82,7 @@ export class Command {
                                     // Open project in new window if workspace is already open
                                     let newWindow = false;
                                     if (
-                                        vscode.workspace.workspaceFolders!
+                                        vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders
                                             .length > 0
                                     ) {
                                         newWindow = true;
