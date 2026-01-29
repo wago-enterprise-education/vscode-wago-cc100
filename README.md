@@ -13,6 +13,13 @@ A Visual Studio Code extension for programming the WAGO CC100 in _Python_. The m
 - [Remove/Reset](#remove-reset)
 - [IO-Check](#io-check)
 
+## Supported WAGO CC100 Devices
+
+| Device   | Firmware | Comment  |
+|----------|----------|----------|
+| 751-9301 | 28, 30   |          |
+
+
 ## How to Use the Extension
 
 Once the WAGO extension is installed in VSCode, a WAGO symbol should appear on the left sidebar. Click this button to open the extension, which reveals options such as **Create Project** and **Open Project** or **Init Project** if you are in a folder. The **Create Project** button helps set up your workspace by creating a template project containing the `wago.yaml` and `controller.yaml` files. These are essential for housing controller configurations. The controller interface includes three buttons and a connection status icon. The icon indicates whether the controller is connected (:green_circle:) or offline (:red_circle:).
