@@ -174,7 +174,7 @@ export class custom_webview_provider_settings implements vscode.WebviewViewProvi
 
         try {
             const file: vscode.Uri = await fileDownloader.downloadFile(
-                vscode.Uri.parse("https://raw.githubusercontent.com/wago-enterprise-education/wago_cc100_python/main/CC100IO/CC100IO.py"),
+                vscode.Uri.parse("https://raw.githubusercontent.com/wago-enterprise-education/wago_cc100_python/V1.1/CC100IO/CC100IO.py"),
                 "CC100IO.py",
                 this.context,
                 cancellationToken,
