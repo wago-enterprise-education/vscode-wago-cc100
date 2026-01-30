@@ -6,6 +6,13 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+## [0.1.11] - 2026-01-30
+
+### Fixed
+
+- CVE-2025-13465 Lodash has Prototype Pollution Vulnerability in `_.unset` and `_.omit` functions
+- Updated NPM packages
+
 ## [0.1.10] - 2026-01-12
 
 ### Fixed
