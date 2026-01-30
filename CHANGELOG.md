@@ -12,6 +12,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 - CVE-2025-13465 Lodash has Prototype Pollution Vulnerability in `_.unset` and `_.omit` functions
 - Updated NPM packages
+- Update download URL for CC100IO.py to Tag V1.1
 
 ## [0.1.10] - 2026-01-12
 
