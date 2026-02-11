@@ -2,7 +2,7 @@
   "name": "vscode-wago-cc100",
   "displayName": "WAGO CC100",
   "description": "VS Code extension to develop python scripts for the WAGO CC100 programmable logic controller",
-  "version": "0.1.11",
+  "version": "0.2.0",
   "author": {
     "name": "WAGO Education",
     "email": "ausbildungminden@wago.com",
@@ -35,6 +35,21 @@
     },
     {
       "name": "Max Steidle"
+    },
+    {
+      "name": "Kirean Smith"
+    },
+    {
+      "name": "Louis Krumme"
+    },
+    {
+      "name": "Finn Erik Hilgers"
+    },
+    {
+      "name": "Michael Kolle"
+    },
+    {
+      "name": "Christian Dück"
     }
   ],
   "publisher": "WAGO-education",
@@ -48,7 +63,7 @@
     "type": "git",
     "url": "https://github.com/wago-enterprise-education/vscode-wago-cc100.git"
   },
-  "icon": "res/images/WAGO_W.png",
+  "icon": "res/images/WAGOW.png",
   "type": "commonjs",
   "engines": {
     "vscode": "^1.63.0"
@@ -60,25 +75,133 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onDebug",
+    "onCommand:extension.startPythonDebug"
+  ],
   "main": "./out/extension.js",
   "contributes": {
+    "debuggers": [
+      {
+        "type": "python",
+        "label": "Remote cc100 debugger"
+      }
+    ],
+    "colors": [
+      {
+        "id": "wagocc100.green",
+        "description": "WAGO Green",
+        "defaults": {
+          "dark": "#6EC800",
+          "light": "#6EC800"
+        }
+      },
+      {
+        "id": "wagocc100.red",
+        "description": "Red",
+        "defaults": {
+          "dark": "#c80000",
+          "light": "#c80000"
+        }
+      }
+    ],
     "commands": [
       {
-        "command": "vscode-wago-cc100.home",
-        "title": "Home"
-      },
-      {
-        "command": "vscode-wago-cc100.application_upload",
-        "title": "Upload application to CC100"
-      },
-      {
         "command": "vscode-wago-cc100.iocheck",
-        "title": "IO-Check"
+        "title": "IO-Check",
+        "icon": "$(eye)",
+        "category": "Wago"
       },
       {
-        "command": "vscode-wago-cc100.testSSH",
-        "title": "Test SSH"
+        "command": "vscode-wago-cc100.add-controller",
+        "title": "Add Controller",
+        "category": "Wago",
+        "icon": "$(add)"
+      },
+      {
+        "command": "vscode-wago-cc100.upload",
+        "title": "Upload",
+        "icon": "$(play)",
+        "category": "Wago"
+      },
+      {
+        "command": "vscode-wago-cc100.upload-all",
+        "title": "Upload All",
+        "icon": "$(run-all)",
+        "category": "Wago"
+      },
+      {
+        "command": "vscode-wago-cc100.debug",
+        "title": "Debug",
+        "icon": "$(debug-alt-small)",
+        "category": "Wago"
+      },
+      {
+        "command": "vscode-wago-cc100.edit-setting",
+        "title": "Edit Setting",
+        "icon": "$(pencil)",
+        "category": "Wago"
+      },
+      {
+        "command": "vscode-wago-cc100.rename-controller",
+        "title": "Rename Controller",
+        "category": "Wago"
+      },
+      {
+        "command": "vscode-wago-cc100.reset-controller",
+        "title": "Reset Controller",
+        "category": "Wago"
+      },
+      {
+        "command": "vscode-wago-cc100.remove-controller",
+        "title": "Remove Controller",
+        "category": "Wago",
+        "icon": "$(remove)"
+      },
+      {
+        "command": "vscode-wago-cc100.remove-reset-controller",
+        "title": "Remove & Reset",
+        "category": "Wago"
+      },
+      {
+        "command": "vscode-wago-cc100.refresh-view",
+        "title": "Refresh",
+        "icon": "$(sync)",
+        "category": "Wago"
+      },
+      {
+        "command": "vscode-wago-cc100.init-project",
+        "title": "Init Project",
+        "category": "Wago"
+      },
+      {
+        "command": "vscode-wago-cc100.create-project",
+        "title": "Create Project",
+        "category": "Wago"
+      },
+      {
+        "command": "vscode-wago-cc100.open-project",
+        "title": "Open Project",
+        "category": "Wago"
+      },
+      {
+        "command": "vscode-wago-cc100.configure-controller",
+        "title": "Configure Controller",
+        "category": "Wago"
+      }
+    ],
+    "viewsWelcome": [
+      {
+        "view": "no-folder-view",
+        "contents": "In order to use this extension, you need to open a folder containing a CC100 project. \n [Create Project](command:vscode-wago-cc100.create-project) \n [Open Project](command:vscode-wago-cc100.open-project) \n To learn more about the extension read the [documentation](https://github.com/wago-enterprise-education/vscode-wago-cc100/blob/main/README.md)."
+      },
+      {
+        "view": "no-project-view",
+        "contents": "The folder you opened does not contain a CC100 project. \n [Init Project](command:vscode-wago-cc100.init-project) \n To learn more about the extension read the [documentation](https://github.com/wago-enterprise-education/vscode-wago-cc100/blob/main/README.md)."
+      },
+      {
+        "view": "controller-view",
+        "contents": "No controller added yet. \n [Add Controller](command:vscode-wago-cc100.add-controller) \n To learn more about the extension read the [documentation](https://github.com/wago-enterprise-education/vscode-wago-cc100/blob/main/README.md)."
       }
     ],
     "viewsContainers": {
@@ -86,44 +209,148 @@
         {
           "id": "CC100",
           "title": "WAGO CC100",
-          "icon": "res/images/WAGO_W.png"
+          "icon": "res/images/WAGOW.png"
         }
       ]
     },
     "views": {
       "CC100": [
         {
-          "name": "Menu",
-          "id": "menu",
-          "type": "webview"
+          "name": "Controller",
+          "id": "controller-view",
+          "when": "workbenchState == folder && projectVersion > 0"
         },
         {
-          "name": "Settings",
-          "id": "settings",
-          "type": "webview"
+          "name": "No Folder Opened",
+          "id": "no-folder-view",
+          "when": "workbenchState != folder && projectVersion == 0"
+        },
+        {
+          "name": "No CC100 Project Found",
+          "id": "no-project-view",
+          "when": "workbenchState == folder && projectVersion == 0"
+        },
+        {
+          "name": "Loading...",
+          "id": "loading-view",
+          "when": "!projectVersion && projectVersion != 0"
         }
       ]
     },
-    "webviews": [
-      {
-        "viewType": "vscode-wago-cc100.home",
-        "icon": {
-          "light": "res/images/WAGO_W.png",
-          "dark": "res/images/WAGO_W.png"
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "vscode-wago-cc100.add-controller",
+          "when": "projectVersion >= 0.2"
+        },
+        {
+          "command": "vscode-wago-cc100.remove-controller",
+          "when": "controllerCount > 0 && projectVersion >= 0.2"
+        },
+        {
+          "command": "vscode-wago-cc100.init-project",
+          "when": "workspaceFolderCount > 0 && projectVersion == 0"
+        },
+        {
+          "command": "vscode-wago-cc100.rename-controller",
+          "when": "controllerCount > 0"
+        },
+        {
+          "command": "vscode-wago-cc100.upload-all",
+          "when": "controllerCount > 0 && projectVersion >= 0.2"
+        },
+        {
+          "command": "vscode-wago-cc100.debug",
+          "when": "controllerCount > 0 && projectVersion >= 0.2"
+        },
+        {
+          "command": "vscode-wago-cc100.rename-controller",
+          "when": "controllerCount > 0 && projectVersion >= 0.2"
+        },
+        {
+          "command": "vscode-wago-cc100.remove-controller",
+          "when": "controllerCount > 0 && projectVersion >= 0.2"
+        },
+        {
+          "command": "vscode-wago-cc100.remove-reset-controller",
+          "when": "controllerCount > 0 && projectVersion >= 0.2"
+        },
+        {
+          "command": "vscode-wago-cc100.configure-controller",
+          "when": "projectVersion >= 0.2"
         }
-      }
-    ]
+      ],
+      "view/title": [
+        {
+          "command": "vscode-wago-cc100.add-controller",
+          "when": "view == controller-view && projectVersion >= 0.2",
+          "group": "navigation@3"
+        },
+        {
+          "command": "vscode-wago-cc100.upload-all",
+          "when": "view == controller-view && projectVersion >= 0.2",
+          "group": "navigation@2"
+        },
+        {
+          "command": "vscode-wago-cc100.refresh-view",
+          "when": "view == controller-view",
+          "group": "navigation@1"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "vscode-wago-cc100.upload",
+          "when": "view == controller-view && viewItem == controller",
+          "group": "inline@3"
+        },
+        {
+          "command": "vscode-wago-cc100.debug",
+          "when": "view == controller-view && viewItem == controller && projectVersion >= 0.2",
+          "group": "inline@2"
+        },
+        {
+          "command": "vscode-wago-cc100.iocheck",
+          "when": "view == controller-view && viewItem == controller",
+          "group": "inline@1"
+        },
+        {
+          "command": "vscode-wago-cc100.rename-controller",
+          "when": "view == controller-view && viewItem == controller && projectVersion >= 0.2",
+          "group": "@1"
+        },
+        {
+          "command": "vscode-wago-cc100.configure-controller",
+          "when": "view == controller-view && viewItem == controller && projectVersion >= 0.2",
+          "group": "@2"
+        },
+        {
+          "command": "vscode-wago-cc100.reset-controller",
+          "when": "view == controller-view && viewItem == controller",
+          "group": "remove@1"
+        },
+        {
+          "command": "vscode-wago-cc100.remove-controller",
+          "when": "view == controller-view && viewItem == controller && projectVersion >= 0.2",
+          "group": "remove@2"
+        },
+        {
+          "command": "vscode-wago-cc100.remove-reset-controller",
+          "when": "view == controller-view && viewItem == controller && projectVersion >= 0.2",
+          "group": "remove@3"
+        },
+        {
+          "command": "vscode-wago-cc100.edit-setting",
+          "when": "view == controller-view && viewItem == controllerItem",
+          "group": "inline"
+        }
+      ]
+    }
   },
-  "extensionDependencies": [
-    "ms-python.python",
-    "mindaro-dev.file-downloader"
-  ],
   "dependencies": {
-    "@microsoft/vscode-file-downloader-api": "^1.0.1",
-    "node-ssh": "^13.1.0",
     "sanitize-html": "^2.14.0",
-    "ssh2": "^1.15.0",
-    "typescript": "^5.3.3"
+    "ssh2": "^1.16.0",
+    "tar": "^7.4.3",
+    "yaml": "^2.7.0"
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
@@ -131,12 +358,18 @@
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile",
     "test": "vscode-test",
-    "deploy": "vsce publish"
+    "deploy": "vsce publish",
+    "build": "vsce package",
+    "format": "prettier --write ."
   },
   "devDependencies": {
-    "@types/node": "^20.14.8",
+    "@types/node": "^25.0.10",
     "@types/sanitize-html": "^2.13.0",
+    "@types/ssh2": "^1.15.4",
     "@types/vscode": "^1.63.0",
-    "@vscode/vsce": "^3.2.1"
+    "@types/yaml": "^1.9.6",
+    "@vscode/vsce": "^3.2.1",
+    "prettier": "^3.6.2",
+    "typescript": "^5.9.2"
   }
 }

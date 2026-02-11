@@ -1,36 +1,56 @@
 import * as vscode from 'vscode';
-import { SSH } from './ssh'
-const ssh = new SSH('192.168.42.42', 0, 'root', '');
-import { custom_webview_provider_menu } from './extension/custom_webview_menu';
-import { custom_webview_provider_settings } from './extension/webview_settings';
-import { webview_homepage } from './extension/webview_homepage';
-import { webview_IOCheck } from './webview_IOCheck';
-import { Workspace } from './extension/workspace';
-const workspace = new Workspace();
+import { ControllerProvider } from './extension/view';
+import { webviewIoCheck } from './extension/webviewIoCheck';
+import { ProjectVersion, verifyProject } from './extension/versionDetection';
+import { Command } from './extension/command';
+import { Manager } from './extensionCore/manager';
 
-export function activate(context: vscode.ExtensionContext) {
-	//create IO-Check
-	const webview_IO = new webview_IOCheck(context);
+/**
+ * Global extension context available to other modules.
+ * This is set during activation and provides access to extension-specific resources.
+ */
+export let extensionContext: vscode.ExtensionContext;
 
-	//show menu
-	const webview_provider_menu = new custom_webview_provider_menu(context.extensionUri, webview_IO);
-	context.subscriptions.push(vscode.window.registerWebviewViewProvider(custom_webview_provider_menu.viewType, webview_provider_menu));
-	webview_provider_menu.register_commands(context);
-	webview_provider_menu.create_status_bar(context);
+/**
+ * Main entry point for the WAGO CC100 extension.
+ * This function is called automatically when the extension is activated by VS Code.
+ *
+ * The activation process:
+ * 1. Registers the controller tree view in the sidebar
+ * 2. Initializes the IO-Check webview functionality
+ * 3. Creates and registers all VS Code commands
+ * 4. Detects project version and validates project structure
+ * 5. Establishes connections to configured controllers
+ *
+ * @param context - The VS Code extension context providing access to extension lifecycle and resources
+ */
+export async function activate(context: vscode.ExtensionContext) {
+    // Register TreeDataProvider for the controller sidebar view
+    vscode.window.registerTreeDataProvider(
+        'controller-view',
+        ControllerProvider.instance
+    );
 
-	//show settings
-	const webview_provider_settings = new custom_webview_provider_settings(context.extensionUri, context, webview_provider_menu, webview_IO);
-	context.subscriptions.push(vscode.window.registerWebviewViewProvider(custom_webview_provider_settings.viewType, webview_provider_settings));
+    // Store extension context globally for use by other modules
+    extensionContext = context;
 
-	webview_provider_menu._view?.webview.postMessage("cmd_simulation");
-	//create home
-	const webview_home = new webview_homepage(context, context.extensionUri);
+    // Initialize IO-Check webview for real-time controller I/O testing and monitoring
+    new webviewIoCheck();
 
-	//show home
-	vscode.commands.executeCommand('vscode-wago-cc100.home');
+    // Register all extension commands with VS Code
+    Command.createCommands();
 
-	webview_provider_settings.download_lib();
+    // Detect project version (V01 or V02) based on configuration files
+    await verifyProject();
+
+    // Establish SSH connections to controllers if a valid project is detected
+    if (ProjectVersion != 0) {
+        Manager.getInstance().establishConnections();
+    }
 }
 
-// This method is called when your extension is deactivated
-export function deactivate() { }
+/**
+ * Called when the extension is deactivated.
+ * Currently empty as cleanup is handled by VS Code's disposal system.
+ */
+export function deactivate() {}

@@ -1,0 +1,26 @@
+docker run \
+--name=pythonRuntime --restart unless-stopped -d \
+-v '/sys/kernel/dout_drv/DOUT_DATA:/sys/kernel/dout_drv/DOUT_DATA' \
+-v '/sys/devices/platform/soc/44009000.spi/spi_master/spi0/spi0.0/din:/sys/devices/platform/soc/44009000.spi/spi_master/spi0/spi0.0/din' \
+-v '/sys/devices/platform/soc/48003000.adc:/sys/devices/platform/soc/48003000.adc' \
+-v '/sys/devices/platform/soc/40017000.dac:/sys/devices/platform/soc/40017000.dac' \
+--device '/dev/input/event0:/dev/input/event0' \
+--device '/dev/input/oms_switch:/dev/input/oms_switch' \
+--mount type=bind,src='/sys/bus/iio/devices/iio:device0/out_voltage1_raw',dst='/sys/bus/iio/devices/iio:device0/out_voltage1_raw' \
+--mount type=bind,src='/sys/bus/iio/devices/iio:device1/out_voltage2_raw',dst='/sys/bus/iio/devices/iio:device1/out_voltage2_raw' \
+--mount type=bind,src='/sys/bus/iio/devices/iio:device0/out_voltage1_powerdown',dst='/sys/bus/iio/devices/iio:device0/out_voltage1_powerdown' \
+--mount type=bind,src='/sys/bus/iio/devices/iio:device1/out_voltage2_powerdown',dst='/sys/bus/iio/devices/iio:device1/out_voltage2_powerdown' \
+--mount type=bind,src='/sys/bus/iio/devices/iio:device3/in_voltage3_raw',dst='/sys/bus/iio/devices/iio:device3/in_voltage3_raw' \
+--mount type=bind,src='/sys/bus/iio/devices/iio:device3/in_voltage0_raw',dst='/sys/bus/iio/devices/iio:device3/in_voltage0_raw' \
+--mount type=bind,src='/sys/bus/iio/devices/iio:device2/in_voltage13_raw',dst='/sys/bus/iio/devices/iio:device2/in_voltage13_raw' \
+--mount type=bind,src='/sys/bus/iio/devices/iio:device2/in_voltage1_raw',dst='/sys/bus/iio/devices/iio:device2/in_voltage1_raw' \
+-v '/dev/leds/run-green/:/dev/leds/run-green/' \
+-v '/dev/leds/run-red/:/dev/leds/run-red/' \
+-v '/etc/config-tools/:/etc/config-tools/' \
+-v '/etc/calib:/etc/calib' \
+-v '/etc/os-release:/etc/os-release' \
+-v '/dev/ttySTM1:/dev/ttySTM1' \
+-v '/home/user/python_bootapplication:/home/user/python_bootapplication' \
+-v '/var/log/wago:/var/log/wago' \
+-p 5678:5678 \
+ghcr.io/wago-enterprise-education/docker-engine-cc100:$1

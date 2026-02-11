@@ -1,4 +1,4 @@
-from lib import CC100IO
+import CC100IO
 
 # Sample script for writing digital Outputs
 

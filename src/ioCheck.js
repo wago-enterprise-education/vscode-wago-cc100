@@ -1,18 +1,18 @@
 const vscode = acquireVsCodeApi();
 
-var DO_Data = [0, 0, 0, 0];
-var display_DO_Data = [0, 0, 0, 0];
-var DO_Changed = false;
-var AO_Data1 = -1;
-var AO_Data2 = -1;
-var Serial_Text = '';
-var LED_RUN_ON = false;
-let switch_status;
-let previous_timestamp = Date.now();
+var doData = [0, 0, 0, 0];
+var displayDoData = [0, 0, 0, 0];
+var doChanged = false;
+var aoData1 = -1;
+var aoData2 = -1;
+var serialText = '';
+var ledRunOn = false;
+let switchStatus;
+let previousTimestamp = Date.now();
 
 const red = '#FF0000';
 const orange = '#FF6000';
-const wago_green = '#6EC800';
+const wagoGreen = '#6EC800';
 const white = '#FFFFFF';
 const black = '#000000';
 
@@ -20,284 +20,291 @@ const black = '#000000';
 
 const body = document.getElementById('body');
 
-const elem_DO = document.getElementsByClassName('btn_do');
-const LED_DO = document.getElementsByClassName('LED_DO');
+const elemDo = document.getElementsByClassName('btnDo');
+const ledDo = document.getElementsByClassName('ledDo');
 
-const elem_DI = document.getElementsByClassName('btn_di');
-const LED_DI = document.getElementsByClassName('LED_DI');
+const elemDi = document.getElementsByClassName('btnDi');
+const ledDi = document.getElementsByClassName('ledDi');
 
-const elem_PT_AI = document.getElementsByClassName('analog_display');
+const elemPtAi = document.getElementsByClassName('analogDisplay');
 
-var elem_Switch = document.getElementById('switch');
+var elemSwitch = document.getElementById('switch');
 
-const elem_AO_value = document.getElementsByClassName('text_input');
-var elem_AO1_val = document.getElementById('val_AO1');
-var elem_AO2_val = document.getElementById('val_AO2');
-var elem_AO1_write = document.getElementById('btn_AO1_write');
-var elem_AO2_write = document.getElementById('btn_AO2_write');
+const elemAoValue = document.getElementsByClassName('textInput');
+var elemAo1Val = document.getElementById('valAo1');
+var elemAo2Val = document.getElementById('valAo2');
+var elemAo1Write = document.getElementById('btnAo1Write');
+var elemAo2Write = document.getElementById('btnAo2Write');
 
-var btn_Send = document.getElementById('btn_serial_send');
-var trans_Message = document.getElementById('input_serial');
-var chat_Serial = document.getElementById('chat_serial');
+var btnSend = document.getElementById('btnSerialSend');
+var transMessage = document.getElementById('inputSerial');
+var chatSerial = document.getElementById('chatSerial');
 
-const side_Nav = document.getElementsByClassName('side_items');
+const sideNav = document.getElementsByClassName('sideItems');
 
-const right_Params = [];
-right_Params[0] = document.getElementById('right_params_inputs');
-right_Params[1] = document.getElementById('right_params_outputs');
-right_Params[2] = document.getElementById('right_params_serial');
-right_Params[3] = document.getElementById('right_params_temperature');
+const rightParams = [];
+rightParams[0] = document.getElementById('rightParamsInputs');
+rightParams[1] = document.getElementById('rightParamsOutputs');
+rightParams[2] = document.getElementById('rightParamsSerial');
+rightParams[3] = document.getElementById('rightParamsTemperature');
 
-var LED_SYS = document.getElementById('LED_SYS');
-var LED_RUN = document.getElementById('LED_RUN');
-var LED_USR = document.getElementById('LED_USR');
-var LED_LNK_ACT1 = document.getElementById('LED_LACT1');
-var LED_LNK_ACT2 = document.getElementById('LED_LACT2');
-var LED_µSD = document.getElementById('LED_MSD');
+var ledSys = document.getElementById('ledSys');
+var ledRun = document.getElementById('ledRun');
+var ledUsr = document.getElementById('ledUsr');
+var ledLnkAct1 = document.getElementById('ledLact1');
+var ledLnkAct2 = document.getElementById('ledLact2');
+var ledµSd = document.getElementById('ledMsd');
 
-var refrash_Rate = document.getElementById('refrash_rate'); 
+var refrashRate = document.getElementById('refrashRate');
 
 // Set Event Listener
-// POST-Event for the communication to the `webview_IOCheck.ts` file
-window.addEventListener('message', event => {
-
+// POST-Event for the communication to the `webviewIoCheck.ts` file
+window.addEventListener('message', (event) => {
     // The JSON data our extension sent
     const message = event.data;
 
     switch (message.command) {
         case 'start': {
             body.style.opacity = 1;
-            body.style.pointerEvents = 'auto'
-            read_data();
+            body.style.pointerEvents = 'auto';
+            readData();
             break;
         }
         case 'serialRead': {
-            show_recieving_Message(message.text);
+            showRecievingMessage(message.text);
             break;
         }
         case 'readData': {
-            update_Refrash_Rate();
-            update_Everything(message.values);
-            read_switch();
-            setTimeout(function() {console.log('Delay');}, 5000);
+            updateRefrashRate();
+            updateEverything(message.values);
+            readSwitch();
             break;
         }
         case 'readSwitch': {
-            if (message.value != switch_status) {
-                if (switch_status == '3') {
-                    up_To_Date = false;
+            if (message.value != switchStatus) {
+                if (switchStatus == '3') {
+                    upToDate = false;
                 }
-                switch_status = message.value;
-                update_Switch(message.value);
-                DO_Data = display_DO_Data;
+                switchStatus = message.value;
+                updateSwitch(message.value);
+                doData = displayDoData;
             }
-            if (switch_status == '1') {
-                read_data();
-            }
-            else {
-                button_Click();
+            if (switchStatus == '1') {
+                readData();
+            } else {
+                buttonClick();
             }
             break;
         }
         case 'buttonClick': {
-            if (DO_Changed) {
-                digital_write(DO_Data);
-                DO_Changed = false;
-            }
-            else if (Serial_Text != '') {
-                serial_write(Serial_Text);
-                Serial_Text = '';
-            }
-            else if (AO_Data1 >= 0) {
-                analog_write(1, AO_Data1);
-                AO_Data1 = -1;
-            }
-            else if (AO_Data2 >= 0) {
-                analog_write(2, AO_Data2);
-                AO_Data2 = -1;
-            }
-            else {
-                read_data();
+            if (doChanged) {
+                digitalWrite(doData);
+                doChanged = false;
+            } else if (serialText != '') {
+                serialWrite(serialText);
+                serialText = '';
+            } else if (aoData1 >= 0) {
+                analogWrite(1, aoData1);
+                aoData1 = -1;
+            } else if (aoData2 >= 0) {
+                analogWrite(2, aoData2);
+                aoData2 = -1;
+            } else {
+                readData();
             }
             break;
         }
         case 'serialWrite': {
-            show_Message(message.text)
-            button_Click();
+            showMessage(message.text);
+            buttonClick();
             break;
         }
-        case 'connection_lost': {
+        case 'connectionLost': {
             body.style.opacity = 0.375;
             body.style.pointerEvents = 'none';
         }
-        case 'reload':{
-            DO_Data = [0, 0, 0, 0];
+        case 'reload': {
+            doData = [0, 0, 0, 0];
         }
     }
 });
 
 // Click-Event for the Write-Button of AO1
-elem_AO1_write.onclick = function () {
-    clicked_AO(0);
-}
+elemAo1Write.onclick = function () {
+    clickedAo(0);
+};
 
 // Keypress-Event for the textfield of AO1
-elem_AO_value[0].addEventListener('keypress', function (event) {
+elemAoValue[0].addEventListener('keypress', function (event) {
     if (event.key === 'Enter') {
         event.preventDefault();
-        elem_AO_value[0].blur();
-        clicked_AO(0);
+        elemAoValue[0].blur();
+        clickedAo(0);
     }
 });
 
 // Click-Event for the Write-Button of AO2
-elem_AO2_write.onclick = function () {
-    clicked_AO(1);
-}
+elemAo2Write.onclick = function () {
+    clickedAo(1);
+};
 
 // Keypress-Event for the textfield of AO1
-elem_AO_value[1].addEventListener('keypress', function (event) {
+elemAoValue[1].addEventListener('keypress', function (event) {
     if (event.key === 'Enter') {
         event.preventDefault();
-        elem_AO_value[1].blur();
-        clicked_AO(1);
+        elemAoValue[1].blur();
+        clickedAo(1);
     }
 });
 
 // Click-Event for the Send-Button of RS-485
-btn_Send.addEventListener('click', clicked_Send);
+btnSend.addEventListener('click', clickedSend);
 
 // Keypress-Event for the textfield of RS-485
-trans_Message.addEventListener('keypress', function (event) {
+transMessage.addEventListener('keypress', function (event) {
     if (event.key === 'Enter') {
         event.preventDefault();
-        btn_Send.click();
+        btnSend.click();
     }
 });
 
-window.addEventListener("DOMContentLoaded", (event) => {
+window.addEventListener('DOMContentLoaded', (event) => {
     vscode.postMessage({
-        command: 'windowLoaded'
-    })
+        command: 'windowLoaded',
+    });
 });
 
 // Click-Event for the DO-Buttons and Side-Nav
-for (let index = 0; index < elem_DO.length; index++) {
-    elem_DO[index].onclick = function () {
-        clicked_DO(index);
-    }
-    side_Nav[index].onclick = function () {
-        clicked_Nav(index);
-    }
+for (let index = 0; index < elemDo.length; index++) {
+    elemDo[index].onclick = function () {
+        clickedDo(index);
+    };
+    sideNav[index].onclick = function () {
+        clickedNav(index);
+    };
 }
-
 
 // SSH functions
 
 /**
- * This function sends a POST-Message to the file `webview_IOCheck.ts` to read all ports from the CC100 with one SSH command
+ * This function sends a POST-Message to the file `webviewIoCheck.ts` to read all ports from the CC100 with one SSH command
  */
-async function read_data() {
+async function readData() {
     vscode.postMessage({
-        command: 'readData'
-    })
+        command: 'readData',
+    });
 }
 
 /**
- * This method sends a POST-Message to the file `webview_IOCheck.ts` to write the digital outputs
+ * This method sends a POST-Message to the file `webviewIoCheck.ts` to write the digital outputs
  * @param value A decimal number to write, which represents the ports in binary format
  */
-function digital_write(value) {
+function digitalWrite(value) {
     vscode.postMessage({
         command: 'digitalWrite',
-        value: value
-    })
+        value: value,
+    });
 }
 
 /**
- * This method sends a POST-Message to the file `webview_IOCheck.ts` for all Click-Events
+ * This method sends a POST-Message to the file `webviewIoCheck.ts` for all Click-Events
  */
-async function button_Click() {
+async function buttonClick() {
     vscode.postMessage({
-        command: 'buttonClick'
-    })
+        command: 'buttonClick',
+    });
 }
 
 /**
- * This method sends a POST-Message to the file `webview_IOCheck.ts` to read incoming messages of the RS-485
+ * This method sends a POST-Message to the file `webviewIoCheck.ts` to read incoming messages of the RS-485
  */
-async function serial_read() {
+async function serialRead() {
     vscode.postMessage({
-        command: 'serialRead'
-    })
+        command: 'serialRead',
+    });
 }
 
 /**
- * This method sends a POST-Message to the `file` `webview_IOCheck.ts` to write a message to the RS-485
+ * This method sends a POST-Message to the `file` `webviewIoCheck.ts` to write a message to the RS-485
  * @param text The text of the sending message
  */
-function serial_write(text) {
+function serialWrite(text) {
     vscode.postMessage({
         command: 'serialWrite',
-        text: text
-    })
+        text: text,
+    });
 }
 
 /**
- * This method sends a POST-Message to the file `webview_IOCheck.ts` to write the analog Data
+ * This method sends a POST-Message to the file `webviewIoCheck.ts` to write the analog Data
  * @param pin '1' write to AO1, '2' write to AO2
  * @param value value between 0 and 4095 (12 bit value)
  */
-function analog_write(pin, value) {
+function analogWrite(pin, value) {
     vscode.postMessage({
         command: 'analogWrite',
         value: value,
-        pin: pin
-    })
+        pin: pin,
+    });
 }
 
 /**
- * This method sends a POST-Message to the file `webview_IOCheck.ts` to read the switch on the CC100
+ * This method sends a POST-Message to the file `webviewIoCheck.ts` to read the switch on the CC100
  */
-function read_switch() {
+function readSwitch() {
     vscode.postMessage({
-        command: 'readSwitch'
-    })
+        command: 'readSwitch',
+    });
 }
 
-async function update_Everything(data_array) {
-    update_AO(0, data_array[4]);
-    update_AO(1, data_array[5]);
-    display_DO_Data = data_array[1].split(',').map(x => +x);
-    
-    update_Digital(data_array[0].split(',').map(x => +x), elem_DI, LED_DI);
-    update_Digital(display_DO_Data, elem_DO, LED_DO);
-    update_PT_AI(3, data_array[2]);
-    update_PT_AI(4, data_array[3]);
-    update_PT_AI(1, data_array[6]);
-    update_PT_AI(2, data_array[7]);
-    update_status_LEDs(data_array[8], data_array[9], data_array[10], data_array[11], data_array[12], data_array[13], data_array[14], data_array[15], data_array[16]);
+async function updateEverything(dataArray) {
+    updateAo(0, dataArray[4]);
+    updateAo(1, dataArray[5]);
+    displayDoData = dataArray[1].split(',').map((x) => +x);
+
+    updateDigital(
+        dataArray[0].split(',').map((x) => +x),
+        elemDi,
+        ledDi
+    );
+    updateDigital(displayDoData, elemDo, ledDo);
+    updatePtAi(3, dataArray[2]);
+    updatePtAi(4, dataArray[3]);
+    updatePtAi(1, dataArray[6]);
+    updatePtAi(2, dataArray[7]);
+    updateStatusLeds(
+        dataArray[8],
+        dataArray[9],
+        dataArray[10],
+        dataArray[11],
+        dataArray[12],
+        dataArray[13],
+        dataArray[14],
+        dataArray[15],
+        dataArray[16]
+    );
 }
 
-function update_Refrash_Rate(){
-    refrash_Rate.innerHTML = (Date.now() - previous_timestamp) + " ms";
-    previous_timestamp = Date.now();
+function updateRefrashRate() {
+    refrashRate.innerHTML = Date.now() - previousTimestamp + ' ms';
+    previousTimestamp = Date.now();
 }
 
 /**
  * This method updates the DI and DO in the UI
- * @param value A decimal number to write, which represents the digital inputs in binary format 
+ * @param value A decimal number to write, which represents the digital inputs in binary format
  * @param elements An array with the HTML-Elements
  * @param LEDs An array with the LEDs for the CC100 SVG
  */
-async function update_Digital(value, elements, LEDs) {
+async function updateDigital(value, elements, LEDs) {
     for (let index = 0; index < elements.length; index++) {
         if (value[index] == 1) {
-            elements[index].style.backgroundColor = wago_green;
+            elements[index].style.backgroundColor = wagoGreen;
             elements[index].value = 'HIGH';
-            LEDs[index].style.fill = wago_green;
+            LEDs[index].style.fill = wagoGreen;
         } else {
-            elements[index].style.backgroundColor = 'var(--vscode-sideBar-border)';
+            elements[index].style.backgroundColor =
+                'var(--vscode-sideBar-border)';
             elements[index].value = 'LOW';
             LEDs[index].style.fill = white;
         }
@@ -306,173 +313,165 @@ async function update_Digital(value, elements, LEDs) {
 
 /**
  * This method updates the LEDs in the IO-Check UI
- * 
- * @param {*} sys_led_green the SYS LED lights green when the value is `1` and not when value is `0`
- * @param {*} sys_led_red the SYS LED lights red when the value is `1` and not when value is `0`
- * @param {*} run_led_green the RUN LED lights green when the value is `1` and not when value is `0`
- * @param {*} run_led_red the RUN LED lights red when the value is `1` and not when value is `0`
- * @param {*} usr_led_green the USR LED lights green when the value is `1` and not when value is `0`
- * @param {*} usr_led_red the USR LED lights red when the value is `1` and not when value is `0`
- * @param {*} µsd_led the µSD LED lights red when the value is `1` and not when value is `0`
+ *
+ * @param {*} sysLedGreen the SYS LED lights green when the value is `1` and not when value is `0`
+ * @param {*} sysLedRed the SYS LED lights red when the value is `1` and not when value is `0`
+ * @param {*} runledGreen the RUN LED lights green when the value is `1` and not when value is `0`
+ * @param {*} runLedRed the RUN LED lights red when the value is `1` and not when value is `0`
+ * @param {*} usrLedGreen the USR LED lights green when the value is `1` and not when value is `0`
+ * @param {*} usrLedRed the USR LED lights red when the value is `1` and not when value is `0`
+ * @param {*} µsdLed the µSD LED lights red when the value is `1` and not when value is `0`
  */
-async function update_status_LEDs(sys_led_green, sys_led_red, run_led_green, run_led_red, usr_led_green, usr_led_red, µsd_led, lnk_act1, lnk_act2) {
-    if (sys_led_green == '1' && sys_led_red == '1') {
-        LED_SYS.style.fill = orange;
-    }
-    else if (sys_led_green == '0' && sys_led_red == '1') {
-        LED_SYS.style.fill = red;
-    }
-    else if (sys_led_green == '1' && sys_led_red == '0') {
-        LED_SYS.style.fill = wago_green;
-    }
-    else {
-        LED_SYS.style.fill = white;
-    }
-
-    if (run_led_green == '1' && run_led_red == '1') {
-        LED_RUN.style.fill = orange;
-    }
-    else if (run_led_green == '0' && run_led_red == '1') {
-        LED_RUN.style.fill = red;
-    }
-    else if (run_led_green == '1' && run_led_red == '0') {
-        LED_RUN.style.fill = wago_green;
-    }
-    else {
-        LED_RUN.style.fill = white;
+async function updateStatusLeds(
+    sysLedGreen,
+    sysLedRed,
+    runLedGreen,
+    runLedRed,
+    usrLedGreen,
+    usrLedRed,
+    µsdLed,
+    lnkAct1,
+    lnkAct2
+) {
+    if (sysLedGreen == '1' && sysLedRed == '1') {
+        ledSys.style.fill = orange;
+    } else if (sysLedGreen == '0' && sysLedRed == '1') {
+        ledSys.style.fill = red;
+    } else if (sysLedGreen == '1' && sysLedRed == '0') {
+        ledSys.style.fill = wagoGreen;
+    } else {
+        ledSys.style.fill = white;
     }
 
-    if (usr_led_green == '1' && usr_led_red == '1') {
-        LED_USR.style.fill = orange;
-    }
-    else if (usr_led_green == '0' && usr_led_red == '1') {
-        LED_USR.style.fill = red;
-    }
-    else if (usr_led_green == '1' && usr_led_red == '0') {
-        LED_USR.style.fill = wago_green;
-    }
-    else {
-        LED_USR.style.fill = white;
+    if (runLedGreen == '1' && runLedRed == '1') {
+        ledRun.style.fill = orange;
+    } else if (runLedGreen == '0' && runLedRed == '1') {
+        ledRun.style.fill = red;
+    } else if (runLedGreen == '1' && runLedRed == '0') {
+        ledRun.style.fill = wagoGreen;
+    } else {
+        ledRun.style.fill = white;
     }
 
-    if(lnk_act1) {
-        if (lnk_act1.includes('yes')) {
-            LED_LNK_ACT1.style.fill = wago_green;
-        }
-        else {
-            LED_LNK_ACT1.style.fill = white;
+    if (usrLedGreen == '1' && usrLedRed == '1') {
+        ledUsr.style.fill = orange;
+    } else if (usrLedGreen == '0' && usrLedRed == '1') {
+        ledUsr.style.fill = red;
+    } else if (usrLedGreen == '1' && usrLedRed == '0') {
+        ledUsr.style.fill = wagoGreen;
+    } else {
+        ledUsr.style.fill = white;
+    }
+
+    if (lnkAct1) {
+        if (lnkAct1.includes('yes')) {
+            ledLnkAct1.style.fill = wagoGreen;
+        } else {
+            ledLnkAct1.style.fill = white;
         }
     }
 
-    if(lnk_act2) {
-        if (lnk_act2.includes('yes')) {
-            LED_LNK_ACT2.style.fill = wago_green;
-        }
-        else {
-            LED_LNK_ACT2.style.fill = white;
+    if (lnkAct2) {
+        if (lnkAct2.includes('yes')) {
+            ledLnkAct2.style.fill = wagoGreen;
+        } else {
+            ledLnkAct2.style.fill = white;
         }
     }
-    if (µsd_led == '1') {
-        LED_µSD.style.fill = red;
-    }
-    else {
-        LED_µSD.style.fill = white;
+    if (µsdLed == '1') {
+        ledµSd.style.fill = red;
+    } else {
+        ledµSd.style.fill = white;
     }
 }
 
 /**
  * This method updates the PT and AI in the UI
  * @param index The index of the PT and AI element in the UI
- * @param analogVal The analog value to update with 
+ * @param analogVal The analog value to update with
  */
-async function update_PT_AI(index, analogVal) {
-    elem_PT_AI[index - 1].innerHTML = analogVal;
+async function updatePtAi(index, analogVal) {
+    elemPtAi[index - 1].innerHTML = analogVal;
 }
 
 /**
  * This method updates the AO in the UI
  * @param index '0' to update AO1, '1' to update AO2
- * @param analogVal The analog value to update with 
+ * @param analogVal The analog value to update with
  */
-function update_AO(index, value) {
+function updateAo(index, value) {
     if (index == 0) {
-        elem_AO1_val.innerHTML = value;
+        elemAo1Val.innerHTML = value;
+    } else if (index == 1) {
+        elemAo2Val.innerHTML = value;
     }
-    else if (index == 1) {
-        elem_AO2_val.innerHTML = value;
-    }
-    // elem_AO_value[index].value = value;
+    // elemAoValue[index].value = value;
 }
 
 /**
  * This method updates the switch on the CC100 in the UI
  * @param value The switch status
  */
-function update_Switch(value) {
+function updateSwitch(value) {
     if (value == '1') {
-        elem_Switch.setAttribute('y', '370');
-        disable_Output_Elements();
-    }
-    else if (value == '2') {
-        elem_Switch.setAttribute('y', '395');
-        enable_Output_Elements();
-    }
-    else if (value == '3') {
-        elem_Switch.setAttribute('y', '420');
+        elemSwitch.setAttribute('y', '370');
+        disableOutputElements();
+    } else if (value == '2') {
+        elemSwitch.setAttribute('y', '395');
+        enableOutputElements();
+    } else if (value == '3') {
+        elemSwitch.setAttribute('y', '420');
     }
 }
 
 /**
  * This method shows the recieved message from RS-485 in the UI
- * @param message The recieved message 
+ * @param message The recieved message
  */
-async function show_recieving_Message(message) {
+async function showRecievingMessage(message) {
     if (message != '') {
-        var html = '<p align="left" style="background-color: #616a73;">'
+        var html = '<p align="left" style="background-color: #616a73;">';
         html += message;
-        html += '</p>'
-        chat_Serial.innerHTML = chat_Serial.innerHTML + html;
-        chat_Serial.scrollTop = chat_Serial.scrollHeight;
+        html += '</p>';
+        chatSerial.innerHTML = chatSerial.innerHTML + html;
+        chatSerial.scrollTop = chatSerial.scrollHeight;
     }
 }
 
 // Event functions (Outputs)
 
 /**
- * This method reads and calibrates the values of the AO textfields 
+ * This method reads and calibrates the values of the AO textfields
  * @param index `0` AO1 was clicked, `1` AO2 was clicked
  */
-function clicked_AO(index) {
-    var val = elem_AO_value[index].value
+function clickedAo(index) {
+    var val = elemAoValue[index].value;
     if (val) {
         val = parseFloat(val);
         if (val > 10000) {
             val = 10000;
             vscode.postMessage({
                 command: 'alert',
-                text: 'Maximum value is 10000'
+                text: 'Maximum value is 10000',
             });
-        }
-        else if (val < 0) {
+        } else if (val < 0) {
             val = 0;
             vscode.postMessage({
                 command: 'alert',
-                text: 'No negative value allowed'
+                text: 'No negative value allowed',
             });
         }
 
-        elem_AO_value[index].value = '';
+        elemAoValue[index].value = '';
         if (index == 0) {
-            AO_Data1 = val;
+            aoData1 = val;
+        } else {
+            aoData2 = val;
         }
-        else {
-            AO_Data2 = val;
-        }
-    }
-    else {
+    } else {
         vscode.postMessage({
             command: 'alert',
-            text: 'Undefined Value'
+            text: 'Undefined Value',
         });
         return;
     }
@@ -482,14 +481,14 @@ function clicked_AO(index) {
  * This method changes the params on the right side according to the matching symbol in the navigation bar
  * @param index The index of the clicked symbol
  */
-function clicked_Nav(index) {
-    for (var i = 0; i < side_Nav.length; i++) {
+function clickedNav(index) {
+    for (var i = 0; i < sideNav.length; i++) {
         if (i == index) {
-            side_Nav[i].style.borderColor = wago_green;
-            right_Params[i].style.display = 'flex';
+            sideNav[i].style.borderColor = wagoGreen;
+            rightParams[i].style.display = 'flex';
         } else {
-            side_Nav[i].style.borderColor = 'var(--vscode-sideBar-border)';
-            right_Params[i].style.display = 'none';
+            sideNav[i].style.borderColor = 'var(--vscode-sideBar-border)';
+            rightParams[i].style.display = 'none';
         }
     }
 }
@@ -498,63 +497,61 @@ function clicked_Nav(index) {
  * This method changes the value of the DO
  * @param index The index of clicked DO
  */
-function clicked_DO(index) {
-    console.log("DO")
-    if (elem_DO[index].value == 'HIGH') {
-        DO_Data[index] = 0;
+function clickedDo(index) {
+    if (elemDo[index].value == 'HIGH') {
+        doData[index] = 0;
     } else {
-        DO_Data[index] = 1;
+        doData[index] = 1;
     }
-    DO_Changed = true;
+    doChanged = true;
 }
 
 /**
  * This method sends the message from the RS-485 textfield
  */
-function clicked_Send() {
-    if (trans_Message.value) {
-        Serial_Text = trans_Message.value;
-        trans_Message.value = '';
+function clickedSend() {
+    if (transMessage.value) {
+        serialText = transMessage.value;
+        transMessage.value = '';
     }
 }
 
-function show_Message(message) {
+function showMessage(message) {
     if (message) {
-        var html = '<p align="right">'
-        html += message
+        var html = '<p align="right">';
+        html += message;
         html += '</p>';
-        chat_Serial.innerHTML += html;
-        chat_Serial.scrollTop = chat_Serial.scrollHeight;
+        chatSerial.innerHTML += html;
+        chatSerial.scrollTop = chatSerial.scrollHeight;
     }
 }
-
 
 // Help functions
 
 /**
  * This method disables all output elements that are not used in monitoring mode
  */
-function disable_Output_Elements() {
-    for (let index = 0; index < elem_DO.length; index++) {
-        elem_DO[index].setAttribute('disabled', 'disabled');
+function disableOutputElements() {
+    for (let index = 0; index < elemDo.length; index++) {
+        elemDo[index].setAttribute('disabled', 'disabled');
     }
-    elem_AO_value[0].setAttribute('disabled', 'disabled');
-    elem_AO_value[1].setAttribute('disabled', 'disabled');
-    elem_AO1_write.setAttribute('disabled', 'disabled');
-    elem_AO2_write.setAttribute('disabled', 'disabled');
-    btn_Send.setAttribute('disabled', 'disabled');
+    elemAoValue[0].setAttribute('disabled', 'disabled');
+    elemAoValue[1].setAttribute('disabled', 'disabled');
+    elemAo1Write.setAttribute('disabled', 'disabled');
+    elemAo2Write.setAttribute('disabled', 'disabled');
+    btnSend.setAttribute('disabled', 'disabled');
 }
 
 /**
  * This method activates all elements that are necessary for setting outputs on the CC100
  */
-function enable_Output_Elements() {
-    for (let index = 0; index < elem_DO.length; index++) {
-        elem_DO[index].removeAttribute('disabled');
+function enableOutputElements() {
+    for (let index = 0; index < elemDo.length; index++) {
+        elemDo[index].removeAttribute('disabled');
     }
-    elem_AO_value[0].removeAttribute('disabled');
-    elem_AO_value[1].removeAttribute('disabled');
-    elem_AO1_write.removeAttribute('disabled');
-    elem_AO2_write.removeAttribute('disabled');
-    btn_Send.removeAttribute('disabled');
+    elemAoValue[0].removeAttribute('disabled');
+    elemAoValue[1].removeAttribute('disabled');
+    elemAo1Write.removeAttribute('disabled');
+    elemAo2Write.removeAttribute('disabled');
+    btnSend.removeAttribute('disabled');
 }

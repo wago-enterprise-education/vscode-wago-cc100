@@ -6,6 +6,39 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-02-05
+
+### Added
+
+- Controller management view in the Activity Bar (add/configure/rename/reset/remove controllers)
+- Project workflows: **Create Project**, **Init Project**, **Open Project** (including project version detection and updated templates)
+- **Upload All** command for multi-controller uploads
+- Remote debugging integration ("Remote cc100 debugger") and controller selection for debugging
+- Developer documentation under `res/devDocs` (architecture/sequence diagrams)
+- Prettier configuration and npm scripts (`format`, `build`)
+
+### Changed
+
+- Major internal refactor: new extension core modules (manager/factories/shared types/constants) and a new connection management implementation
+- More VS Code-native integration (Activity Bar view, commands, welcome views, and context menus)
+- Updated dependencies (removed unused packages, added `tar` and `yaml`, updated `ssh2`)
+- Updated project template layout (introduced `wago.yaml` and controller templates; removed legacy template libs)
+- Updated/renamed media assets for better cross-platform path/case consistency; updated extension icon
+
+### Fixed
+
+- "Create Project" error when the target folder already exists
+- SSH key generation and remote folder creation issues
+- Upload robustness: preserve directory structure, ensure target directories exist, improved cleanup/reset behavior, and more reliable Docker image handling
+- Upload behavior: ensure the uploaded Python application starts correctly; improved multi-upload behavior
+- Network/address handling improvements (allow DNS hostnames; fix IP switching issues; improved gateway/netmask validation)
+- IO-Check issues (analog write) and minor label typo (digital input)
+
+### Removed
+
+- Legacy menu/settings/homepage webview assets and other unused media/resources
+- Bundled legacy Python 3.7.6 `.ipk` file from the repository
+
 ## [0.1.11] - 2026-01-30
 
 ### Fixed
