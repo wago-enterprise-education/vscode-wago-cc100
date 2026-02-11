@@ -13,7 +13,7 @@ A Visual Studio Code extension for programming the WAGO Compact Contoller 100 in
 - [Write Your Python Code](#write-your-python-code)
 - [Upload](#upload)
 - [Debug](#debug)
-- [Remove/Reset](#remove-reset)
+- [Remove/Reset](#removereset)
 - [IO-Check](#io-check)
 
 ## Supported WAGO CC100 Devices
@@ -32,7 +32,7 @@ A Visual Studio Code extension for programming the WAGO Compact Contoller 100 in
 4. Add a controller via **Add Controller** and fill in the prompted fields.
 5. Put your code into the controller source folder (see [Write your Python code](#write-your-python-code)).
 6. Upload via **Upload** (play icon).
-   
+
 ## How to use the Extension
 
 Once the WAGO extension is installed in VSCode, a WAGO symbol should appear on the left sidebar. Click this button to open the extension, which reveals options such as **Create Project** and **Open Project** or **Init Project** if you are in a folder. The **Create Project** button helps set up your workspace by creating a template project containing the `wago.yaml` and `controller.yaml` files. These are essential for housing controller configurations. The controller interface includes three buttons and a connection status icon. The icon indicates whether the controller is connected (:green_circle:) or offline (:red_circle:).
@@ -87,8 +87,7 @@ With the switch in the `STOP` position, outputs and the serial port can be manua
 
 ## Issues
 
-If you can reproduce an issue, please open an issue on GitHub and include logs and steps to reproduce:
-https://github.com/wago-enterprise-education/vscode-wago-cc100/issues
+If you can reproduce an issue, please open an [issue on GitHub](https://github.com/wago-enterprise-education/vscode-wago-cc100/issues) and include logs and steps to reproduce:
 
 ## Release notes
 
@@ -96,8 +95,7 @@ See the changelog in this repository: `CHANGELOG.md`.
 
 ## Contributing
 
-Contributions are welcome via GitHub pull requests:
-https://github.com/wago-enterprise-education/vscode-wago-cc100
+Contributions are welcome via [GitHub pull requests](https://github.com/wago-enterprise-education/vscode-wago-cc100)
 
 ## License
 
