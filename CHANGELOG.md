@@ -8,6 +8,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ### Fixed
 
+- CVE-2026-27903 minimatch has ReDoS: matchOne() combinatorial backtracking via multiple non-adjacent GLOBSTAR segments
 - CVE-2026-26960 Arbitrary File Read/Write via Hardlink Target Escape Through Symlink Chain in node-tar Extraction
 - CVE-2026-2391 qs's arrayLimit bypass in comma parsing allows denial of service
 
