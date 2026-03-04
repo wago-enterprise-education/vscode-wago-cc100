@@ -6,6 +6,10 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+### Fixed
+
+- CVE-2026-2391 qs's arrayLimit bypass in comma parsing allows denial of service
+
 ## [0.2.0] - 2026-02-05
 
 ### Added
