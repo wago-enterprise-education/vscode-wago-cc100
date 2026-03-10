@@ -8,10 +8,18 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [0.2.2] - 2026-03-10
 
+### Added
+
+- Add `release.yml` workflow for Github Actions to automatically build the vsix and attach the file to the release when a new release is created on Github
+
 ### Fixed
 
 - Updated NPM packages
 - CVE-2026-29786 tar has Hardlink Path Traversal via Drive-Relative Linkpath
+
+### Removed
+
+- The workflow file for vsix distributionn to the marketplace failed. Deactivated for now
 
 ## [0.2.1] - 2026-03-04
 
