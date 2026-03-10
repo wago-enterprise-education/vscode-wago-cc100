@@ -6,6 +6,13 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-03-10
+
+### Fixed
+
+- Updated NPM packages
+- CVE-2026-29786 tar has Hardlink Path Traversal via Drive-Relative Linkpath
+
 ## [0.2.1] - 2026-03-04
 
 ### Fixed
