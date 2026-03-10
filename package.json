@@ -349,7 +349,7 @@
   "dependencies": {
     "sanitize-html": "^2.14.0",
     "ssh2": "^1.16.0",
-    "tar": "^7.5.8",
+    "tar": "^7.5.10",
     "yaml": "^2.7.0"
   },
   "scripts": {
