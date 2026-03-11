@@ -1,0 +1,63 @@
+# GitHub Action to build VSIX and attach to releases
+# Triggers on release creation and manual dispatch
+# Follows specific build steps: global vsce install, cleanup, cache verify, ci install, package
+
+name: Build and Attach VSIX to Release
+
+on:
+  release:
+    types: [created]
+  workflow_dispatch:
+
+jobs:
+  build-and-attach-vsix:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 18.x
+        cache: 'npm'
+
+    - name: Install VSCE globally
+      run: npm install -g @vscode/vsce
+
+    - name: Clean build artifacts and dependencies
+      run: rm -rf out node_modules
+
+    - name: Verify npm cache
+      run: npm cache verify
+
+    - name: Install dependencies with ci
+      run: npm ci
+
+    - name: Build VSIX package
+      run: vsce package
+
+    - name: Find VSIX file
+      id: find-vsix
+      run: |
+        VSIX_FILE=$(find . -name "*.vsix" -maxdepth 1 | head -1)
+        if [ -z "$VSIX_FILE" ]; then
+          echo "Error: No VSIX file found"
+          exit 1
+        fi
+        echo "vsix-file=$VSIX_FILE" >> $GITHUB_OUTPUT
+        echo "Found VSIX file: $VSIX_FILE"
+
+    - name: Upload VSIX to release
+      if: github.event_name == 'release'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        gh release upload ${{ github.event.release.tag_name }} ${{ steps.find-vsix.outputs.vsix-file }} --clobber
+
+    - name: Upload VSIX as workflow artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: vsix-package
+        path: ${{ steps.find-vsix.outputs.vsix-file }}
+        retention-days: 30

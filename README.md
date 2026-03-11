@@ -18,9 +18,10 @@ A Visual Studio Code extension for programming the WAGO Compact Contoller 100 in
 
 ## Supported WAGO CC100 Devices
 
-| Device   | Firmware | Comment  |
-|----------|----------|----------|
-| 751-9301 | 28, 30   |          |
+| Device   | supported FW    | Comment                  |
+|----------|-----------------|--------------------------|
+| 751-9301 | 28, 30          |                          |
+| 751-9401 | 28              | CAN not supported        |
 
 ## Quick start
 
