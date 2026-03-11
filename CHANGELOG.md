@@ -6,6 +6,10 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+### Fixed
+
+- Update node.js to version 20 in release.yml workflow for Github Actions to fix build issue
+
 ## [0.2.2] - 2026-03-10
 
 ### Added
