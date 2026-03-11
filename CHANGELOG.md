@@ -11,6 +11,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 ### Added
 
 - Add `release.yml` workflow for Github Actions to automatically build the vsix and attach the file to the release when a new release is created on Github
+- Add 751-9401  for supported WAGO CC100 devices
 
 ### Fixed
 
