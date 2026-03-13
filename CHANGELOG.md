@@ -10,6 +10,10 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 - Update node.js to version 20 in release.yml workflow for Github Actions to fix build issue
 
+### Removed
+
+- Update .vscodeignore: devDocs, .github and .prettierignore
+
 ## [0.2.2] - 2026-03-10
 
 ### Added
