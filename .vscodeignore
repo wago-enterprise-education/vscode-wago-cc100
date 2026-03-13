@@ -13,4 +13,7 @@
 **/*.gif
 res/devDocs
 src/**
+out/
+node_modules/**
+!node_modules/ssh2/**
 vsc-extension-quickstart.md
