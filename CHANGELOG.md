@@ -6,6 +6,12 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+## [0.2.3] - 2026-03-16
+
+### Added
+
+- Add esbuild bundler for optimized extension packaging
+
 ### Fixed
 
 - Update NPM packages
