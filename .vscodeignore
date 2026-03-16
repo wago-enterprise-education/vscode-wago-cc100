@@ -1,9 +1,9 @@
+.github/**
 .vscode/**
 .vscode-test/**
-src/**
 .gitignore
 .yarnrc
-vsc-extension-quickstart.md
+.prettierignore
 **/tsconfig.json
 **/eslint.config.mjs
 **/*.map
@@ -11,3 +11,11 @@ vsc-extension-quickstart.md
 **/.vscode-test.*
 **/.eslintrc.json
 **/*.gif
+res/devDocs
+src/**
+!src/ioCheck.js
+out/**
+node_modules/**
+dist/*.map
+esbuild.js
+vsc-extension-quickstart.md

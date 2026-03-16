@@ -213,7 +213,7 @@ export class webviewIoCheck {
             'res/images/cc100Schalter.png'
         ).toString();
         const pathStyle1 = this.getPath('res/webviews/ioCheck.css').toString();
-        const pathScript = this.getPath('out/ioCheck.js').toString();
+        const pathScript = this.getPath('src/ioCheck.js').toString();
         const pathWagoimg = this.getPath(
             'res/images/wago-iconsRgbTemperatureOutlineGreen.svg'
         ).toString();

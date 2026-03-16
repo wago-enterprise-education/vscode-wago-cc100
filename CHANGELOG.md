@@ -6,6 +6,24 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+## [0.2.3] - 2026-03-16
+
+### Added
+
+- Add esbuild bundler for optimized extension packaging
+
+### Fixed
+
+- Update NPM packages
+- Update node.js to version 20 in release.yml workflow for Github Actions to fix build issue
+- CVE-2026-1528 Undici: Malicious WebSocket 64-bit length overflows parser and crashes the client
+- CVE-2026-1525 Undici has an HTTP Request/Response Smuggling issue
+- CVE-2026-1527 Undici has CRLF Injection in undici via `upgrade` option
+
+### Removed
+
+- Update .vscodeignore: devDocs, .github and .prettierignore
+
 ## [0.2.2] - 2026-03-10
 
 ### Added
