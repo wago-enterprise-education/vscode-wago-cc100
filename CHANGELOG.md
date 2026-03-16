@@ -8,6 +8,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ### Fixed
 
+- Update NPM packages
 - Update node.js to version 20 in release.yml workflow for Github Actions to fix build issue
 - CVE-2026-1528 Undici: Malicious WebSocket 64-bit length overflows parser and crashes the client
 - CVE-2026-1525 Undici has an HTTP Request/Response Smuggling issue
