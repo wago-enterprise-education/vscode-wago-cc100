@@ -9,6 +9,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 ### Fixed
 
 - Update workflow `release.yml` to use node.js version 24 for building the vsix package, as version 20 is going to be deprecated soon
+- Change the `release.yml` workflow to allow manual triggering on release, tag, branch or any commit
 - Add `ssh2` as external dependency in `esbuild.js` to avoid build issues related to the `ssh2` package when using esbuild for bundling
 
 ## [0.2.3] - 2026-03-16

@@ -8,13 +8,46 @@ on:
   release:
     types: [created]
   workflow_dispatch:
+    inputs:
+      source_type:
+        description: 'What to build from'
+        required: true
+        type: choice
+        options:
+        - 'release'
+        - 'tag'
+        - 'branch'
+        - 'commit'
+        default: 'release'
+      source_value:
+        description: 'Release tag, branch name, tag name, or commit SHA'
+        required: true
+        type: string
+        default: 'main'
+      target_release:
+        description: 'Release tag to attach VSIX to (leave empty for artifact only)'
+        required: false
+        type: string
 
 jobs:
   build-and-attach-vsix:
     runs-on: ubuntu-latest
     steps:
+    - name: Determine checkout reference
+      id: checkout-ref
+      run: |
+        if [ "${{ github.event_name }}" = "release" ]; then
+          echo "ref=${{ github.event.release.tag_name }}" >> $GITHUB_OUTPUT
+          echo "Building from release: ${{ github.event.release.tag_name }}"
+        else
+          echo "ref=${{ inputs.source_value }}" >> $GITHUB_OUTPUT
+          echo "Building from ${{ inputs.source_type }}: ${{ inputs.source_value }}"
+        fi
+
     - name: Checkout repository
       uses: actions/checkout@v4
+      with:
+        ref: ${{ steps.checkout-ref.outputs.ref }}
 
     - name: Setup Node.js
       uses: actions/setup-node@v4
@@ -48,16 +81,24 @@ jobs:
         echo "vsix-file=$VSIX_FILE" >> $GITHUB_OUTPUT
         echo "Found VSIX file: $VSIX_FILE"
 
-    - name: Upload VSIX to release
+    - name: Upload VSIX to release (automatic)
       if: github.event_name == 'release'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         gh release upload ${{ github.event.release.tag_name }} ${{ steps.find-vsix.outputs.vsix-file }} --clobber
 
+    - name: Upload VSIX to specified release (manual)
+      if: github.event_name == 'workflow_dispatch' && inputs.target_release != ''
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        gh release upload ${{ inputs.target_release }} ${{ steps.find-vsix.outputs.vsix-file }} --clobber
+
     - name: Upload VSIX as workflow artifact
+      if: github.event_name == 'workflow_dispatch'
       uses: actions/upload-artifact@v4
       with:
-        name: vsix-package
+        name: vsix-package-${{ inputs.source_type }}-${{ inputs.source_value }}
         path: ${{ steps.find-vsix.outputs.vsix-file }}
         retention-days: 30
