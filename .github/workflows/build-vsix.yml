@@ -2,7 +2,7 @@
 # Triggers on release creation and manual dispatch
 # Follows specific build steps: global vsce install, cleanup, cache verify, ci install, package
 
-name: Build and Attach VSIX to Release
+name: Build VSIX
 
 on:
   release:
@@ -15,7 +15,7 @@ on:
         type: string
 
 jobs:
-  build-and-attach-vsix:
+  build-vsix:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
