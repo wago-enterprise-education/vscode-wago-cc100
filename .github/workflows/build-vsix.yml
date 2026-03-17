@@ -31,8 +31,8 @@ jobs:
         VERSION=$(node -p "require('./package.json').version")
         # Get short commit hash (8 characters)
         COMMIT_HASH=$(git rev-parse --short=8 HEAD)
-        # Generate artifact name: vscode-wago-cc100-vx.y.z-dev-hash
-        ARTIFACT_NAME="vscode-wago-cc100-v${VERSION}-dev-${COMMIT_HASH}"
+        # Generate artifact name: vscode-wago-cc100-vx.y.z-hash
+        ARTIFACT_NAME="vscode-wago-cc100-v${VERSION}-${COMMIT_HASH}"
         
         echo "version=$VERSION" >> $GITHUB_OUTPUT
         echo "commit-hash=$COMMIT_HASH" >> $GITHUB_OUTPUT

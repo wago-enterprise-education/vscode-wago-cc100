@@ -1,4 +1,4 @@
-# Release Workflow Usage Guide
+# Build VSIX Workflow Usage Guide
 
 This document explains how to use the GitHub Actions workflow for building the vsix package of the "vscode-wago-cc100" extension. The workflow is designed to automatically build and attach the vsix file to GitHub releases, as well as allow manual triggering for development builds from any branch, tag, or specific commit.
 
@@ -60,27 +60,30 @@ gh auth login
 
 ```bash
 # Build from main branch
-gh workflow run release.yml --ref main
+gh workflow run build-vsix.yml --ref main
 
 # Build from specific branch
-gh workflow run release.yml --ref release/v0.2.4
+gh workflow run build-vsix.yml --ref release/v0.2.4
 
 # Build from tag
-gh workflow run release.yml --ref v0.2.3
+gh workflow run build-vsix.yml --ref v0.2.3
 ```
 
 ### Build from Specific Commit
 
 ```bash
 # Method 1: Use commit SHA directly as ref
-gh workflow run release.yml --ref a1b2c3d4f5e6
+gh workflow run build-vsix.yml --ref a1b2c3d4f5e6
+
+# Method 2: Use branch + commit input
+gh workflow run build-vsix.yml --ref main -f commit_sha=a1b2c3d4f5e6
 ```
 
 ### Monitor Workflow
 
 ```bash
 # List recent workflow runs
-gh run list --workflow=release.yml
+gh run list --workflow=build-vsix.yml
 
 # Watch specific run (use ID from list)
 gh run watch 1234567890
@@ -97,7 +100,7 @@ gh run download 1234567890
 
 **Examples:**
 
-- `vscode-wago-cc100-v0.2.4-dev.0-a1b2c3d4` (from release/v0.2.4 in development mode)
+- `vscode-wago-cc100-v0.2.4-a1b2c3d4` (from release/v0.2.4)
 - `vscode-wago-cc100-v0.2.3-f7e8d9c1` (from main at a specific commit)
 
 **Components:**
@@ -110,7 +113,7 @@ gh run download 1234567890
 **Format:** Standard VSIX naming from `vsce package`
 
 - Attached directly to GitHub release
-- No `-dev` suffix
+- No hash suffix (standard vsce naming)
 
 ## 🔍 Finding Your Build
 
@@ -125,7 +128,7 @@ gh run download 1234567890
 
 ```bash
 # List artifacts from latest run
-gh run list --workflow=release.yml --limit=1 --json databaseId --jq '.[0].databaseId' | xargs gh run download
+gh run list --workflow=build-vsix.yml --limit=1 --json databaseId --jq '.[0].databaseId' | xargs gh run download
 
 # Download specific run artifacts
 gh run download <run-id>
@@ -136,10 +139,10 @@ gh run download <run-id>
 | Scenario | Command | Output |
 |----------|---------|--------|
 | Auto release | Create GitHub release | VSIX attached to release |
-| Build main | `gh workflow run release.yml --ref main` | `vscode-wago-cc100-v{version}-{hash}` |
-| Build branch | `gh workflow run release.yml --ref feature/abc` | `vscode-wago-cc100-v{version}-{hash}` |
-| Build commit | `gh workflow run release.yml --ref a1b2c3d4` | `vscode-wago-cc100-v{version}-{hash}` |
-| Build with input | `gh workflow run release.yml --ref main -f commit_sha=abc123` | `vscode-wago-cc100-v{version}-{hash}` |
+| Build main | `gh workflow run build-vsix.yml --ref main` | `vscode-wago-cc100-v{version}-{hash}` |
+| Build branch | `gh workflow run build-vsix.yml --ref feature/abc` | `vscode-wago-cc100-v{version}-{hash}` |
+| Build commit | `gh workflow run build-vsix.yml --ref a1b2c3d4` | `vscode-wago-cc100-v{version}-{hash}` |
+| Build with input | `gh workflow run build-vsix.yml --ref main -f commit_sha=abc123` | `vscode-wago-cc100-v{version}-{hash}` |
 
 ## 📝 Notes
 
