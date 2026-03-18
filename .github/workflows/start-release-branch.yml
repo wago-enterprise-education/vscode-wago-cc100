@@ -1,0 +1,65 @@
+# GitHub Action to start a new release branch from main.
+# Follows the procedure described in development.md:
+#   1. Bump version on main with the selected pre-release type and --preid dev
+#   2. Create and push a release/v<x.y.z> branch
+#   3. Commit with message "start release branch"
+#
+# Restricted to maintainers via the "release" GitHub environment
+# (configure deployment protection rules under Settings → Environments).
+
+name: Start Release Branch
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump_type:
+        description: 'Version bump type'
+        required: true
+        default: prerelease
+        type: choice
+        options:
+          - prerelease
+          - preminor
+          - premajor
+
+jobs:
+  start-release-branch:
+    runs-on: ubuntu-latest
+    environment: release
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.x
+
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump version
+        run: npm version ${{ inputs.bump_type }} --preid dev --no-git-tag-version
+
+      - name: Derive release branch name
+        id: branch
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          BASE_VERSION=${VERSION%-dev.0}
+          BRANCH="release/v${BASE_VERSION}"
+          echo "name=${BRANCH}" >> "$GITHUB_OUTPUT"
+          echo "Bumped to ${VERSION} → branch: ${BRANCH}"
+
+      - name: Create release branch
+        run: git switch -c ${{ steps.branch.outputs.name }}
+
+      - name: Commit version bump
+        run: git commit -am "start release branch"
+
+      - name: Push release branch
+        run: git push -u origin ${{ steps.branch.outputs.name }}

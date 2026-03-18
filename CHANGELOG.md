@@ -6,6 +6,10 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+### Added
+
+- Add Github action workflow which creates a release branch
+
 ### Changed
 
 - Update workflow `release.yml` to use node.js version 24 for building the vsix package, as version 20 is going to be deprecated soon
