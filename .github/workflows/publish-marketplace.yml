@@ -1,0 +1,57 @@
+# GitHub Action to publish the VSIX to the VS Code Marketplace
+# Triggers automatically after "Build VSIX" completes on a release event
+# Gated by the 'release' environment (requires manual approval before publishing)
+#
+# To verify the PAT without publishing, use the "Verify Marketplace PAT" workflow.
+#
+# Prerequisites:
+# - Add secret VSCE_PAT (VS Code Marketplace Personal Access Token) under
+#   Settings → Secrets and variables → Actions
+
+name: Publish to VS Code Marketplace
+
+on:
+  workflow_run:
+    workflows: ["Build VSIX"]
+    types:
+      - completed
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: release
+    # Only run when Build VSIX succeeded AND was triggered by a release event
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'release'
+
+    steps:
+      - name: Download VSIX from release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # For release-triggered workflows, head_branch holds the tag name
+          TAG="${{ github.event.workflow_run.head_branch }}"
+          echo "Downloading VSIX from release: $TAG"
+          gh release download "$TAG" \
+            --repo "${{ github.repository }}" \
+            --pattern "*.vsix"
+
+      - name: Find VSIX file
+        id: find-vsix
+        run: |
+          VSIX_FILE=$(find . -name "*.vsix" -maxdepth 1 | head -1)
+          if [ -z "$VSIX_FILE" ]; then
+            echo "Error: No VSIX file found in release assets"
+            exit 1
+          fi
+          echo "vsix-file=$VSIX_FILE" >> $GITHUB_OUTPUT
+          echo "Found VSIX file: $VSIX_FILE"
+
+      - name: Install VSCE
+        run: npm install -g @vscode/vsce
+
+      - name: Publish to VS Code Marketplace
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        run: vsce publish --packagePath ${{ steps.find-vsix.outputs.vsix-file }}
