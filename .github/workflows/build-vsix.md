@@ -56,7 +56,7 @@ Create development builds from any branch, tag, or specific commit.
 gh auth login
 ```
 
-### Build from Branch/Tag
+### CLI Build from Branch/Tag HEAD
 
 ```bash
 # Build from main branch
@@ -69,7 +69,7 @@ gh workflow run build-vsix.yml --ref release/v0.2.4
 gh workflow run build-vsix.yml --ref v0.2.3
 ```
 
-### Build from Specific Commit
+### CLI Build from Specific Commit
 
 ```bash
 # Method 1: Use commit SHA directly as ref
@@ -137,7 +137,7 @@ gh run download <run-id>
 ## ⚡ Quick Reference
 
 | Scenario | Command | Output |
-|----------|---------|--------|
+| -------- | ------- | ------ |
 | Auto release | Create GitHub release | VSIX attached to release |
 | Build main | `gh workflow run build-vsix.yml --ref main` | `vscode-wago-cc100-v{version}-{hash}` |
 | Build branch | `gh workflow run build-vsix.yml --ref feature/abc` | `vscode-wago-cc100-v{version}-{hash}` |

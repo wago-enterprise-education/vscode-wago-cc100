@@ -11,6 +11,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 - Add Github action workflow which creates a release branch
 - Add Github action workflow which takes the VSIX from a release and publishes it to the marketplace using the VSCE_PAT secret for authentication
 - Add Github action workflow which can be manually triggered to verify that the VSCE_PAT is working
+- Add [documentation](.github/workflows/README.md) for all workflows in the `.github/workflows` folder
 
 ### Changed
 
@@ -18,7 +19,6 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 - Renamed workflow `release.yml` to `build-vsix.yml` to better reflect its purpose
 - Add manual triggering to workflow on release, tag, branch or any commit
 - Manual workflow runs attach vsix as artifact with commit hash in the name for better traceability
-- Add [documentation](.github/workflows/build-vsix.md) for the workflow
 
 ### Fixed
 
