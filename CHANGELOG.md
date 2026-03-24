@@ -18,7 +18,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 - Update workflow `release.yml` to use node.js version 24 for building the vsix package, as version 20 is going to be deprecated soon
 - Renamed workflow `release.yml` to `build-vsix.yml` to better reflect its purpose
 - Add manual triggering to workflow on release, tag, branch or any commit
-- Manual workflow runs attach vsix as artifact with commit hash in the name for better traceability
+- Manually triggered `build-vsix.yml` workflow runs do attach the resulting VSIX as artifact with commit hash in the name for better traceability
 
 ### Fixed
 
