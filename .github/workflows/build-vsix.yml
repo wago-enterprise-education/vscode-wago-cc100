@@ -2,24 +2,50 @@
 # Triggers on release creation and manual dispatch
 # Follows specific build steps: global vsce install, cleanup, cache verify, ci install, package
 
-name: Build and Attach VSIX to Release
+name: Build VSIX
 
 on:
   release:
     types: [created]
   workflow_dispatch:
+    inputs:
+      commit_sha:
+        description: 'Specific commit SHA (leave empty to use selected branch/tag HEAD)'
+        required: false
+        type: string
 
 jobs:
-  build-and-attach-vsix:
+  build-vsix:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
+      with:
+        ref: ${{ inputs.commit_sha || github.sha }}
+
+    - name: Get version and commit info for manual builds
+      if: github.event_name == 'workflow_dispatch'
+      id: version-info
+      run: |
+        # Extract version from package.json
+        VERSION=$(node -p "require('./package.json').version")
+        # Get short commit hash (8 characters)
+        COMMIT_HASH=$(git rev-parse --short=8 HEAD)
+        # Generate artifact name: vscode-wago-cc100-vx.y.z-hash
+        ARTIFACT_NAME="vscode-wago-cc100-v${VERSION}-${COMMIT_HASH}"
+        
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "commit-hash=$COMMIT_HASH" >> $GITHUB_OUTPUT
+        echo "artifact-name=$ARTIFACT_NAME" >> $GITHUB_OUTPUT
+        
+        echo "Version: $VERSION"
+        echo "Commit: $COMMIT_HASH"
+        echo "Artifact name: $ARTIFACT_NAME"
 
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: 20.x
+        node-version: 24.x
         cache: 'npm'
 
     - name: Install VSCE globally
@@ -48,16 +74,17 @@ jobs:
         echo "vsix-file=$VSIX_FILE" >> $GITHUB_OUTPUT
         echo "Found VSIX file: $VSIX_FILE"
 
-    - name: Upload VSIX to release
+    - name: Upload VSIX to release (automatic)
       if: github.event_name == 'release'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         gh release upload ${{ github.event.release.tag_name }} ${{ steps.find-vsix.outputs.vsix-file }} --clobber
 
-    - name: Upload VSIX as workflow artifact
+    - name: Upload VSIX as workflow artifact (manual builds only)
+      if: github.event_name == 'workflow_dispatch'
       uses: actions/upload-artifact@v4
       with:
-        name: vsix-package
+        name: ${{ steps.version-info.outputs.artifact-name }}
         path: ${{ steps.find-vsix.outputs.vsix-file }}
         retention-days: 30

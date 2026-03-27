@@ -1,0 +1,27 @@
+# GitHub Action to verify that the VSCE_PAT secret is valid for the
+# VS Code Marketplace publisher WAGO-education.
+# Run this manually at any time to check if the PAT needs to be renewed.
+#
+# Prerequisites:
+# - VSCE_PAT secret must be set under Settings → Secrets and variables → Actions
+
+name: Verify Marketplace PAT
+
+on:
+  workflow_dispatch:
+
+jobs:
+  verify-pat:
+    runs-on: ubuntu-latest
+    environment: release
+    steps:
+      - name: Install VSCE
+        run: npm install -g @vscode/vsce
+
+      - name: Verify PAT
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        run: |
+          echo "Verifying VSCE_PAT for publisher WAGO-education..."
+          vsce verify-pat --publisher WAGO-education
+          echo "PAT is valid!"

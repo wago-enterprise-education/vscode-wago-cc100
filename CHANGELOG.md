@@ -6,6 +6,28 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+## [0.2.4] - 2026-03-27
+
+### Added
+
+- Update npm packages
+- Add Github action workflow which creates a release branch
+- Add Github action workflow which takes the VSIX from a release and publishes it to the marketplace using the VSCE_PAT secret for authentication
+- Add Github action workflow which can be manually triggered to verify that the VSCE_PAT is working
+- Add [documentation](.github/workflows/README.md) for all workflows in the `.github/workflows` folder
+
+### Changed
+
+- Update workflow `release.yml` to use node.js version 24 for building the vsix package, as version 20 is going to be deprecated soon
+- Renamed workflow `release.yml` to `build-vsix.yml` to better reflect its purpose
+- Add manual triggering to workflow on release, tag, branch or any commit
+- Manually triggered `build-vsix.yml` workflow runs do attach the resulting VSIX as artifact with commit hash in the name for better traceability
+
+### Fixed
+
+- CVE-2026-33532 yaml is vulnerable to Stack Overflow via deeply nested YAML collections
+- Add `ssh2` as external dependency in `esbuild.js` to avoid build issues related to the `ssh2` package when using esbuild for bundling
+
 ## [0.2.3] - 2026-03-16
 
 ### Added
