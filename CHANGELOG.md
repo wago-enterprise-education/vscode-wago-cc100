@@ -8,6 +8,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ### Added
 
+- Update npm packages
 - Add Github action workflow which creates a release branch
 - Add Github action workflow which takes the VSIX from a release and publishes it to the marketplace using the VSCE_PAT secret for authentication
 - Add Github action workflow which can be manually triggered to verify that the VSCE_PAT is working
