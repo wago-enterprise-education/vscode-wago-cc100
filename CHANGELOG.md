@@ -22,6 +22,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ### Fixed
 
+- CVE-2026-33532 yaml is vulnerable to Stack Overflow via deeply nested YAML collections
 - Add `ssh2` as external dependency in `esbuild.js` to avoid build issues related to the `ssh2` package when using esbuild for bundling
 
 ## [0.2.3] - 2026-03-16
