@@ -6,6 +6,11 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+### Fixed
+
+- CVE-2026-4800 lodash vulnerable to Code Injection via `_.template` imports key names
+- CVE-2026-2950 lodash vulnerable to Prototype Pollution via array path bypass in `_.unset` and `_.omit`
+
 ## [0.2.4] - 2026-03-27
 
 ### Added
