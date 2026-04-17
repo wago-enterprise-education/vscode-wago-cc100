@@ -22,7 +22,9 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    environment: release
+    environment:
+      name: release
+      deployment: true
     # Only run when Build VSIX succeeded AND was triggered by a release event
     if: >-
       github.event.workflow_run.conclusion == 'success' &&

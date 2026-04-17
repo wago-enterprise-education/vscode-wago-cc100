@@ -9,6 +9,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 ### Changed
 
 - Force Node 24 for workflows
+- Deployment setting in workflow files updated
 
 ### Fixed
 

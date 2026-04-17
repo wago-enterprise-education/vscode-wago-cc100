@@ -13,7 +13,10 @@ on:
 jobs:
   verify-pat:
     runs-on: ubuntu-latest
-    environment: release
+    environment:
+      name: release
+      deployment: false
+
     steps:
       - name: Install VSCE
         run: npm install -g @vscode/vsce
