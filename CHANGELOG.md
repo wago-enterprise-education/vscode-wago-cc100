@@ -6,6 +6,10 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+## Changed
+
+- Add workflow to create release on PR merge to main
+
 ## [0.2.5] - 2026-04-17
 
 ### Changed
