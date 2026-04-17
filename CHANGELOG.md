@@ -6,6 +6,10 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+### Changed
+
+- Force Node 24 for workflows
+
 ### Fixed
 
 - CVE-2026-40186 sanitize-html allowedTags Bypass via Entity-Decoded Text in nonTextTags Elements

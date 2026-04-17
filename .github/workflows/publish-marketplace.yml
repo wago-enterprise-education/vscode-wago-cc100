@@ -10,6 +10,9 @@
 
 name: Publish to VS Code Marketplace
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 on:
   workflow_run:
     workflows: ["Build VSIX"]
