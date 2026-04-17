@@ -8,6 +8,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ### Fixed
 
+- CVE-2026-40186 sanitize-html allowedTags Bypass via Entity-Decoded Text in nonTextTags Elements
 - CVE-2026-4800 lodash vulnerable to Code Injection via `_.template` imports key names
 - CVE-2026-2950 lodash vulnerable to Prototype Pollution via array path bypass in `_.unset` and `_.omit`
 
