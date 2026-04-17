@@ -6,6 +6,20 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+## [0.2.5] - 2026-04-17
+
+### Changed
+
+- Force Node 24 for workflows
+- Deployment setting in workflow files updated
+- Update packages
+
+### Fixed
+
+- CVE-2026-40186 sanitize-html allowedTags Bypass via Entity-Decoded Text in nonTextTags Elements
+- CVE-2026-4800 lodash vulnerable to Code Injection via `_.template` imports key names
+- CVE-2026-2950 lodash vulnerable to Prototype Pollution via array path bypass in `_.unset` and `_.omit`
+
 ## [0.2.4] - 2026-03-27
 
 ### Added

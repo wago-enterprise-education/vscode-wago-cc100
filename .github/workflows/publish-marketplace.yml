@@ -10,6 +10,9 @@
 
 name: Publish to VS Code Marketplace
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 on:
   workflow_run:
     workflows: ["Build VSIX"]
@@ -19,7 +22,9 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    environment: release
+    environment:
+      name: release
+      deployment: true
     # Only run when Build VSIX succeeded AND was triggered by a release event
     if: >-
       github.event.workflow_run.conclusion == 'success' &&

@@ -28,7 +28,7 @@ This workflow is protected by the 'release' environment which should be configur
 
 ## 🔑 Prerequisites
 
-- **VSCE_PAT:** VS Code Marketplace Personal Access Token
+- **VSCE_PAT:** VS Code Marketplace Personal Access Token [see documentation](https://code.visualstudio.com/api/working-with-extensions/publishing-extension)
   - Add under Settings → Secrets and variables → Actions
   - Token must have publish permissions for the WAGO-education publisher
   - Use the "Verify Marketplace PAT" workflow to test token validity

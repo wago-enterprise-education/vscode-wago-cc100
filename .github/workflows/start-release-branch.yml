@@ -25,7 +25,9 @@ on:
 jobs:
   start-release-branch:
     runs-on: ubuntu-latest
-    environment: release
+    environment:
+      name: release
+      deployment: false
 
     steps:
       - name: Checkout main
