@@ -6,10 +6,13 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+## [0.2.5] - 2026-04-17
+
 ### Changed
 
 - Force Node 24 for workflows
 - Deployment setting in workflow files updated
+- Update packages
 
 ### Fixed
 
