@@ -10,6 +10,10 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 - Add workflow to create release on PR merge to main
 
+### Fixwed
+
+- uuid: Missing buffer bounds check in v3/v5/v6 when buf is provided
+
 ## [0.2.5] - 2026-04-17
 
 ### Changed
