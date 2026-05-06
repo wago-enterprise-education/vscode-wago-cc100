@@ -10,9 +10,10 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 - Add workflow to create release on PR merge to main
 
-### Fixwed
+### Fixed
 
 - uuid: Missing buffer bounds check in v3/v5/v6 when buf is provided
+- Fix missing ssh2 transitive dependencies (asn1, safer-buffer, bcrypt-pbkdf, tweetnacl) in `.vscodeignore`
 
 ## [0.2.5] - 2026-04-17
 

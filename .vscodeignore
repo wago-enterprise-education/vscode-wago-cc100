@@ -17,6 +17,10 @@ src/**
 out/**
 node_modules/**
 !node_modules/ssh2/**
+!node_modules/asn1/**
+!node_modules/safer-buffer/**
+!node_modules/bcrypt-pbkdf/**
+!node_modules/tweetnacl/**
 dist/*.map
 esbuild.js
 vsc-extension-quickstart.md
