@@ -6,7 +6,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
-## Changed
+### Changed
 
 - Add workflow to create release on PR merge to main
 
@@ -14,6 +14,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 - uuid: Missing buffer bounds check in v3/v5/v6 when buf is provided
 - Fix missing ssh2 transitive dependencies (asn1, safer-buffer, bcrypt-pbkdf, tweetnacl) in `.vscodeignore`
+- CVE-2026-6321 fast-uri vulnerable to path traversal via percent-encoded dot segments
 
 ## [0.2.5] - 2026-04-17
 
