@@ -36,3 +36,11 @@ This workflow is protected by the 'release' environment which should be configur
 - **release:** Environment with protection rules
   - Configure deployment protection rules
   - Add required reviewers who can approve publishing
+
+## 🔗 Related Workflows
+
+- **Previous step:** [Build VSIX](build-vsix.md) - Creates VSIX packages (automatic trigger)
+- **Release creation:** [Create GitHub Release](create-github-release.md) - Creates GitHub releases
+- **Release setup:** [Start Release Branch](start-release-branch.md) - Creates versioned release branches
+- **Utility:** [Verify Marketplace PAT](verify-marketplace-pat.md) - Validates publishing credentials before use
+- **Overview:** [All Workflows](README.md) - Complete workflow documentation

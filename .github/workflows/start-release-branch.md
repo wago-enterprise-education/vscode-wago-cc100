@@ -59,3 +59,11 @@ gh workflow run start-release-branch.yml -f bump_type=premajor
 - **Use case:** Breaking changes, major architectural updates
 - **Example:** 1.0.0 → 2.0.0-dev0
 - **When to use:** Significant changes that may break compatibility
+
+## 🔗 Related Workflows
+
+- **Next step:** [Create GitHub Release](create-github-release.md) - Automatically creates releases when you merge the release branch
+- **Build step:** [Build VSIX](build-vsix.md) - Builds extension packages from releases
+- **Final step:** [Publish to Marketplace](publish-marketplace.md) - Publishes to VS Code Marketplace
+- **Utility:** [Verify Marketplace PAT](verify-marketplace-pat.md) - Validates publishing credentials
+- **Overview:** [All Workflows](README.md) - Complete workflow documentation

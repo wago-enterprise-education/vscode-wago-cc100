@@ -1,0 +1,120 @@
+# GitHub Action to automatically create a GitHub Release when a release/v* branch
+# is merged into main via Pull Request.
+# 
+# Workflow:
+# 1. Triggers when PR from release/v* → main is closed and merged
+# 2. Extracts version number from the release branch name
+# 3. Parses CHANGELOG.md to extract release notes for that version
+# 4. Creates GitHub Release with extracted version and notes
+# 5. This triggers the existing build-vsix.yml → publish-marketplace.yml chain
+#
+# Restricted to maintainers via the "release" GitHub environment
+
+name: Create GitHub Release
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    environment:
+      name: release
+      deployment: false
+    # Only run if PR was merged AND head branch matches release/v* pattern
+    if: >-
+      github.event.pull_request.merged == true &&
+      startsWith(github.event.pull_request.head.ref, 'release/v')
+
+    steps:
+      - name: Checkout main branch
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Extract version from branch name
+        id: version
+        run: |
+          BRANCH_NAME="${{ github.event.pull_request.head.ref }}"
+          # Extract version from release/vX.Y.Z → X.Y.Z
+          VERSION=${BRANCH_NAME#release/v}
+          TAG="v${VERSION}"
+          
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
+          echo "Extracted version: ${VERSION} (tag: ${TAG})"
+
+      - name: Extract release notes from CHANGELOG
+        id: changelog
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          
+          # Create a temporary file for the release notes
+          RELEASE_NOTES_FILE=$(mktemp)
+          
+          # Extract the section for this version from CHANGELOG.md
+          # Start from line containing [VERSION] and stop at next version or end of file
+          awk -v version="$VERSION" '
+            BEGIN { found=0; capturing=0 }
+            /^## \[/ {
+              if (found && capturing) {
+                # We found the next version section, stop capturing
+                exit
+              }
+              if ($0 ~ "\\[" version "\\]") {
+                found=1
+                capturing=1
+                next  # Skip the version header line
+              }
+            }
+            capturing && !/^## \[/ {
+              # Capture everything until we hit another version section
+              if (NF > 0 || getline_result != 0) {  # Print non-empty lines and handle empty lines properly
+                print $0
+              }
+            }
+          ' CHANGELOG.md > "$RELEASE_NOTES_FILE"
+          
+          # Remove trailing empty lines
+          sed -i '/^[[:space:]]*$/{ :a; N; s/\n[[:space:]]*$//; ta }' "$RELEASE_NOTES_FILE"
+          
+          # Check if we found any content
+          if [ ! -s "$RELEASE_NOTES_FILE" ]; then
+            echo "Warning: No changelog content found for version $VERSION"
+            echo "## Release $VERSION" > "$RELEASE_NOTES_FILE"
+            echo "" >> "$RELEASE_NOTES_FILE"
+            echo "For detailed changes, please see the [CHANGELOG.md](CHANGELOG.md)." >> "$RELEASE_NOTES_FILE"
+          fi
+          
+          echo "release-notes-file=$RELEASE_NOTES_FILE" >> $GITHUB_OUTPUT
+          echo "Release notes extracted:"
+          cat "$RELEASE_NOTES_FILE"
+
+      - name: Create GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          TAG="${{ steps.version.outputs.tag }}"
+          RELEASE_NOTES_FILE="${{ steps.changelog.outputs.release-notes-file }}"
+          
+          echo "Creating release $TAG..."
+          
+          gh release create "$TAG" \
+            --title "Release $VERSION" \
+            --notes-file "$RELEASE_NOTES_FILE" \
+            --target main
+          
+          echo "✅ GitHub Release $TAG created successfully!"
+          echo "This will now trigger the build-vsix.yml workflow to build and attach the VSIX."
+
+      - name: Cleanup
+        if: always()
+        run: |
+          # Clean up temporary files
+          RELEASE_NOTES_FILE="${{ steps.changelog.outputs.release-notes-file }}"
+          if [ -n "$RELEASE_NOTES_FILE" ] && [ -f "$RELEASE_NOTES_FILE" ]; then
+            rm -f "$RELEASE_NOTES_FILE"
+          fi

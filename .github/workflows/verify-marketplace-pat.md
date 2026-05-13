@@ -94,3 +94,11 @@ The PAT must have:
 2. Update VSCE_PAT secret
 3. Run verify workflow to confirm
 4. Revoke old PAT from marketplace
+
+## 🔗 Related Workflows
+
+- **Uses this token:** [Publish to Marketplace](publish-marketplace.md) - Publishes VSIX to VS Code Marketplace
+- **Triggers publishing:** [Build VSIX](build-vsix.md) - Creates VSIX packages
+- **Creates releases:** [Create GitHub Release](create-github-release.md) - Creates GitHub releases
+- **Release setup:** [Start Release Branch](start-release-branch.md) - Creates versioned release branches
+- **Overview:** [All Workflows](README.md) - Complete workflow documentation

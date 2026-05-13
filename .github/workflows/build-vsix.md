@@ -151,3 +151,11 @@ gh run download <run-id>
 - **Manual builds:** Always create artifacts, never attach to releases
 - **Retention:** Artifacts are kept for 30 days
 - **Build consistency:** Same commit always produces same hash in artifact name
+
+## 🔗 Related Workflows
+
+- **Previous step:** [Create GitHub Release](create-github-release.md) - Creates GitHub releases (automatic trigger)
+- **Next step:** [Publish to Marketplace](publish-marketplace.md) - Publishes VSIX to VS Code Marketplace
+- **Release setup:** [Start Release Branch](start-release-branch.md) - Creates versioned release branches
+- **Utility:** [Verify Marketplace PAT](verify-marketplace-pat.md) - Validates publishing credentials
+- **Overview:** [All Workflows](README.md) - Complete workflow documentation
