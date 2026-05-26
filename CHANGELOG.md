@@ -9,6 +9,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 ### Fixed
 
 - CVE-2026-44990 Apostrophe has default XSS via `xmp` raw-text passthrough in `sanitize-html`
+- CVE-2026-8723 qs has a remotely triggerable DoS: qs.stringify crashes with TypeError on null/undefined entries in comma-format arrays when encodeValuesOnly is set
 
 ## [0.2.6] - 2026-05-13
 
