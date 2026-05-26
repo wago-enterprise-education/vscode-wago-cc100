@@ -6,6 +6,10 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+### Fixed
+
+- CVE-2026-44990 Apostrophe has default XSS via `xmp` raw-text passthrough in `sanitize-html`
+
 ## [0.2.6] - 2026-05-13
 
 ### Changed
