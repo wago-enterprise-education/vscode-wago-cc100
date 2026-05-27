@@ -6,6 +6,10 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+### Fixed
+
+- CVE-2026-44705 tmp has Path Traversal via unsanitized prefix/postfix that enables directory escape
+
 ## [0.2.7] - 2026-05-27
 
 ### Changed
