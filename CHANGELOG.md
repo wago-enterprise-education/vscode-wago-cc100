@@ -6,6 +6,8 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+## [0.2.7] - 2026-05-27
+
 ### Changed
 
 - Update npm packages
