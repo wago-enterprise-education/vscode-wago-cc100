@@ -12,7 +12,8 @@ The workflow automatically triggers when a release branch is merged into main vi
 2. Extracts version number from branch name (e.g., `release/v0.2.5` → `0.2.5`)
 3. Parses `CHANGELOG.md` to extract release notes for that version
 4. Creates GitHub Release with tag `v{version}` and extracted changelog content
-5. Triggers downstream workflows: [Build VSIX](build-vsix.md) → [Publish to Marketplace](publish-marketplace.md)
+5. Calls [Build VSIX](build-vsix.md) directly via `workflow_call` to build and attach the VSIX
+6. On completion, [Publish to Marketplace](publish-marketplace.md) is triggered via `workflow_run`
 
 **How to trigger:**
 
@@ -25,15 +26,25 @@ The workflow automatically triggers when a release branch is merged into main vi
 ## 📋 Workflow Chain
 
 ```text
-Start Release Branch → Development → PR Merge → Create GitHub Release → Build VSIX → Publish Marketplace
+Start Release Branch → Development → PR Merge → Create GitHub Release → Build VSIX (workflow_call) → Publish Marketplace (workflow_run)
 ```
 
 | Step | Workflow | Trigger | Output |
 | ---- | -------- | ------- | ------ |
 | 1 | [Start Release Branch](start-release-branch.md) | Manual dispatch | `release/v{version}` branch |
 | 2 | **Create GitHub Release** | PR Merge (`release/v*` → `main`) | GitHub Release with tag |
-| 3 | [Build VSIX](build-vsix.md) | Release creation | VSIX attached to release |
-| 4 | [Publish to Marketplace](publish-marketplace.md) | Build VSIX completion | Extension published |
+| 3 | [Build VSIX](build-vsix.md) | `workflow_call` from this workflow | VSIX attached to release |
+| 4 | [Publish to Marketplace](publish-marketplace.md) | `workflow_run` on completion of this workflow | Extension published |
+
+## ⚠️ GITHUB_TOKEN Limitation (Design Note)
+
+This workflow uses `workflow_call` (reusable workflow) to invoke Build VSIX instead of relying on the `release: created` event. The reason:
+
+> **Events created by the default `GITHUB_TOKEN` do not trigger other workflows.** This is a deliberate GitHub security measure to prevent infinite recursive workflow runs.
+
+Since the `gh release create` step runs with `GITHUB_TOKEN`, the resulting `release: created` webhook event is suppressed by GitHub. Any workflow listening for `release: types: [created]` (like Build VSIX originally did) will **not** be triggered.
+
+The solution is to call Build VSIX directly via `workflow_call`, which runs it as a reusable workflow within the same workflow run. The downstream Publish to Marketplace workflow then picks up the completion via `workflow_run`, which is emitted by GitHub’s Actions infrastructure (not by the token) and is therefore not subject to this limitation.
 
 ## 🔍 Version Detection
 

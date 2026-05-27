@@ -10,6 +10,12 @@ env:
 on:
   release:
     types: [created]
+  workflow_call:
+    inputs:
+      tag_name:
+        description: 'Release tag name (e.g. v0.2.6)'
+        required: true
+        type: string
   workflow_dispatch:
     inputs:
       commit_sha:
@@ -24,7 +30,7 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
       with:
-        ref: ${{ inputs.commit_sha || github.sha }}
+        ref: ${{ inputs.tag_name || inputs.commit_sha || github.sha }}
 
     - name: Get version and commit info for manual builds
       if: github.event_name == 'workflow_dispatch'
@@ -77,12 +83,13 @@ jobs:
         echo "vsix-file=$VSIX_FILE" >> $GITHUB_OUTPUT
         echo "Found VSIX file: $VSIX_FILE"
 
-    - name: Upload VSIX to release (automatic)
-      if: github.event_name == 'release'
+    - name: Upload VSIX to release
+      if: github.event_name == 'release' || inputs.tag_name
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        gh release upload ${{ github.event.release.tag_name }} ${{ steps.find-vsix.outputs.vsix-file }} --clobber
+        TAG="${{ github.event.release.tag_name || inputs.tag_name }}"
+        gh release upload "$TAG" ${{ steps.find-vsix.outputs.vsix-file }} --clobber
 
     - name: Upload VSIX as workflow artifact (manual builds only)
       if: github.event_name == 'workflow_dispatch'

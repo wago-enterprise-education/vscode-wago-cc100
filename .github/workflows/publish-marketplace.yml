@@ -15,7 +15,7 @@ env:
 
 on:
   workflow_run:
-    workflows: ["Build VSIX"]
+    workflows: ["Build VSIX", "Create GitHub Release"]
     types:
       - completed
 
@@ -25,18 +25,29 @@ jobs:
     environment:
       name: release
       deployment: true
-    # Only run when Build VSIX succeeded AND was triggered by a release event
+    # Only run when the triggering workflow succeeded AND was a release-related event
     if: >-
       github.event.workflow_run.conclusion == 'success' &&
-      github.event.workflow_run.event == 'release'
+      (github.event.workflow_run.event == 'release' ||
+       github.event.workflow_run.name == 'Create GitHub Release')
 
     steps:
       - name: Download VSIX from release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # For release-triggered workflows, head_branch holds the tag name
-          TAG="${{ github.event.workflow_run.head_branch }}"
+          # Determine the release tag based on the triggering workflow
+          # For release-triggered Build VSIX: head_branch is the tag directly
+          # For PR-triggered Create GitHub Release: head_branch is release/vX.Y.Z
+          BRANCH="${{ github.event.workflow_run.head_branch }}"
+          if [[ "$BRANCH" == release/v* ]]; then
+            TAG="v${BRANCH#release/v}"
+          elif [[ "$BRANCH" == v* ]]; then
+            TAG="$BRANCH"
+          else
+            echo "Error: Cannot determine release tag from branch: $BRANCH"
+            exit 1
+          fi
           echo "Downloading VSIX from release: $TAG"
           gh release download "$TAG" \
             --repo "${{ github.repository }}" \
