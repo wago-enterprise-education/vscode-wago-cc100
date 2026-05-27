@@ -9,6 +9,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 ### Changed
 
 - Update npm packages
+- Fix workflow chain: use `workflow_call` to invoke Build VSIX from Create GitHub Release (events created by `GITHUB_TOKEN` do not trigger other workflows)
 
 ### Fixed
 

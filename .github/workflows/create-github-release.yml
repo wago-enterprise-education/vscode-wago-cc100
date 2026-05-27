@@ -6,7 +6,8 @@
 # 2. Extracts version number from the release branch name
 # 3. Parses CHANGELOG.md to extract release notes for that version
 # 4. Creates GitHub Release with extracted version and notes
-# 5. This triggers the existing build-vsix.yml → publish-marketplace.yml chain
+# 5. Calls build-vsix.yml (via workflow_call) to build and attach the VSIX
+# 6. On completion, publish-marketplace.yml is triggered via workflow_run
 #
 # Restricted to maintainers via the "release" GitHub environment
 
@@ -23,6 +24,8 @@ jobs:
     environment:
       name: release
       deployment: false
+    outputs:
+      tag: ${{ steps.version.outputs.tag }}
     # Only run if PR was merged AND head branch matches release/v* pattern
     if: >-
       github.event.pull_request.merged == true &&
@@ -118,3 +121,10 @@ jobs:
           if [ -n "$RELEASE_NOTES_FILE" ] && [ -f "$RELEASE_NOTES_FILE" ]; then
             rm -f "$RELEASE_NOTES_FILE"
           fi
+
+  build-vsix:
+    needs: create-release
+    uses: ./.github/workflows/build-vsix.yml
+    with:
+      tag_name: ${{ needs.create-release.outputs.tag }}
+    secrets: inherit

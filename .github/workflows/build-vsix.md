@@ -4,15 +4,25 @@ This document explains how to use the GitHub Actions workflow for building the v
 
 ## 🚀 Automatic Release Build
 
-The workflow automatically triggers when a new release is created on GitHub.
+The workflow triggers automatically in two scenarios:
+
+1. **Via `workflow_call` from Create GitHub Release** (primary path): When a release branch is merged into main, the Create GitHub Release workflow calls this workflow directly as a reusable workflow, passing the release tag name.
+2. **Via `release: created` event** (fallback): When a GitHub release is created manually (bypassing the PR flow), the workflow triggers independently.
 
 **What happens:**
 
+- Checks out the release tag
 - Builds VSIX from the release tag
 - Attaches the VSIX file to the GitHub release
 - Uses official release naming (matches GitHub release)
 
-**How to trigger:**
+**How to trigger (automatic via PR merge):**
+
+1. Merge a `release/v*` branch into main
+2. Create GitHub Release workflow runs and calls this workflow
+3. VSIX is built and attached to the release
+
+**How to trigger (manual release):**
 
 1. Create a new release on GitHub (via web UI or `gh release create`)
 2. The workflow runs automatically
@@ -138,7 +148,8 @@ gh run download <run-id>
 
 | Scenario | Command | Output |
 | -------- | ------- | ------ |
-| Auto release | Create GitHub release | VSIX attached to release |
+| Auto release (via PR merge) | Merge `release/v*` PR into main | VSIX attached to release |
+| Auto release (manual) | Create GitHub release | VSIX attached to release |
 | Build main | `gh workflow run build-vsix.yml --ref main` | `vscode-wago-cc100-v{version}-{hash}` |
 | Build branch | `gh workflow run build-vsix.yml --ref feature/abc` | `vscode-wago-cc100-v{version}-{hash}` |
 | Build commit | `gh workflow run build-vsix.yml --ref a1b2c3d4` | `vscode-wago-cc100-v{version}-{hash}` |
@@ -154,8 +165,8 @@ gh run download <run-id>
 
 ## 🔗 Related Workflows
 
-- **Previous step:** [Create GitHub Release](create-github-release.md) - Creates GitHub releases (automatic trigger)
-- **Next step:** [Publish to Marketplace](publish-marketplace.md) - Publishes VSIX to VS Code Marketplace
+- **Caller:** [Create GitHub Release](create-github-release.md) - Calls this workflow via `workflow_call` after creating a release
+- **Next step:** [Publish to Marketplace](publish-marketplace.md) - Publishes VSIX to VS Code Marketplace (triggered via `workflow_run`)
 - **Release setup:** [Start Release Branch](start-release-branch.md) - Creates versioned release branches
 - **Utility:** [Verify Marketplace PAT](verify-marketplace-pat.md) - Validates publishing credentials
 - **Overview:** [All Workflows](README.md) - Complete workflow documentation
