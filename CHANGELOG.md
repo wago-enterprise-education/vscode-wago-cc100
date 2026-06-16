@@ -6,6 +6,8 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+## [0.2.9] - 2026-06-16
+
 ### Fixed
 
 - Security Issue: esbuild allows arbitrary file read when running the development server on Windows
