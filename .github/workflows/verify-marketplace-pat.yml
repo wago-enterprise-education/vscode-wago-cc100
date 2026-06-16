@@ -26,5 +26,5 @@ jobs:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
         run: |
           echo "Verifying VSCE_PAT for publisher WAGO-education..."
-          vsce verify-pat --publisher WAGO-education
+          vsce verify-pat WAGO-education
           echo "PAT is valid!"

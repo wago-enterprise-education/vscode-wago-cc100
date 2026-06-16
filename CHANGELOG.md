@@ -6,6 +6,14 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+## [0.2.9] - 2026-06-16
+
+### Fixed
+
+- Security Issue: esbuild allows arbitrary file read when running the development server on Windows
+- CVE-2026-49982 tmp: Type-confusion bypass of _assertPath allows path traversal via non-string prefix/postfix/template
+- Update verify-marketplace-pat.yml workflow to correct wrong parameter for `vsce verify-pat` command
+
 ## [0.2.8] - 2026-05-27
 
 ### Fixed
