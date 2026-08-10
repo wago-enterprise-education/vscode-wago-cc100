@@ -28,6 +28,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 - CVE-2026-16729 undici vulnerable to cookie attribute injection via unsanitized domain and unparsed setCookie fields
 - CVE-2026-15157 undici vulnerable to CRLF Injection via blob-like body 'type' property
 - No CVE PostCSS: Path Traversal in Previous Source Map Auto-Loading (sourceMappingURL) leads to Arbitrary .map File Disclosure
+- Update npm packages
 
 ## [0.2.9] - 2026-06-16
 
