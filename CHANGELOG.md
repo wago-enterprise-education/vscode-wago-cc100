@@ -13,6 +13,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 - CVE-2026-59873 node-tar: Decompression/parse DoS via unlimited input
 - CVE-2026-59874 node-tar: Negative tar entry size causes infinite loop in archive replace
 - CVE-2026-13311 shell-quote: Quadratic-complexity Denial of Service in `parse()` (CWE-407)
+- CVE-2026-13149 brace-expansion: DoS via exponential-time expansion of consecutive non-expanding {} groups
 
 ## [0.2.9] - 2026-06-16
 
