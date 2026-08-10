@@ -12,6 +12,9 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 - CVE-2026-59873 node-tar: Decompression/parse DoS via unlimited input
 - CVE-2026-59874 node-tar: Negative tar entry size causes infinite loop in archive replace
+- CVE-2026-59871 node-tar: Process crash via PAX numeric path type confusion
+- CVE-2026-59875 node-tar: Uncaught Exception DoS via NUL byte in PAX path/linkpath records
+- node-tar: Uncontrolled recursion in mapHas/filesFilter allows uncatchable stack-overflow DoS via crafted long-path tar with member selection
 - CVE-2026-13311 shell-quote: Quadratic-complexity Denial of Service in `parse()` (CWE-407)
 - CVE-2026-13149 brace-expansion: DoS via exponential-time expansion of consecutive non-expanding {} groups
 
