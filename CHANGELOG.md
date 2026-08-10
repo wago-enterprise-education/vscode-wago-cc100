@@ -22,6 +22,11 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 - CVE-2026-18446 fast-uri vulnerable to host confusion via backslash authority introducer
 - CVE-2026-16221 fast-uri vulnerable to host confusion via literal backslash authority delimiter
 - CVE-2026-59887 linkify-it: Quadratic-complexity DoS via the `mailto:` validator scan-loop on attacker text
+- CVE-2026-13697 undici vulnerable to cross-user information disclosure and parse-time crash via degenerate private cache directives
+- CVE-2026-14643 undici vulnerable to cross-user information disclosure via whitespace around equals in Cache-Control directives
+- CVE-2026-16728 undici vulnerable to downstream response desynchronization via retry interceptor
+- CVE-2026-16729 undici vulnerable to cookie attribute injection via unsanitized domain and unparsed setCookie fields
+- CVE-2026-15157 undici vulnerable to CRLF Injection via blob-like body 'type' property
 
 ## [0.2.9] - 2026-06-16
 
