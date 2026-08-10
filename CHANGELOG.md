@@ -17,6 +17,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 - node-tar: Uncontrolled recursion in mapHas/filesFilter allows uncatchable stack-overflow DoS via crafted long-path tar with member selection
 - CVE-2026-13311 shell-quote: Quadratic-complexity Denial of Service in `parse()` (CWE-407)
 - CVE-2026-13149 brace-expansion: DoS via exponential-time expansion of consecutive non-expanding {} groups
+- CVE-2026-59869 js-yaml: YAML merge-key chains can force quadratic CPU consumption
 
 ## [0.2.9] - 2026-06-16
 
