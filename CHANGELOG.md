@@ -6,6 +6,12 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+### [0.2.10] - 2026-08-10
+
+### Fixed
+
+- CVE-2026-59873 node-tar: Decompression/parse DoS via unlimited input
+
 ## [0.2.9] - 2026-06-16
 
 ### Fixed
