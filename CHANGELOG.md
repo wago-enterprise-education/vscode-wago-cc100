@@ -14,7 +14,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 - CVE-2026-59874 node-tar: Negative tar entry size causes infinite loop in archive replace
 - CVE-2026-59871 node-tar: Process crash via PAX numeric path type confusion
 - CVE-2026-59875 node-tar: Uncaught Exception DoS via NUL byte in PAX path/linkpath records
-- node-tar: Uncontrolled recursion in mapHas/filesFilter allows uncatchable stack-overflow DoS via crafted long-path tar with member selection
+- No CVE node-tar: Uncontrolled recursion in mapHas/filesFilter allows uncatchable stack-overflow DoS via crafted long-path tar with member selection
 - CVE-2026-13311 shell-quote: Quadratic-complexity Denial of Service in `parse()` (CWE-407)
 - CVE-2026-13149 brace-expansion: DoS via exponential-time expansion of consecutive non-expanding {} groups
 - CVE-2026-59869 js-yaml: YAML merge-key chains can force quadratic CPU consumption
@@ -27,6 +27,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 - CVE-2026-16728 undici vulnerable to downstream response desynchronization via retry interceptor
 - CVE-2026-16729 undici vulnerable to cookie attribute injection via unsanitized domain and unparsed setCookie fields
 - CVE-2026-15157 undici vulnerable to CRLF Injection via blob-like body 'type' property
+- No CVE PostCSS: Path Traversal in Previous Source Map Auto-Loading (sourceMappingURL) leads to Arbitrary .map File Disclosure
 
 ## [0.2.9] - 2026-06-16
 
