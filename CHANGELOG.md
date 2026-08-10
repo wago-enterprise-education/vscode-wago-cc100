@@ -21,6 +21,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 - CVE-2026-13676 fast-uri vulnerable to host confusion via failed IDN canonicalization
 - CVE-2026-18446 fast-uri vulnerable to host confusion via backslash authority introducer
 - CVE-2026-16221 fast-uri vulnerable to host confusion via literal backslash authority delimiter
+- CVE-2026-59887 linkify-it: Quadratic-complexity DoS via the `mailto:` validator scan-loop on attacker text
 
 ## [0.2.9] - 2026-06-16
 
