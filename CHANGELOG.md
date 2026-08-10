@@ -18,6 +18,9 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 - CVE-2026-13311 shell-quote: Quadratic-complexity Denial of Service in `parse()` (CWE-407)
 - CVE-2026-13149 brace-expansion: DoS via exponential-time expansion of consecutive non-expanding {} groups
 - CVE-2026-59869 js-yaml: YAML merge-key chains can force quadratic CPU consumption
+- CVE-2026-13676 fast-uri vulnerable to host confusion via failed IDN canonicalization
+- CVE-2026-18446 fast-uri vulnerable to host confusion via backslash authority introducer
+- CVE-2026-16221 fast-uri vulnerable to host confusion via literal backslash authority delimiter
 
 ## [0.2.9] - 2026-06-16
 
