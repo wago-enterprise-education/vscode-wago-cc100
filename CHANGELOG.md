@@ -6,6 +6,30 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+### [0.2.10] - 2026-08-10
+
+### Fixed
+
+- CVE-2026-59873 node-tar: Decompression/parse DoS via unlimited input
+- CVE-2026-59874 node-tar: Negative tar entry size causes infinite loop in archive replace
+- CVE-2026-59871 node-tar: Process crash via PAX numeric path type confusion
+- CVE-2026-59875 node-tar: Uncaught Exception DoS via NUL byte in PAX path/linkpath records
+- No CVE node-tar: Uncontrolled recursion in mapHas/filesFilter allows uncatchable stack-overflow DoS via crafted long-path tar with member selection
+- CVE-2026-13311 shell-quote: Quadratic-complexity Denial of Service in `parse()` (CWE-407)
+- CVE-2026-13149 brace-expansion: DoS via exponential-time expansion of consecutive non-expanding {} groups
+- CVE-2026-59869 js-yaml: YAML merge-key chains can force quadratic CPU consumption
+- CVE-2026-13676 fast-uri vulnerable to host confusion via failed IDN canonicalization
+- CVE-2026-18446 fast-uri vulnerable to host confusion via backslash authority introducer
+- CVE-2026-16221 fast-uri vulnerable to host confusion via literal backslash authority delimiter
+- CVE-2026-59887 linkify-it: Quadratic-complexity DoS via the `mailto:` validator scan-loop on attacker text
+- CVE-2026-13697 undici vulnerable to cross-user information disclosure and parse-time crash via degenerate private cache directives
+- CVE-2026-14643 undici vulnerable to cross-user information disclosure via whitespace around equals in Cache-Control directives
+- CVE-2026-16728 undici vulnerable to downstream response desynchronization via retry interceptor
+- CVE-2026-16729 undici vulnerable to cookie attribute injection via unsanitized domain and unparsed setCookie fields
+- CVE-2026-15157 undici vulnerable to CRLF Injection via blob-like body 'type' property
+- No CVE PostCSS: Path Traversal in Previous Source Map Auto-Loading (sourceMappingURL) leads to Arbitrary .map File Disclosure
+- Update npm packages
+
 ## [0.2.9] - 2026-06-16
 
 ### Fixed
