@@ -6,6 +6,8 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+## [0.2.11] - 2026-09-15
+
 ### Fixed
 
 - CVE-2026-84375: js-yaml: maxTotalMergeKeys does not limit CPU use for empty merge sources
@@ -17,7 +19,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 - Removed dev dependency "@types/yaml"
 - Update npm packages
 
-### [0.2.10] - 2026-08-10
+## [0.2.10] - 2026-08-10
 
 ### Fixed
 
