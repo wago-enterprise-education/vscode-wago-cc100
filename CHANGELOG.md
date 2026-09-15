@@ -6,7 +6,20 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
-### [0.2.10] - 2026-08-10
+## [0.2.11] - 2026-09-15
+
+### Fixed
+
+- CVE-2026-84375: js-yaml: maxTotalMergeKeys does not limit CPU use for empty merge sources
+- CVE-2026-76172: fast-uri vulnerable to host confusion via percent-encoded scheme normalization
+- CVE-2026-75931: fast-uri vulnerable to host confusion via skipped IDN canonicalization on scheme-relative references
+- CVE-2026-75975: fast-uri vulnerable to server-side request forgery via malformed IPv6 normalization
+- CVE-2026-75899: fast-uri vulnerable to server-side request forgery via repeated hostname percent-decoding
+- CVE-2026-84371: ApostropheCMS: Stored XSS via SVG SMIL URI-list scheme-policy bypass
+- Removed dev dependency "@types/yaml"
+- Update npm packages
+
+## [0.2.10] - 2026-08-10
 
 ### Fixed
 
