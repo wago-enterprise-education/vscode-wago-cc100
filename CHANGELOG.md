@@ -8,6 +8,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ### Fixed
 
+- CVE-2026-93749: source-map-js allows event-loop denial of service through indexed source-map section offsets
 - CVE-2026-113657: ApostropheCMS sanitize-html: SMIL animation namespace-prefix bypass allows javascript: URI injection (XSS)
 - CVE-2026-113654: ApostropheCMS sanitize-html: nonTextTags discard region ends early on an implied close, letting <noscript> content render
 - CVE-2026-113661: ApostropheCMS: Incomplete CVE-2026-53606: `meta http-equiv=refresh` `content` still ships `javascript:` / `data:` URLs
