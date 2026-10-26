@@ -6,6 +6,10 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+### Fixed
+
+- CVE-2026-102422: shell-quote: `quote()` command injection via a line terminator in a token after a `{ comment }` token
+
 ## [0.2.12] - 2026-10-26
 
 ### Fixed
