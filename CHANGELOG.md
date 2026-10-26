@@ -6,6 +6,8 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+## [0.2.12] - 2026-10-26
+
 ### Fixed
 
 - CVE-2026-93749: source-map-js allows event-loop denial of service through indexed source-map section offsets
