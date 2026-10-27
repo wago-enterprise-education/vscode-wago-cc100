@@ -6,14 +6,11 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+## [0.2.12] - 2026-10-27
+
 ### Fixed
 
 - CVE-2026-102422: shell-quote: `quote()` command injection via a line terminator in a token after a `{ comment }` token
-
-## [0.2.12] - 2026-10-26
-
-### Fixed
-
 - CVE-2026-93749: source-map-js allows event-loop denial of service through indexed source-map section offsets
 - CVE-2026-113657: ApostropheCMS sanitize-html: SMIL animation namespace-prefix bypass allows javascript: URI injection (XSS)
 - CVE-2026-113654: ApostropheCMS sanitize-html: nonTextTags discard region ends early on an implied close, letting <noscript> content render
