@@ -106,7 +106,7 @@ jobs:
           echo "Creating release $TAG..."
           
           gh release create "$TAG" \
-            --title "Release $VERSION" \
+            --title "$TAG" \
             --notes-file "$RELEASE_NOTES_FILE" \
             --target main
           
