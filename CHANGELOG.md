@@ -6,6 +6,16 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+## [0.2.13] - 2026-11-03
+
+### Fixed
+
+- CVE-2026-109461: MSAL Node authorization code flow may disclose parameters to an attacker-controlled endpoint
+
+### Changed
+
+- Use the version tag as the GitHub release name without a "Release" prefix
+
 ## [0.2.12] - 2026-10-27
 
 ### Fixed
