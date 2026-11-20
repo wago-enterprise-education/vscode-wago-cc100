@@ -10,6 +10,12 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 - CVE-2026-110816: qs : qs.stringify with arrayFormat 'comma' throws an uncaught TypeError on array elements carrying a non-callable own toString (DoS)
 
+### Changed
+
+- Run npx npm-check-updates -u
+- Change `vscode` dependency to "^1.110.0"
+- Change `@types/vscode` dependency to "^1.110.0"
+
 ## [0.2.13] - 2026-11-03
 
 ### Fixed
